@@ -1,5 +1,4 @@
-# PICARD
-> Pipeline Integration and Coordination for Automated R Dataflows
+# Pipeline Integration and Coordination for Automated R Dataflows
 
 # Overview
 PICARD is the internal orchestration engine developed by UMC Utrecht to manage and automate multi-step data transformation pipelines used in clinical research.
