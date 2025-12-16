@@ -1,0 +1,48 @@
+#' T5Pipeline Class
+#'
+#' @description
+#' This class is responsible for managing the T5 pipeline, including loading
+#' configuration files, executing steps, and cleaning up files.
+#'
+#' @details
+#' The T5Pipeline class is designed to handle the T5 pipeline for semantic
+#' harmonization. It loads configuration files, executes the steps defined in
+#' the configuration, and cleans up files as needed.
+#'
+#' @export
+t5_pipeline <- R6::R6Class(
+  "T5Pipeline",
+  inherit = pipeline,
+  public = list(
+    #' @field T5 Configuration for the T5 pipeline
+    T5 = NULL,
+
+    #' Initialize the T5 pipeline with a YAML configuration file
+    #' @param config_t5 Path to the YAML configuration file for T5
+    #' @return An instance of T5Pipeline
+    initialize = function(
+      config_t5 = base::file.path("configuration", "config_T5.yaml")
+    ) {
+      logger::log_info("Initializing T5 class")
+      self$T5 <- super$load_yaml(config_t5)
+      logger::log_debug("T5 config loaded")
+    },
+
+    #' Clean up files related to the T5 pipeline
+    #' @return NULL
+    clean = function() {
+      # Implement if you need to clear intermediates, etc.
+      # Keep no-op to preserve current caller expectations.
+      logger::log_debug("T5 clean() - no-op")
+      base::invisible(NULL)
+    },
+
+    #' Run the T5 pipeline
+    #' @return NULL
+    run = function() {
+      logger::log_debug("Running T5 substeps via Pipeline engine")
+      super$run_substeps(self$T5, step_key = "T5")
+      base::invisible(NULL)
+    }
+  )
+)

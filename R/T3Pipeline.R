@@ -1,0 +1,48 @@
+#' T3Pipeline Class
+#'
+#' @description
+#' This class is responsible for managing the T3 pipeline, including loading
+#' configuration files, executing steps, and cleaning up files.
+#'
+#' @details
+#' The T3Pipeline class is designed to handle the T3 pipeline for semantic
+#' harmonization. It loads configuration files, executes the steps defined in
+#' the configuration, and cleans up files as needed.
+#'
+#' @export
+t3_pipeline <- R6::R6Class(
+  "T3Pipeline",
+  inherit = pipeline,
+  public = list(
+    #' @field T3 Configuration for the T3 pipeline
+    T3 = NULL,
+
+    #' Initialize the T3 pipeline with a YAML configuration file
+    #' @param config_t3 Path to the YAML configuration file for T3
+    #' @return An instance of T3Pipeline
+    initialize = function(
+      config_t3 = base::file.path("configuration", "config_T3.yaml")
+    ) {
+      logger::log_info("Initializing T3 class")
+      self$T3 <- super$load_yaml(config_t3)
+      logger::log_debug("T3 config loaded")
+    },
+
+    #' Clean up files related to the T3 pipeline
+    #' @return NULL
+    clean = function() {
+      # Implement if you need to clear intermediates, etc.
+      # Keep no-op to preserve current caller expectations.
+      logger::log_debug("T3 clean() - no-op")
+      base::invisible(NULL)
+    },
+
+    #' Run the T3 pipeline
+    #' @return NULL
+    run = function() {
+      logger::log_debug("Running T3 substeps via Pipeline engine")
+      super$run_substeps(self$T3, step_key = "T3")
+      base::invisible(NULL)
+    }
+  )
+)
