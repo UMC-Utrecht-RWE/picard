@@ -1,3 +1,7 @@
+<div class="img-label-wrapper">
+<img class="titleResource" src="man/figures/logo.png" width=250 height=250 style="float:right">
+</div>
+
 # Pipeline Integration and Coordination for Automated R Dataflows
 
 # Overview
