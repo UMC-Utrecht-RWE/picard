@@ -27,7 +27,7 @@ audit_start <- function(
     file_name <- basename(tools::file_path_sans_ext(file_name))
   }
 
-  file_name_sens  <- file_name
+  file_name_sens <- file_name
   file_name <- paste0(
     base::format(base::Sys.time(), "%Y-%m-%d_%H:%M_"), file_name
   )
@@ -43,7 +43,8 @@ audit_start <- function(
   }
 
   audit_file <- list.files(
-    dir_output, pattern = file_name_sens, full.names = TRUE
+    dir_output,
+    pattern = file_name_sens, full.names = TRUE
   )
   # create or clear file if delete_old = TRUE
   if (all(base::file.exists(audit_file)) && delete_old) {

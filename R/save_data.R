@@ -22,16 +22,15 @@
 #' @return Invisibly returns file_path
 #' @export
 save_data <- function(
-  data,
-  file_path,
-  file_name = NULL,
-  create_plot = FALSE,
-  plot_path = "data/intermediate_plots",
-  exclude_columns_from_plots = c(
-    "person_id", "pregnancy_id", "unique_id"
-  ),
-  ...
-) {
+    data,
+    file_path,
+    file_name = NULL,
+    create_plot = FALSE,
+    plot_path = "data/intermediate_plots",
+    exclude_columns_from_plots = c(
+      "person_id", "pregnancy_id", "unique_id"
+    ),
+    ...) {
   # Validate and prepare output path
   path_info <- prepare_output_path(file_path, file_name)
   file_path <- path_info$normalized_path
@@ -94,17 +93,20 @@ save_data <- function(
       }
     }
 
-    tryCatch({
-      picard::plot_data_features(
-        data = data_to_plot,
-        file_path = file_path,
-        ...
-      )
-    }, error = function(e) {
-      logger::log_warn(paste0(
-        "Failed to create plots: ", e$message
-      ))
-    })
+    tryCatch(
+      {
+        picard::plot_data_features(
+          data = data_to_plot,
+          file_path = file_path,
+          ...
+        )
+      },
+      error = function(e) {
+        logger::log_warn(paste0(
+          "Failed to create plots: ", e$message
+        ))
+      }
+    )
   }
 
   invisible(file_path)
@@ -118,10 +120,9 @@ save_data <- function(
 #' @return Named list with normalized_path
 #' @keywords internal
 prepare_output_path <- function(
-  file_path,
-  file_name = NULL,
-  create_dir = TRUE
-) {
+    file_path,
+    file_name = NULL,
+    create_dir = TRUE) {
   # Trim whitespace
   file_path <- trimws(file_path)
 
@@ -319,5 +320,4 @@ list_writers <- function() {
     arrow::write_parquet(data, path, ...)
     base::invisible(path)
   })
-
 }

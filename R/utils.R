@@ -22,7 +22,8 @@ load_config_values <- function(file_path = NULL) {
   } else {
     # list all .yamls in the configuration folder
     yamls <- list.files(
-      here::here("configuration"), pattern = "\\.yaml$",
+      here::here("configuration"),
+      pattern = "\\.yaml$",
       full.names = TRUE
     )
     # load all files and add a new variable in the environment
@@ -227,10 +228,9 @@ set_dates <- function(
 #' get_date_value(c("20251119", "20251118", "Ciao"))
 #' @export
 get_date_value <- function(
-  date_input,
-  origin = "1970-01-01",
-  date_formats = c("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d")
-) {
+    date_input,
+    origin = "1970-01-01",
+    date_formats = c("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d")) {
   # Already Date
   if (base::inherits(date_input, "Date")) {
     return(date_input)

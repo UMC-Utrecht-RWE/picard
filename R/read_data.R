@@ -172,8 +172,7 @@ validate_and_normalize_path <- function(file_path, file_name = NULL) {
 #' @return Corrected file_path if a case-insensitive match is found
 #' @keywords internal
 case_sensitive_filename <- function(
-  file_path, file_name, dir_path, actual_files
-) {
+    file_path, file_name, dir_path, actual_files) {
   # In read_data(), replace the file finding logic:
   if (!file_name %in% actual_files) {
     similar_files <- actual_files[tolower(actual_files) == tolower(file_name)]
@@ -194,7 +193,8 @@ case_sensitive_filename <- function(
     } else {
       # Provide helpful suggestions
       suggestion <- agrep(
-        file_name, actual_files, value = TRUE, max.distance = 0.3
+        file_name, actual_files,
+        value = TRUE, max.distance = 0.3
       )
       if (length(suggestion) > 0) {
         stop(
@@ -231,25 +231,28 @@ define_column_types <- function(df, col_types) {
     if (col %in% names(df)) {
       type <- col_types[[col]]
 
-      tryCatch({
-        # Handle both function and character input
-        converter <- if (is.function(type)) {
-          type
-        } else if (is.character(type)) {
-          get(paste0("as.", type))
-        } else {
-          stop("col_types values must be functions or character strings")
-        }
+      tryCatch(
+        {
+          # Handle both function and character input
+          converter <- if (is.function(type)) {
+            type
+          } else if (is.character(type)) {
+            get(paste0("as.", type))
+          } else {
+            stop("col_types values must be functions or character strings")
+          }
 
-        data.table::set(df, j = col, value = converter(df[[col]]))
-        logger::log_debug(
-          paste0("Converted column '", col, "' to type: ", type)
-        )
-      }, error = function(e) {
-        logger::log_warn(paste0(
-          "Failed to convert column '", col, "': ", e$message
-        ))
-      })
+          data.table::set(df, j = col, value = converter(df[[col]]))
+          logger::log_debug(
+            paste0("Converted column '", col, "' to type: ", type)
+          )
+        },
+        error = function(e) {
+          logger::log_warn(paste0(
+            "Failed to convert column '", col, "': ", e$message
+          ))
+        }
+      )
     } else {
       logger::log_warn(paste0("Column '", col, "' not present in data"))
     }

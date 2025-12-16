@@ -29,12 +29,10 @@
 #' )
 #' }
 load_sql_query <- function(
-  file_path,
-  encoding = "UTF-8",
-  params = NULL,
-  safe_interpolation = TRUE
-) {
-
+    file_path,
+    encoding = "UTF-8",
+    params = NULL,
+    safe_interpolation = TRUE) {
   # Validate file exists
   if (!file.exists(file_path)) {
     stop("SQL file not found: ", file_path, call. = FALSE)
@@ -183,12 +181,10 @@ interpolate_sql_params <- function(sql, params, safe_interpolation = TRUE) {
 #' )
 #' }
 execute_sql_file <- function(
-  sql,
-  conn,
-  execute = TRUE,
-  ...
-) {
-
+    sql,
+    conn,
+    execute = TRUE,
+    ...) {
   if (!execute) {
     return(sql)
   }

@@ -89,8 +89,8 @@ get_feature_plotter <- function(name) {
     seed = NA_integer_,
     title_prefix = "Features",
     theme = ggplot2::theme_minimal(base_size = 11),
-    show_stats = TRUE,  # show summary statistics
-    cols = NULL  # column selection
+    show_stats = TRUE, # show summary statistics
+    cols = NULL # column selection
   ), dots)
 }
 
@@ -231,7 +231,9 @@ get_feature_plotter <- function(name) {
   buckets <- .col_buckets(dt, cols = opts$cols)
   all_cols <- unlist(buckets, use.names = FALSE)
 
-  if (length(all_cols) == 0) return(list())
+  if (length(all_cols) == 0) {
+    return(list())
+  }
 
   # Calculate missing percentages
   missing_pct <- sapply(dt[, all_cols, with = FALSE], function(x) {
@@ -327,17 +329,16 @@ get_feature_plotter <- function(name) {
 #' @return Invisibly returns vector of saved file paths
 #' @export
 plot_data_features <- function(
-  data,
-  file_name = NULL,
-  plot_path = "data/intermediate_plots",
-  exclude_columns_from_plots = c(
-    "person_id", "pregnancy_id", "unique_id"
-  ),
-  chart_types = c("dist"),
-  cols = NULL,
-  show_stats = TRUE,
-  ...
-) {
+    data,
+    file_name = NULL,
+    plot_path = "data/intermediate_plots",
+    exclude_columns_from_plots = c(
+      "person_id", "pregnancy_id", "unique_id"
+    ),
+    chart_types = c("dist"),
+    cols = NULL,
+    show_stats = TRUE,
+    ...) {
   if (is.null(file_name)) {
     file_name <- "plot_examples"
   }

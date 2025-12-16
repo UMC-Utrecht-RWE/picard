@@ -29,5 +29,4 @@ testthat::test_that("summarize_data_file returns correct summary", {
   testthat::expect_setequal(names(summary), expected)
   testthat::expect_true(is.list(summary))
   testthat::expect_equal(summary$file, temp_file)
-
 })

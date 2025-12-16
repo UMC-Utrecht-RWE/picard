@@ -1,12 +1,14 @@
 # Helper to create test data
 create_test_data <- function() {
   data.table::data.table(
-    num  = stats::rnorm(100),
-    int  = base::sample.int(50, 100, replace = TRUE),
-    logi = base::sample(c(TRUE, FALSE, NA), 100, replace = TRUE,
-                        prob = c(0.45, 0.45, 0.10)),
-    fct  = base::factor(base::sample(LETTERS[1:4], 100, replace = TRUE)),
-    chr  = base::sample(c(letters[1:3], NA), 100, replace = TRUE),
+    num = stats::rnorm(100),
+    int = base::sample.int(50, 100, replace = TRUE),
+    logi = base::sample(c(TRUE, FALSE, NA), 100,
+      replace = TRUE,
+      prob = c(0.45, 0.45, 0.10)
+    ),
+    fct = base::factor(base::sample(LETTERS[1:4], 100, replace = TRUE)),
+    chr = base::sample(c(letters[1:3], NA), 100, replace = TRUE),
     date = as.Date("2023-01-01") + base::sample.int(365, 100, replace = TRUE),
     time = as.POSIXct("2023-01-01", tz = "UTC") +
       base::sample.int(86400, 100, replace = TRUE)
@@ -91,14 +93,16 @@ testthat::test_that(".col_buckets respects column selection", {
 
 # Test: .top_n_factor
 testthat::test_that(".top_n_factor limits levels correctly", {
-  x <- c(rep("A", 50), rep("B", 30), rep("C", 10),
-         rep("D", 5), rep("E", 3), rep("F", 2))
+  x <- c(
+    rep("A", 50), rep("B", 30), rep("C", 10),
+    rep("D", 5), rep("E", 3), rep("F", 2)
+  )
 
   result <- .top_n_factor(x, n = 3)
 
   testthat::expect_s3_class(result, "factor")
   testthat::expect_equal(levels(result), c("A", "B", "C", "Other"))
-  testthat::expect_equal(sum(result == "Other"), 10)  # D, E, F
+  testthat::expect_equal(sum(result == "Other"), 10) # D, E, F
 })
 
 testthat::test_that(".top_n_factor handles n larger than unique values", {
@@ -222,11 +226,11 @@ testthat::test_that(".boxplot_plotter ignores non-numeric columns", {
 })
 
 testthat::test_that("plot_data_features saves PNG files", {
-
   # Option A: write to a temp file
   tmp_log <- base::tempfile(fileext = ".log")
   logger::log_appender(logger::appender_file(tmp_log),
-                       namespace = "picard")
+    namespace = "picard"
+  )
 
   # Option B: silence logging (no I/O)
   # logger::log_appender(function(...) invisible(NULL),
@@ -339,7 +343,7 @@ testthat::test_that("plot_data_features creates multi-page output", {
     file_path = temp_file,
     chart_types = "dist",
     ncol = 2,
-    nrow = 2  # 4 plots per page, 12 columns = 3 pages
+    nrow = 2 # 4 plots per page, 12 columns = 3 pages
   )
 
   # Should have multiple pages
@@ -372,7 +376,7 @@ testthat::test_that(".default_opts merges custom options", {
   opts <- .default_opts(ncol = 5, custom_param = "test")
 
   testthat::expect_equal(opts$ncol, 5)
-  testthat::expect_equal(opts$nrow, 3)  # default
+  testthat::expect_equal(opts$nrow, 3) # default
   testthat::expect_equal(opts$custom_param, "test")
 })
 

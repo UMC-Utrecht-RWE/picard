@@ -27,7 +27,7 @@ t2_pipeline <- R6::R6Class(
     #' @return An instance of T2Pipeline
     initialize = function(
       config_t2 = base::file.path("configuration", "config_T2.yaml"),
-      config_project =  file.path("configuration", "config_project.yaml"),
+      config_project = file.path("configuration", "config_project.yaml"),
       skip_substeps = FALSE
     ) {
       logger::log_info("Initializing T2 class")
