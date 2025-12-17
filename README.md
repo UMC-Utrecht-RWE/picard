@@ -1,7 +1,7 @@
 <div class="img-label-wrapper">
-<img class="titleResource" src="man/figures/logo.png" width=250 height=250 style="float:right">
+<img src="man/figures/logo.png" width=200 height=203 style="float:right">
 </div>
-
+<!-- <img src="man/figures/logo.png" width=125 height=128 align='right'> -->
 # Pipeline Integration and Coordination for Automated R Dataflows
 
 # Overview
