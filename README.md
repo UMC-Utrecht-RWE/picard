@@ -2,7 +2,6 @@
   <img src="man/figures/logo.png" width="200" height="203" alt="PICARD logo">
 </p> -->
 <img src="man/figures/logo.png" align="right" width="200" height="203">
-<br clear="right">
 
 
 
