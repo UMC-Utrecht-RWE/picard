@@ -1,8 +1,8 @@
 <!-- <p align="right">
   <img src="man/figures/logo.png" width="200" height="203" alt="PICARD logo">
 </p> -->
-<img src="man/figures/logo.png" align="right" width="200" height="203">
-
+<!-- <img src="man/figures/logo.png" align="right" width="200" height="203"> -->
+# picard <a href="https://github.com/UMC-Utrecht-RWE"><img src="man/figures/logo.png" align="right" height="138" /></a>
 
 
 # Pipeline Integration and Coordination for Automated R Dataflows
