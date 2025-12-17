@@ -1,7 +1,11 @@
-<div class="img-label-wrapper">
-<img src="man/figures/logo.png" width=200 height=203 style="float:right">
-</div>
-<!-- <img src="man/figures/logo.png" width=125 height=128 align='right'> -->
+<!-- <p align="right">
+  <img src="man/figures/logo.png" width="200" height="203" alt="PICARD logo">
+</p> -->
+<img src="man/figures/logo.png" align="right" width="200" height="203">
+<br clear="right">
+
+
+
 # Pipeline Integration and Coordination for Automated R Dataflows
 
 # Overview
