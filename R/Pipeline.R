@@ -27,6 +27,7 @@ pipeline <- R6::R6Class(
       config_pipeline = file.path("configuration", "config_pipeline.yaml")
     ) {
       picard::logger_manager$initialize()
+      picard::logger_manager$configure()
       logger::log_info("Initializing Pipeline")
       self$config <- self$load_yaml(config_pipeline)
       self$steps <- self$config$steps

@@ -19,13 +19,20 @@ LoggerManager <- R6::R6Class( # nolint
     #' @field step_log_file Path to the step-specific log file.
     step_log_file = NULL,
 
-    #' Initialize the LoggerManager
+    #' Initialize LoggerManager
+    #' Constructor for the LoggerManager class.
+    #' @return NULL
+    initialize = function() {
+      invisible(self)
+    },
+
+    #' configure the LoggerManager
     #'
     #' Sets up the logging directory, global log file, and log appenders.
     #' Cleans up old logs and configures the global logger.
     #'
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
-    initialize = function(log_dir = "logs") {
+    configure = function(log_dir = "logs") {
       self$log_dir <- log_dir
       if (!dir.exists(self$log_dir)) dir.create(self$log_dir, recursive = TRUE)
 
@@ -48,8 +55,9 @@ LoggerManager <- R6::R6Class( # nolint
 
       # Set global logger
       logger::log_appender(self$global_appender)
-
       logger::log_threshold(logger::INFO)
+
+      invisible(self)
     },
 
     #' Cleanup Old Logs

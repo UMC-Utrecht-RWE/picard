@@ -18,10 +18,8 @@ cleaning up old logs, and creating step-specific loggers.
 \item{\code{global_appender}}{Function for appending logs to console and file.}
 
 \item{\code{step_log_file}}{Path to the step-specific log file.
-Initialize the LoggerManager
-
-Sets up the logging directory, global log file, and log appenders.
-Cleans up old logs and configures the global logger.}
+Initialize LoggerManager
+Constructor for the LoggerManager class.}
 }
 \if{html}{\out{</div>}}
 }
@@ -29,6 +27,7 @@ Cleans up old logs and configures the global logger.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-LoggerManager-new}{\code{LoggerManager$new()}}
+\item \href{#method-LoggerManager-configure}{\code{LoggerManager$configure()}}
 \item \href{#method-LoggerManager-cleanup_old_logs}{\code{LoggerManager$cleanup_old_logs()}}
 \item \href{#method-LoggerManager-create_dual_appender}{\code{LoggerManager$create_dual_appender()}}
 \item \href{#method-LoggerManager-init_step_logger}{\code{LoggerManager$init_step_logger()}}
@@ -42,7 +41,23 @@ Cleans up old logs and configures the global logger.}
 \if{latex}{\out{\hypertarget{method-LoggerManager-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$new(log_dir = "logs")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$new()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+NULL
+configure the LoggerManager
+
+Sets up the logging directory, global log file, and log appenders.
+Cleans up old logs and configures the global logger.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LoggerManager-configure"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-configure}{}}}
+\subsection{Method \code{configure()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(log_dir = "logs")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
