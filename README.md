@@ -93,6 +93,7 @@ pipeline$run_all()
 # /logs/
 ```
 ## Cheatsheets
+<a href="man/cheatsheet/picard.pdf"><img src="man/figures/cheatsheet.png" width="630" height="252"/></a>
 
 # Governance and Security
 PICARD aligns with UMC Utrecht’s and VAC4EU’s data protection principles:
