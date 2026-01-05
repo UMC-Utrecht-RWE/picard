@@ -1,20 +1,3 @@
-# Helper to create test data
-create_test_data <- function() {
-  data.table::data.table(
-    num = stats::rnorm(100),
-    int = base::sample.int(50, 100, replace = TRUE),
-    logi = base::sample(c(TRUE, FALSE, NA), 100,
-      replace = TRUE,
-      prob = c(0.45, 0.45, 0.10)
-    ),
-    fct = base::factor(base::sample(LETTERS[1:4], 100, replace = TRUE)),
-    chr = base::sample(c(letters[1:3], NA), 100, replace = TRUE),
-    date = as.Date("2023-01-01") + base::sample.int(365, 100, replace = TRUE),
-    time = as.POSIXct("2023-01-01", tz = "UTC") +
-      base::sample.int(86400, 100, replace = TRUE)
-  )
-}
-
 # Test: Registry initialization
 testthat::test_that("plotter registry initializes with built-in plotters", {
   # Force re-initialization
