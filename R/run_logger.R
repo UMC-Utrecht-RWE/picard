@@ -12,12 +12,30 @@ LoggerManager <- R6::R6Class( # nolint
   public = list(
     #' @field log_dir Directory where logs are stored.
     log_dir = NULL,
+    #' @field run_id Unique identifier for the current run.
+    run_id = NULL,
     #' @field global_log_file Path to the global log file.
     global_log_file = NULL,
-    #' @field global_appender Function for appending logs to console and file.
-    global_appender = NULL,
     #' @field step_log_file Path to the step-specific log file.
     step_log_file = NULL,
+    #' @field global_appender Function for appending logs to console and file.
+    global_appender = NULL,
+    #' @field step_appender Function for appending logs to step-specific file.
+    step_appender = NULL,
+
+    #' @field run_start_time Timestamp when the run started.
+    run_start_time = NULL,
+    #' @field step_start_time Timestamp when the current step started.
+    step_start_time = NULL,
+    #' @field script_start_time Timestamp when the current script started.
+    script_start_time = NULL,
+    #' @field last_log_time Timestamp of the last log entry.
+    last_log_time = NULL,
+
+    #' @field current_step Name of the current step being executed.
+    current_step = NULL,
+    #' @field current_script Name of the current script being executed.
+    current_script = NULL,
 
     #' Initialize LoggerManager
     #' Constructor for the LoggerManager class.
@@ -34,29 +52,49 @@ LoggerManager <- R6::R6Class( # nolint
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
     configure = function(log_dir = "logs") {
       self$log_dir <- log_dir
-      if (!dir.exists(self$log_dir)) dir.create(self$log_dir, recursive = TRUE)
+      if (!base::dir.exists(self$log_dir)) {
+        base::dir.create(self$log_dir, recursive = TRUE)
+      }
 
-      self$global_log_file <- file.path(
+      self$run_id <- base::format(base::Sys.time(), "%Y%m%d_%H%M%S")
+      self$run_start_time <- base::Sys.time()
+      self$last_log_time <- self$run_start_time
+
+      self$global_log_file <- base::file.path(
         self$log_dir,
-        paste0("pipeline_", Sys.Date(), ".log")
+        base::paste0("pipeline_", self$run_id, ".log")
       )
 
       self$cleanup_old_logs()
 
+      # Ensure the global log file exists
+      if (!base::file.exists(self$global_log_file)) {
+        base::file.create(self$global_log_file)
+      }
+
       # Create console and file appenders
-      app_console <- function(line) cat(line, "\n")
-      app_file <- logger::appender_file(self$global_log_file)
+      app_console <- function(line) base::cat(line, "\n")
+      app_main <- logger::appender_file(self$global_log_file)
 
       # Store the true global appender here
       self$global_appender <- function(line) {
         app_console(line)
-        app_file(line)
+        app_main(line)
       }
 
       # Set global logger
-      logger::log_appender(self$global_appender)
-      logger::log_threshold(logger::INFO)
+      logger::log_layout(self$.layout_with_timers)
+      logger::log_threshold(logger::TRACE)
 
+      logger::log_appender(function(line) {
+        self$global_appender(line)
+        if (!base::is.null(self$step_appender)) {
+          self$step_appender(line)
+        }
+      })
+
+      logger::log_info("Pipeline run started. run_id={self$run_id}")
+      # base::flush.console()
       invisible(self)
     },
 
@@ -66,26 +104,22 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @param days_to_keep Number of days to retain logs. Defaults to 30 days.
     cleanup_old_logs = function(days_to_keep = 30) {
-      old_logs <- list.files(self$log_dir, full.names = TRUE, recursive = TRUE)
-      old_logs_dates <- file.mtime(old_logs)
-      cutoff_date <- as.POSIXct(Sys.Date() - days_to_keep)
-      file.remove(old_logs[old_logs_dates < cutoff_date])
-    },
+      old_logs <- base::list.files(
+        self$log_dir,
+        full.names = TRUE,
+        recursive = TRUE
+      )
 
-    #' Create Dual Appender
-    #'
-    #' Creates an appender that logs to both the global log file and
-    #' a step-specific log file.
-    #'
-    #' @param step_log_path Path to the step-specific log file.
-    #' @return A function that appends logs to both the global and
-    #' step-specific log files.
-    create_dual_appender = function(step_log_path) {
-      step_appender <- logger::appender_tee(step_log_path)
-      function(line) {
-        self$global_appender(line)
-        step_appender(line)
+      if (length(old_logs) == 0) {
+        return(invisible(NULL))
       }
+
+      old_logs_dates <- base::file.mtime(old_logs)
+      cutoff_date <- base::as.POSIXct(base::Sys.Date() - days_to_keep)
+
+      base::file.remove(old_logs[old_logs_dates < cutoff_date])
+
+      invisible(NULL)
     },
 
     #' Initialize Step Logger
@@ -94,23 +128,162 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @param step_name Name of the step for which the log is being initialized.
     init_step_logger = function(step_name) {
-      step_log_dir <- file.path(self$log_dir, step_name)
-      if (!dir.exists(step_log_dir)) dir.create(step_log_dir, recursive = TRUE)
+      self$current_step <- step_name
+      self$step_start_time <- base::Sys.time()
+      self$current_script <- NULL
+      self$script_start_time <- NULL
 
-      self$step_log_file <- file.path(
+      step_log_dir <- base::file.path(self$log_dir, step_name)
+      if (!base::dir.exists(step_log_dir)) {
+        base::dir.create(step_log_dir, recursive = TRUE)
+      }
+
+      self$step_log_file <- base::file.path(
         step_log_dir,
-        paste0("step_log_", Sys.Date(), ".log")
+        base::paste0("step_", step_name, "_", self$run_id, ".log")
       )
 
-      # Create a step-specific appender
-      step_appender <- logger::appender_tee(self$step_log_file)
+      self$step_appender <- logger::appender_file(self$step_log_file)
 
-      # Replace the global appender with the step-specific appender
-      logger::log_appender(function(line) {
-        step_appender(line) # Log only to the step-specific appender
-      })
-      logger::log_threshold(logger::DEBUG)
-      logger::log_info("Logger initialized for step: {step_name}")
+      logger::log_info("Step started: {step_name}")
+
+      invisible(self)
+    },
+
+    #' End Step Logger
+    #'
+    #' Reset the step-specific logger.
+    #' @return None
+    end_step_logger = function() {
+      if (!base::is.null(self$current_step)) {
+        logger::log_info("Step ended: {self$current_step}")
+      }
+
+      self$current_step <- NULL
+      self$step_start_time <- NULL
+      self$current_script <- NULL
+      self$script_start_time <- NULL
+      self$step_log_file <- NULL
+      self$step_appender <- NULL
+
+      invisible(self)
+    },
+
+    #' Start Script Timer
+    #'
+    #' As for init_step_logger, but for scripts within steps.
+    #' @param script_name Name of the script being started.
+    start_script = function(script_name) {
+      self$current_script <- script_name
+      self$script_start_time <- base::Sys.time()
+      logger::log_info("Script started: {script_name}")
+      invisible(self)
+    },
+
+    #' End Script Timer
+    #'
+    #' Resets the script timer.
+    #' @return None
+    end_script = function() {
+      if (!base::is.null(self$current_script)) {
+        logger::log_info("Script ended: {self$current_script}")
+      }
+      self$current_script <- NULL
+      self$script_start_time <- NULL
+      invisible(self)
+    },
+
+    #' Layout with Timers
+    #'
+    #' Custom log layout function that includes timing information.
+    #' @param record Log record.
+    #' @param level Log level.
+    #' @param msg Log message.
+    #' @param namespace Namespace of the log message.
+    #' @param .logcall Call information.
+    #' @param .topcall Top-level call information.
+    #' @param .topenv Top-level environment.
+    #' @param ... Additional arguments.
+    #' @return Formatted log message string.
+    .layout_with_timers = function(
+      level,
+      msg = NULL,
+      namespace = NULL,
+      .logcall = NULL,
+      .topcall = NULL,
+      .topenv = NULL,
+      ...
+    ) {
+      if (base::is.list(level) && !base::is.null(level$msg)) {
+        record <- level
+        lvl <- record$level
+        message <- record$msg
+      } else {
+        lvl <- level
+        message <- msg
+      }
+
+      lvl_txt <- lvl
+      if (base::is.numeric(lvl)) {
+        lvl_map <- c(
+          "TRACE" = 600,
+          "DEBUG" = 500,
+          "INFO" = 400,
+          "SUCCESS" = 350,
+          "WARN" = 300,
+          "ERROR" = 200,
+          "FATAL" = 100
+        )
+        rev_map <- stats::setNames(names(lvl_map), as.character(lvl_map))
+        lvl_txt <- rev_map[as.character(lvl_txt)]
+        if (base::is.na(lvl_txt)) {
+          lvl_txt <- base::as.character(lvl)
+        }
+      }
+
+      now <- base::Sys.time()
+
+      run_s <- base::as.numeric(
+        base::difftime(now, self$run_start_time, units = "secs")
+      )
+
+      step_s <- NA_real_
+      if (!base::is.null(self$step_start_time)) {
+        step_s <- base::as.numeric(
+          base::difftime(now, self$step_start_time, units = "secs")
+        )
+      }
+
+      script_s <- NA_real_
+      if (!base::is.null(self$script_start_time)) {
+        script_s <- base::as.numeric(
+          base::difftime(now, self$script_start_time, units = "secs")
+        )
+      }
+
+      delta_s <- base::as.numeric(
+        base::difftime(now, self$last_log_time, units = "secs")
+      )
+      self$last_log_time <- now
+
+      step <- if (is.null(self$current_step)) "-" else self$current_step
+      scr <- if (is.null(self$current_script)) "-" else self$current_script
+
+      step_txt <- if (is.na(step_s)) "NA" else base::sprintf("%.2f", step_s)
+      scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
+
+      base::sprintf(
+        "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s",
+        base::format(now, "%Y-%m-%d %H:%M:%S"),
+        lvl_txt,
+        run_s,
+        step_txt,
+        scr_txt,
+        delta_s,
+        step,
+        scr,
+        message
+      )
     },
 
     #' Start Capturing Print Statements
@@ -120,9 +293,9 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @return None
     start_capturing_prints = function() {
-      if (!is.null(self$step_log_file)) {
-        sink(self$step_log_file, append = TRUE, type = "output")
-      }
+      sink_file <- self$global_log_file
+      base::sink(sink_file, append = TRUE, type = "output")
+      invisible(NULL)
     },
 
     #' Stop Capturing Print Statements
@@ -131,7 +304,8 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @return None
     stop_capturing_prints = function() {
-      sink(type = "output")
+      base::sink(type = "output")
+      invisible(NULL)
     }
   )
 )
