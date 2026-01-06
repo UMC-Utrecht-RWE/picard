@@ -311,9 +311,44 @@ testthat::test_that("set_dates validates reference_date", {
   )
 })
 
-
 testthat::test_that("set_dates returns data.table even if not originally", {
   dt <- setup_data()
   result <- set_dates(dt, "date_char")
   testthat::expect_true(data.table::is.data.table(result))
+})
+
+
+#####################################
+# Tests for get_date_value
+#####################################
+testthat::test_that("Test date_input as POSIXct", {
+  date_input <- as.POSIXct(c("2020-01-01", "2020-01-02"), tz = "UTC")
+  result <- get_date_value(date_input)
+  expected <- as.Date(c("2020-01-01", "2020-01-02"))
+  testthat::expect_identical(result, expected)
+})
+
+testthat::test_that("Test date_input as factor", {
+  date_input <- factor(c("2020-01-01", "2020-01-02"))
+  result <- get_date_value(date_input)
+  expected <- as.Date(c("2020-01-01", "2020-01-02"))
+  testthat::expect_identical(result, expected)
+})
+
+testthat::test_that("Test date_input as NA_character_", {
+  testthat::expect_warning(
+    get_date_value(NA_character_),
+    "Some date values could not be parsed and were set to NA."
+  )
+  testthat::expect_warning(
+    get_date_value("invalid-date"),
+    "Some date values could not be parsed and were set to NA."
+  )
+})
+
+testthat::test_that("Test date_input as NA_character_", {
+  testthat::expect_warning(
+    get_date_value(TRUE),
+    "Unsupported date_input type; returning NA of class Date."
+  )
 })

@@ -42,6 +42,7 @@ load_config_values <- function(file_path = NULL) {
 }
 
 #' Ensure that a YAML file is valid and strictly formatted
+#'
 #' @description
 #' This function reads a YAML file and ensures that it has a valid
 #' structure. It checks that the file has a .yaml or .yml extension
@@ -65,6 +66,7 @@ read_yaml <- function(file_path) {
 }
 
 #' Run an R script and log its execution details
+#'
 #' @description
 #' This function executes an R script, computes its SHA1 hash,
 #' and logs the execution details (timestamp, filename, SHA1 hash)
@@ -222,12 +224,6 @@ set_dates <- function(
         origin = origin,
         date_formats = date_formats
       ), .SDcols = col] # nolint
-    } else if (inherits(df[[col]], "Date")) {
-      next # already Date, skip
-    } else {
-      logger::log_warn(
-        "Column '", col, "' is neither character, numeric, nor Date. Skipping."
-      )
     }
   }
 
