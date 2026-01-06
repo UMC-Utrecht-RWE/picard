@@ -1,5 +1,5 @@
-# rm(list = ls())
-# source("/Users/mcinelli/repos/picard/R/run_logger.R", encoding = "UTF-8")
+rm(list = ls())
+source("/Users/mcinelli/repos/picard/R/run_logger.R", encoding = "UTF-8")
 # logger_manager$configure()
 # logger_manager$init_step_logger("T2")
 # logger_manager$start_script("create_something.R")
@@ -38,8 +38,10 @@ testthat::test_that("step log is created and receives messages", {
   lm <- picard:::LoggerManager$new()
   lm$configure(log_dir = log_dir)
 
+  logger::log_info("inizio") # di nuovo il file si sara pure creato ma e' vuoto.
+
   lm$init_step_logger("step_a")
-  testthat::expect_true(base::file.exists(lm$step_log_file))
+  testthat::expect_true(base::file.exists(lm$step_log_file)) # qua il file non csi crea.
 
   logger::log_info("hello")
 

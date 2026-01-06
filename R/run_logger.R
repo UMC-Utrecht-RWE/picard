@@ -94,7 +94,6 @@ LoggerManager <- R6::R6Class( # nolint
       })
 
       logger::log_info("Pipeline run started. run_id={self$run_id}")
-      # base::flush.console()
       invisible(self)
     },
 
