@@ -1,5 +1,9 @@
-# Test function for load_config_values
-testthat::test_that("Test for load_config_values", {
+################################################
+# Test functions for load_config_values
+################################################
+# two ifs and two elses plus a for loop to cover.
+# at least five tests needed.
+testthat::test_that("Test for file_path not null, exists and it is a yaml", {
   # create a temporary YAML file
   temp_yaml <- tempfile(fileext = ".yaml")
   on.exit(unlink(temp_yaml)) # ensure the file is deleted after the test
@@ -12,21 +16,105 @@ testthat::test_that("Test for load_config_values", {
   testthat::expect_equal(config$start_study_date, "2023-8-24")
 })
 
-# testthat::test_that("Test for load_config_values", {
-#   # Test loading the configuration values absent
-#   testthat::expect_error(
-#     load_config_values(file_path = ""),
-#     "Configuration file not found: "
-#   )
-# })
+testthat::test_that("Test for file_path not null but it does not exists", {
+  # Test loading the configuration values absent
+  testthat::expect_error(
+    load_config_values(file_path = ""),
+    "Configuration file not found at: "
+  )
+})
 
-# testthat::test_that("Test for load_config_values file wrong", {
-#   # Test loading the configuration values
-#   testthat::expect_error(
-#     load_config_values("blabla.yaml"),
-#     "Configuration file not found: blabla.yaml"
-#   )
-# })
+testthat::test_that("Test for file_path not null, exists but not a yaml", {
+  # Test loading the configuration values absent
+  temp_not_yaml <- tempfile(fileext = ".txt")
+  on.exit(unlink(temp_not_yaml)) # ensure the file is deleted after the test
+  writeLines(c("Ciao Mondo!"), temp_not_yaml)
+
+  # Test loading the configuration values
+  testthat::expect_error(
+    load_config_values(file_path = temp_not_yaml),
+    "Config must be .yaml or .yml"
+  )
+})
+
+testthat::test_that("Test for file_path null but yaml file exists", {
+  testthat::expect_error(
+    load_config_values(),
+    "No YAML configuration files found in 'configuration' folder."
+  )
+})
+
+testthat::test_that("Test for file_path null and at least a yaml file exists", {
+  # create a temporary configuration directory
+  tmp <- withr::local_tempdir()
+  config_dir <- file.path(tmp, "configuration")
+  # dir.create(config_dir, showWarnings = FALSE)
+  fs::dir_create(config_dir)
+
+  # create a temporary YAML file in the configuration directory
+  temp_yaml <- file.path(config_dir, "config_values.yaml")
+  writeLines(c("start_study_date: 2023-8-24"), temp_yaml)
+
+  # change working directory to tempdir to use here::here correctly
+  old_wd <- getwd()
+  setwd(tmp)
+  file.create(".here")
+  here::i_am(".here")
+
+  # Test loading the configuration values
+  config <- load_config_values()
+
+  testthat::expect_equal(config_values$start_study_date, "2023-8-24")
+
+  on.exit(unlink(config_dir, recursive = TRUE)) # clean up after test
+  on.exit(setwd(old_wd), add = TRUE) # ensure we return to old
+})
+
+
+##############################
+# Test read_yaml
+##############################
+testthat::test_that("read_yaml reads a valid yaml mapping", {
+  tmp <- tempfile(fileext = ".yaml")
+  writeLines(c("a: 1", "b: true"), tmp)
+
+  out <- read_yaml(tmp)
+
+  testthat::expect_true(is.list(out))
+  testthat::expect_identical(out$a, 1L)
+  testthat::expect_identical(out$b, TRUE)
+})
+
+testthat::test_that("read_yaml rejects yaml that is not a mapping", {
+  tmp <- tempfile(fileext = ".yaml")
+  writeLines("hello world", tmp)  # valid YAML scalar, not a mapping
+
+  testthat::expect_error(
+    read_yaml(tmp),
+    "YAML mapping"
+  )
+})
+
+testthat::test_that("read_yaml rejects non-yaml files", {
+  tmp <- tempfile(fileext = ".txt")
+  writeLines("hello world", tmp)
+
+  testthat::expect_error(
+    read_yaml(tmp),
+    "Config must be \\.yaml or \\.yml"
+  )
+})
+
+testthat::test_that("read_yaml rejects invalid YAML syntax", {
+  tmp <- tempfile(fileext = ".yaml")
+  writeLines("not: [valid", tmp)
+
+  testthat::expect_error(
+    read_yaml(tmp),
+    "^Invalid YAML:"
+  )
+})
+
 
 testthat::test_that("run_script creates log dir, logs, and returns meta", {
   log_dir <- base::file.path(base::tempdir(), "logs_run_script_a")

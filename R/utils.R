@@ -15,7 +15,7 @@
 load_config_values <- function(file_path = NULL) {
   if (!base::is.null(file_path)) {
     if (base::file.exists(file_path)) {
-      return(yaml::read_yaml(file_path))
+      return(read_yaml(file_path))
     } else {
       stop("Configuration file not found at: ", file_path)
     }
@@ -26,16 +26,42 @@ load_config_values <- function(file_path = NULL) {
       pattern = "\\.yaml$",
       full.names = TRUE
     )
+    if (length(yamls) == 0) {
+      stop("No YAML configuration files found in 'configuration' folder.")
+    }
     # load all files and add a new variable in the environment
     # for each file with the name of the file
     for (yaml in yamls) {
       base::assign(
         tolower(tools::file_path_sans_ext(basename(yaml))),
-        yaml::read_yaml(yaml),
+        read_yaml(yaml),
         envir = .GlobalEnv
       )
     }
   }
+}
+
+#' Ensure that a YAML file is valid and strictly formatted
+#' @description
+#' This function reads a YAML file and ensures that it has a valid
+#' structure. It checks that the file has a .yaml or .yml extension
+#' and that it contains a mapping (list) at the top level.
+#' @param file_path Path to the YAML file.
+#' @return A list representing the YAML content if valid.
+#' @keywords internal
+read_yaml <- function(file_path) {
+  ext <- tolower(tools::file_ext(file_path))
+  if (!ext %in% c("yaml", "yml")) {
+    stop("Config must be .yaml or .yml", call. = FALSE)
+  }
+  out <- tryCatch(
+    yaml::read_yaml(file_path),
+    error = function(e) stop("Invalid YAML: ", e$message, call. = FALSE)
+  )
+  if (!is.list(out)) {
+    stop("Config must be a YAML mapping (top-level object).", call. = FALSE)
+  }
+  out
 }
 
 #' Run an R script and log its execution details
