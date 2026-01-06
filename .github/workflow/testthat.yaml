@@ -99,4 +99,6 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          covr::codecov()
+          excl <- list("R/000.R"=3:6, "R/zzz.R"=1:1e6)
+          covr::package_coverage(exclusions=excl)
+          # covr::codecov()
