@@ -102,7 +102,7 @@ audit_add <- function(...) {
     )
   }
 
-  if (is.list(...)) {
+  if (data.table::is.data.table(...)) {
     utils::write.table(
       ..., audit_file, append = FALSE,
       sep = " ", dec = ".",
