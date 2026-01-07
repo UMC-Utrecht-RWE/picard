@@ -53,9 +53,15 @@ testthat::test_that("step log is created, receives messages and, closed", {
   lm$init_step_logger("T3") # Step level
   logger::log_info("Begin T3")
   temp_tep_log_t3 <- lm$step_log_file  # Step level
+
+  lm$start_script("substep_c.R") # Script level
+  logger::log_success("Inside the script c")
+
   lm$start_capturing_prints()
   print("A random print statement")
+
   lm$stop_capturing_prints()
+  lm$end_script()
   lm$end_step_logger()
 
   # Tests
@@ -73,7 +79,6 @@ testthat::test_that("step log is created, receives messages and, closed", {
   testthat::expect_true(base::any(base::grepl("Begin T3", main_lines)))
   testthat::expect_true(base::any(base::grepl("Step ended: T2", main_lines)))
   testthat::expect_true(base::any(base::grepl("Step ended: T3", main_lines)))
-  testthat::expect_true(base::any(base::grepl("A random print", main_lines)))
 
   # Test if the step logs have got their messages
   testthat::expect_true(base::any(base::grepl("Step ended: T2", step_t2_lines)))
@@ -85,6 +90,7 @@ testthat::test_that("step log is created, receives messages and, closed", {
   testthat::expect_true(base::any(base::grepl("Step ended: T3", step_t3_lines)))
   testthat::expect_true(base::any(base::grepl("Begin T3", step_t3_lines)))
   testthat::expect_true(base::any(base::grepl("Step ended: T3", step_t3_lines)))
+  testthat::expect_true(base::any(base::grepl("A random print", step_t3_lines)))
   testthat::expect_null(lm$step_log_file)
   rm(temp_tep_log_t2, temp_tep_log_t3)
 })

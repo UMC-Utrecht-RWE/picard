@@ -293,7 +293,7 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @return None
     start_capturing_prints = function() {
-      sink_file <- self$global_log_file
+      sink_file <- self$step_log_file
       base::sink(sink_file, append = TRUE, type = "output")
       invisible(NULL)
     },
