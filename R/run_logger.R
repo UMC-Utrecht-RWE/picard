@@ -82,18 +82,19 @@ LoggerManager <- R6::R6Class( # nolint
         app_main(line)
       }
 
-      # Set global logger
-      logger::log_layout(self$.layout_with_timers)
-      logger::log_threshold(logger::TRACE)
+      # Configure logger for global and package namespaces.
+      namespaces <- c("global", "picard")
+      logger::log_layout(self$.layout_with_timers, namespace = namespaces)
+      logger::log_threshold(logger::TRACE, namespace = namespaces)
 
       logger::log_appender(function(line) {
         self$global_appender(line)
         if (!base::is.null(self$step_appender)) {
           self$step_appender(line)
         }
-      })
+      }, namespace = namespaces)
 
-      logger::log_info("Pipeline run started. run_id={self$run_id}")
+      logger::log_info("Pipeline configured. run_id={self$run_id}")
       invisible(self)
     },
 
@@ -332,3 +333,12 @@ LoggerManager <- R6::R6Class( # nolint
 #'
 #' @export
 logger_manager <- .get_logger_manager_instance()
+
+#' Reset LoggerManager Singleton (for tests)
+#' This is only for testing, ignore it.
+#' @keywords internal
+.reset_logger_manager_instance <- function() {
+  env <- base::environment(.get_logger_manager_instance)
+  env$instance <- NULL
+  invisible(NULL)
+}
