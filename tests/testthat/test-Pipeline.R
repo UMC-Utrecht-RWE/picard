@@ -90,3 +90,44 @@ testthat::test_that("load_yaml throws error on missing file", {
     "Missing configuration file"
   )
 })
+
+testthat::test_that("Testing skip step function", {
+  config_step <- tempfile(fileext = ".yaml")
+  config_project <- tempfile(fileext = ".yaml")
+  output_a <- tempfile(fileext = ".txt")
+  output_b <- tempfile(fileext = ".txt")
+  yaml::write_yaml(
+    list(substep = list(
+      A = TRUE,
+      B = TRUE
+    )),
+    config_step
+  )
+  yaml::write_yaml(
+    list(A = list(
+      input = "file_A.txt",
+      output = output_a
+    ),
+    B = list(
+      input = "file_B.txt",
+      output = output_b
+    )),
+    config_project
+  )
+  # Create output file for step A to simulate existing output
+  file.create(output_a)
+
+  pl <- picard::pipeline$new(config_pipeline = config_project)
+  config_file_input <- yaml::read_yaml(config_step)
+  config_file_output <- pl$skip_step(
+    config_file = config_file_input,
+    project = yaml::read_yaml(config_project)
+  )
+
+  testthat::expect_false(
+    config_file_output$substep$A
+  )
+  testthat::expect_true(
+    config_file_output$substep$B
+  )
+})
