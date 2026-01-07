@@ -1,3 +1,24 @@
+testthat::test_that("audit_start creates file, header, and option", {
+  tmp_dir <- base::tempdir()
+  tmp_file <- "my_step_audit.txt"
+
+  # make sure the option is clean
+  base::options(.current_audit_file = NULL)
+
+  file_name <- audit_start(
+    dir_output = tmp_dir,
+    file_name  = tmp_file
+  )
+
+  df <- create_test_data()
+  audit_add(df)
+  audit_path <- base::file.path(tmp_dir, file_name)
+  testthat::expect_true(base::file.exists(audit_path))
+  file_lines <- base::readLines(audit_path)
+  # testthat::expect_true(
+  #   substring(tail(file_lines, n = 1), 2, 4) == "100"
+  # )
+})
 # testthat::test_that("audit_start creates file, header, and option", {
 #   tmp_dir <- base::tempdir()
 #   tmp_file <- "my_step_audit.txt"

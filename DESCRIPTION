@@ -1,9 +1,11 @@
 Package: picard
-Title: PICARD is an internal R package designed to manage and coordinate the execution of modular R scripts across the UMC Utrecht data transformation pipeline.
+Title: PICARD is an internal R package designed to manage and coordinate the execution of modular R scripts across the UMC Utrecht data transformation pipeline
 Version: 1.0.0
 Authors@R:
     person("Mattia", "Cinelli", , "m.cinelli@umcutrecht.nl", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-9306-8079"))
-Description: It provides a unified interface to configure, trigger, and log multi-step ETL pipelines (T2–T5) used for clinical data harmonisation and analysis within the VAC4EU network and UMCU’s Digital Research Environment (DRE). The package enables:- Dynamic orchestration of project-specific transformation scripts, Configuration-driven control of pipeline substeps (T2–T5), Logging, auditing, plottinh and reproducibility tracking. PICARD is designed to “make it run”: ensuring consistent, transparent, and reproducible execution of UMCU’s data processing pipelines.
+Description: It provides a unified interface to configure, trigger, and log multi-step ETL pipelines (T2–T5) used for clinical data harmonisation and analysis within the VAC4EU network and UMCU’s Digital Research Environment (DRE).
+    The package enables:- Dynamic orchestration of project-specific transformation scripts, Configuration-driven control of pipeline substeps (T2–T5), Logging, auditing, plottinh and reproducibility tracking.
+    PICARD is designed to “make it run”: ensuring consistent, transparent, and reproducible execution of UMCU’s data processing pipelines.
 License: file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
