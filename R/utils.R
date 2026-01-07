@@ -15,7 +15,7 @@
 load_config_values <- function(file_path = NULL) {
   if (!base::is.null(file_path)) {
     if (base::file.exists(file_path)) {
-      return(read_yaml(file_path))
+      read_yaml(file_path)
     } else {
       stop("Configuration file not found at: ", file_path)
     }
@@ -142,15 +142,15 @@ run_script <- function(
   )
 
   if (quiet) {
-    return(invisible(NULL))
+    invisible(NULL)
   } else {
-    return(list(
+    list(
       file = file_path,
       sha1 = sha1,
       registry = registry_path,
       timing = timing,
       env = env
-    ))
+    )
   }
 }
 
