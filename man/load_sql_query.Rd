@@ -4,12 +4,7 @@
 \alias{load_sql_query}
 \title{Load SQL file as a single query string with variable interpolation}
 \usage{
-load_sql_query(
-  file_path,
-  encoding = "UTF-8",
-  params = NULL,
-  safe_interpolation = TRUE
-)
+load_sql_query(file_path, encoding = "UTF-8", params = NULL)
 }
 \arguments{
 \item{file_path}{path to the .sql file}
@@ -18,9 +13,6 @@ load_sql_query(
 
 \item{params}{named list of parameters to interpolate into the SQL.
 Use \code{\{param\}} in your SQL file to reference these.}
-
-\item{safe_interpolation}{logical; if TRUE (default), validates that
-all placeholders are replaced to avoid SQL injection risks}
 }
 \value{
 character(1) containing the full SQL with interpolated values
