@@ -32,12 +32,12 @@ create_substep_config <- function(
     substep_names,
     root = "T2root",
     src = "source_code",
+    step_name = "T2",
     marker_path = NULL) {
   full_root <- fs::path_norm(base::file.path(base::tempdir(), root, src))
   base::dir.create(full_root, recursive = TRUE, showWarnings = FALSE)
 
   # Convert marker_path to forward slashes
-  # marker_path_normalized <- gsub("\\\\", "/", marker_path)
   marker_path_normalized <- normalizePath(
     marker_path,
     winslash = "/", mustWork = FALSE
@@ -51,7 +51,8 @@ create_substep_config <- function(
     substep_list <- stats::setNames(as.list(flags), substep_names)
   } else {
     if (is.null(base::names(substep_names)) ||
-      any(base::names(substep_names) == "")) {
+        any(base::names(substep_names) == "")
+    ) {
       base::stop("substep_names must be named or character.")
     }
     substep_list <- stats::setNames(
@@ -74,13 +75,17 @@ create_substep_config <- function(
     }
   )
 
-  list(
-    T2 = list(
-      root = fs::path_norm(base::file.path(base::tempdir(), root)),
-      source_code = src
+  out <- setNames(
+    list(
+      list(
+        root = fs::path_norm(base::file.path(base::tempdir(), root)),
+        source_code = src
+      )
     ),
-    substep = substep_list
+    step_name
   )
+  out$substep <- substep_list
+  out
 }
 
 # Helper to create test data
