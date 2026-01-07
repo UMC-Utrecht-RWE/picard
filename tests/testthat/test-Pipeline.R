@@ -96,6 +96,7 @@ testthat::test_that("Testing skip step function", {
   config_project <- tempfile(fileext = ".yaml")
   output_a <- tempfile(fileext = ".txt")
   output_b <- tempfile(fileext = ".txt")
+  on.exit(unlink(c(config_step, config_project, output_a, output_b)))
   yaml::write_yaml(
     list(substep = list(
       A = TRUE,
