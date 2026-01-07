@@ -70,9 +70,6 @@ read_data <- function(file_path, file_name = NULL, col_types = NULL, ...) {
 #' actual_files
 #' @keywords internal
 validate_and_normalize_path <- function(file_path, file_name = NULL) {
-  # Trim whitespace
-  file_path <- trimws(file_path)
-
   # Validate file_path
   if (is.null(file_path)) {
     stop("file_path cannot be NULL", call. = FALSE)
@@ -85,6 +82,9 @@ validate_and_normalize_path <- function(file_path, file_name = NULL) {
       call. = FALSE
     )
   }
+
+  # Trim whitespace
+  file_path <- trimws(file_path)
 
   if (length(file_path) != 1) {
     stop(
@@ -132,26 +132,8 @@ validate_and_normalize_path <- function(file_path, file_name = NULL) {
   dir_path <- dirname(file_path)
   file_name <- basename(file_path)
 
-  # Check if directory exists
-  if (!dir.exists(dir_path)) {
-    stop(
-      "Directory does not exist: ", dir_path, "\n",
-      "Please check the path or create the directory first.",
-      call. = FALSE
-    )
-  }
-
   # List actual files in directory
-  actual_files <- tryCatch(
-    list.files(dir_path),
-    error = function(e) {
-      stop(
-        "Cannot list files in directory: ", dir_path, "\n",
-        "Error: ", e$message,
-        call. = FALSE
-      )
-    }
-  )
+  actual_files <- list.files(dir_path)
 
   # Return normalized components
   list(
