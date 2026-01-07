@@ -11,10 +11,6 @@
 
 # logger_manager$end_script()
 # logger_manager$end_step_logger()
-
-# rm(list = ls())
-# source("/Users/mcinelli/repos/picard/R/run_logger.R", encoding = "UTF-8")
-# Only config
 testthat::test_that("main log is created and has run marker", {
   log_dir <- base::file.path(base::tempdir(), "picard_logs_basic_1")
   if (base::dir.exists(log_dir)) {
@@ -30,7 +26,7 @@ testthat::test_that("main log is created and has run marker", {
   testthat::expect_true(any(base::grepl("Pipeline configured.", main_lines)))
 })
 
-# Config and step logging
+# All loggings
 testthat::test_that("step log is created, receives messages and, closed", {
   log_dir <- base::file.path(base::tempdir(), "picard_logs_basic_2")
   if (base::dir.exists(log_dir)) {
@@ -40,71 +36,57 @@ testthat::test_that("step log is created, receives messages and, closed", {
   # Code
   lm <- picard:::LoggerManager$new()
   lm$configure(log_dir = log_dir)  # Config level
-  lm$init_step_logger("T2")
-  logger::log_info("Ciao")
-  temp_tep_log <- lm$step_log_file
-  lm$end_step_logger()
 
-  # Tests
-  testthat::expect_true(base::file.exists(temp_tep_log))
-  main_lines <- base::readLines(lm$global_log_file, warn = FALSE)
-  step_lines <- base::readLines(temp_tep_log, warn = FALSE)
-
-  testthat::expect_true(base::any(base::grepl("Ciao", main_lines)))
-  testthat::expect_true(base::any(base::grepl("Ciao", step_lines)))
-  testthat::expect_true(base::any(base::grepl("Step ended:", main_lines)))
-  testthat::expect_true(base::any(base::grepl("Step ended:", step_lines)))
-  testthat::expect_null(lm$step_log_file)
-  rm(temp_tep_log)
-})
-
-# Config, step logging and script logging
-testthat::test_that("Testing levels up to script", {
-  log_dir <- base::file.path(base::tempdir(), "picard_logs_basic_2")
-  if (base::dir.exists(log_dir)) {
-    base::unlink(log_dir, recursive = TRUE, force = TRUE)
-  }
-
-  # Code
-  lm <- picard:::LoggerManager$new() # Config level
-  lm$configure(log_dir = log_dir)
   lm$init_step_logger("T2") # Step level
-  temp_tep_log <- lm$step_log_file
-  logger::log_info("Begining of the step")
+  temp_tep_log_t2 <- lm$step_log_file  # Need to store for tests
+  logger::log_info("Begin T2")
 
-  lm$start_script("first_substep.R") # Script level
-  logger::log_info("Inside the script")
+  lm$start_script("substep_a.R") # Script level
+  logger::log_info("Inside the script a")
+  lm$end_script()
+
+  lm$start_script("substep_b.R") # Script level
+  logger::log_success("Inside the script b")
   lm$end_script()
   lm$end_step_logger()
 
-  # Tests
-  testthat::expect_true(base::file.exists(temp_tep_log))
-  step_lines <- base::readLines(temp_tep_log, warn = FALSE)
-
-  testthat::expect_true(base::any(base::grepl("Script started:", step_lines)))
-  testthat::expect_true(base::any(base::grepl("Inside the script", step_lines)))
-  testthat::expect_true(base::any(base::grepl("Script ended:", step_lines)))
-})
-
-# Config, step logging and script logging
-testthat::test_that("Testing capturing prints", {
-  log_dir <- base::file.path(base::tempdir(), "picard_logs_basic_2")
-  if (base::dir.exists(log_dir)) {
-    base::unlink(log_dir, recursive = TRUE, force = TRUE)
-  }
-
-  # Code
-  lm <- picard:::LoggerManager$new() # Config level
-  lm$configure(log_dir = log_dir)
+  lm$init_step_logger("T3") # Step level
+  logger::log_info("Begin T3")
+  temp_tep_log_t3 <- lm$step_log_file  # Step level
   lm$start_capturing_prints()
-  print("Ciao mondo")
+  print("A random print statement")
   lm$stop_capturing_prints()
+  lm$end_step_logger()
 
   # Tests
-  testthat::expect_true(base::file.exists(lm$global_log_file))
-  main_lines <- base::readLines(lm$global_log_file, warn = FALSE)
+  # Do files in their own folder exist?
+  testthat::expect_true(base::file.exists(temp_tep_log_t2))
+  testthat::expect_true(base::file.exists(temp_tep_log_t3))
 
-  testthat::expect_true(base::any(base::grepl("Ciao mondo", main_lines)))
+  # Read them
+  main_lines <- base::readLines(lm$global_log_file, warn = FALSE)
+  step_t2_lines <- base::readLines(temp_tep_log_t2, warn = FALSE)
+  step_t3_lines <- base::readLines(temp_tep_log_t3, warn = FALSE)
+
+  # Test if the main log has got all messages from the steps.
+  testthat::expect_true(base::any(base::grepl("Begin T2", main_lines)))
+  testthat::expect_true(base::any(base::grepl("Begin T3", main_lines)))
+  testthat::expect_true(base::any(base::grepl("Step ended: T2", main_lines)))
+  testthat::expect_true(base::any(base::grepl("Step ended: T3", main_lines)))
+  testthat::expect_true(base::any(base::grepl("A random print", main_lines)))
+
+  # Test if the step logs have got their messages
+  testthat::expect_true(base::any(base::grepl("Step ended: T2", step_t2_lines)))
+  testthat::expect_true(base::any(base::grepl("Begin T2", step_t2_lines)))
+  testthat::expect_true(base::any(grepl("Inside the script a", step_t2_lines)))
+  testthat::expect_true(base::any(grepl("Inside the script b", step_t2_lines)))
+  testthat::expect_true(base::any(base::grepl("Step ended: T2", step_t2_lines)))
+
+  testthat::expect_true(base::any(base::grepl("Step ended: T3", step_t3_lines)))
+  testthat::expect_true(base::any(base::grepl("Begin T3", step_t3_lines)))
+  testthat::expect_true(base::any(base::grepl("Step ended: T3", step_t3_lines)))
+  testthat::expect_null(lm$step_log_file)
+  rm(temp_tep_log_t2, temp_tep_log_t3)
 })
 
 #######################
