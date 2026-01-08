@@ -276,7 +276,7 @@ LoggerManager <- R6::R6Class( # nolint
       step_txt <- if (is.na(step_s)) "NA" else base::sprintf("%.2f", step_s)
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
-      verbose <- match.arg(verbose) # "Normal" is the default
+      verbose <- base::match.arg(verbose) # "Normal" is the default
       if (verbose == "None") {
         base::sprintf(
           "%s | %-5s | %s",
@@ -336,11 +336,11 @@ LoggerManager <- R6::R6Class( # nolint
       sink_path <- base::as.character(sink_file)
 
       self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-      base::sink(self$output_con, type = "output")
+      base::sink(self$output_con, type = "output", split = TRUE)
 
       if (isTRUE(capture_messages)) {
         self$message_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-        base::sink(self$message_con, type = "message")
+        base::sink(self$message_con, type = "message", split = TRUE)
       }
 
       invisible(NULL)
