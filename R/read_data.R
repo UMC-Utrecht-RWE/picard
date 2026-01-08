@@ -193,7 +193,7 @@ case_sensitive_filename <- function(
 }
 
 
-#' Fix and define the value of column
+#' Fix and define the value of columns within a data.table
 #'
 #' @param df A data.table
 #' @param col_types Optional, define the column type in output per column.
@@ -218,10 +218,8 @@ define_column_types <- function(df, col_types) {
           # Handle both function and character input
           converter <- if (is.function(type)) {
             type
-          } else if (is.character(type)) {
-            get(paste0("as.", type))
           } else {
-            stop("col_types values must be functions or character strings")
+            get(paste0("as.", type))
           }
 
           data.table::set(df, j = col, value = converter(df[[col]]))
@@ -230,13 +228,13 @@ define_column_types <- function(df, col_types) {
           )
         },
         error = function(e) {
-          logger::log_warn(paste0(
+          warning(paste0(
             "Failed to convert column '", col, "': ", e$message
           ))
         }
       )
     } else {
-      logger::log_warn(paste0("Column '", col, "' not present in data"))
+      warning(paste0("Column '", col, "' not present in data"))
     }
   }
 
