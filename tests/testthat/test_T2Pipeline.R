@@ -45,7 +45,8 @@ testthat::test_that("T2Pipeline clean() is a no-op", {
 
 testthat::test_that("T2Pipeline initializes and skip_substeps", {
   cfg <- create_substep_config(
-    c(s1 = TRUE, s2 = TRUE), marker_path = tempfile()
+    c(s1 = TRUE, s2 = TRUE),
+    marker_path = tempfile()
   )
   yaml_path <- file.path(tempdir(), "config_T2.yaml")
   yaml::write_yaml(cfg, yaml_path)

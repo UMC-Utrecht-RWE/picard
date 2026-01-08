@@ -18,7 +18,8 @@ testthat::test_that("audit_start creates exactly one audit file", {
   audit_start(dir_output = tmp, file_name = "bob")
 
   bob_files <- base::list.files(
-    tmp, pattern = "bob.*\\.txt$", full.names = TRUE
+    tmp,
+    pattern = "bob.*\\.txt$", full.names = TRUE
   )
   testthat::expect_equal(length(bob_files), 1)
 

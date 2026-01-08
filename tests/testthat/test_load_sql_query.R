@@ -214,7 +214,8 @@ testthat::test_that("Passing nulls", {
 
   testthat::expect_error(
     interpolate_sql_params(
-      "{a}", params = list(a = TRUE)
+      "{a}",
+      params = list(a = TRUE)
     ),
     regexp = "Unsupported parameter type for 'a': logical"
   )

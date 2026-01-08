@@ -87,7 +87,7 @@ testthat::test_that("read_yaml reads a valid yaml mapping", {
 
 testthat::test_that("read_yaml rejects yaml that is not a mapping", {
   tmp <- tempfile(fileext = ".yaml")
-  writeLines("hello world", tmp)  # valid YAML scalar, not a mapping
+  writeLines("hello world", tmp) # valid YAML scalar, not a mapping
 
   testthat::expect_error(
     read_yaml(tmp),
