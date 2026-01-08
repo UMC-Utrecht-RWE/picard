@@ -272,6 +272,21 @@ LoggerManager <- R6::R6Class( # nolint
       step_txt <- if (is.na(step_s)) "NA" else base::sprintf("%.2f", step_s)
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
+
+    #   base::sprintf(
+    #     "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s",
+    #     base::format(now, "%Y-%m-%d %H:%M:%S"),
+    #     lvl_txt,
+    #     run_s,
+    #     step_txt,
+    #     scr_txt,
+    #     delta_s,
+    #     step,
+    #     scr,
+    #     message
+    #   )
+    # },
+
       base::sprintf(
         "%s | %-5s | run+%8.2fs | scr+%8ss | %s/%s | %s",
         base::format(now, "%Y-%m-%d %H:%M:%S"),

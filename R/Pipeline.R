@@ -83,7 +83,6 @@ pipeline <- R6::R6Class(
         logger::log_info(base::paste("Starting step:", step_name))
         base::tryCatch(
           expr = {
-            # picard::logger_manager$init_step_logger(step_name)
             base::source(fs::path_norm(script_path), local = TRUE)
             logger::log_info(base::paste("Completed", step_name))
           },
