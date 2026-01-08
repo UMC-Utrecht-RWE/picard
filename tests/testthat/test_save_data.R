@@ -192,7 +192,6 @@ testthat::test_that("prepare_output_path validates file_name when provided", {
   )
 })
 
-
 testthat::test_that("prepare_output_path appends file_name and creates dir", {
   withr::local_tempdir()
   testthat::skip_if_not_installed("fs")

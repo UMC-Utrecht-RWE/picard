@@ -236,7 +236,7 @@ testthat::test_that("execute=FALSE returns sql and does not hit DBI", {
 testthat::test_that("INSERT executes and SELECT returns a data frame", {
   testthat::skip_if_not_installed("RSQLite")
 
-  conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
 
   DBI::dbExecute(conn, "CREATE TABLE t (x INTEGER)")
 
