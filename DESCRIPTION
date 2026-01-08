@@ -26,7 +26,8 @@ Imports:
     arrow (>= 22.0.0),
     fst (>= 0.9.8),
     fs (>= 1.6.6),
-    scriptName (>= 1.0.1)
+    scriptName (>= 1.0.1),
+    RSQLite (>= 2.4.5)
 Suggests:
     lintr (>= 3.2.0),
     styler (>= 1.10.3),
