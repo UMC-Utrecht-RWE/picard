@@ -89,7 +89,7 @@ LoggerManager <- R6::R6Class( # nolint
 
       logger::log_appender(function(line) {
         clean_line <- gsub(
-          "\\|\\s*run\\+[0-9.]+s\\s*\\|\\s*scr\\+[0-9.]+s\\s*",
+          "\\|\\s*run\\+\\s*[0-9.]+s\\s*\\|\\s*scr\\+\\s*[0-9.]+s\\s*",
           "| ",
           line
         )
