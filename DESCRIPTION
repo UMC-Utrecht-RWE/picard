@@ -26,7 +26,7 @@ Imports:
     arrow (>= 22.0.0),
     fst (>= 0.9.8),
     fs (>= 1.6.6),
-    RSQLite (>= 2.4.5)
+    RSQLite (>= 2.4.5),
     openxlsx (>= 4.2.7.1),
     scriptName (>= 1.0.1)
 Suggests:
