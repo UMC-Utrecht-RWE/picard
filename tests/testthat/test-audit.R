@@ -22,31 +22,6 @@ testthat::test_that("audit_start creates exactly one audit file", {
   base::unlink(tmp, recursive = TRUE, force = TRUE)
 })
 
-
-# testthat::test_that("audit_start creates file, header, and option", {
-#   tmp_dir <- base::tempdir()
-#   tmp_file <- "my_step_audit.txt"
-
-#   # make sure the option is clean
-#   base::options(.current_audit_file = NULL)
-
-#   file_name <- audit_start(
-#     dir_output = tmp_dir,
-#     file_name  = tmp_file
-#   )
-
-#   df <- create_test_data()
-#   audit_add(df)
-#   audit_path <- base::file.path(tmp_dir, file_name)
-#   testthat::expect_true(base::file.exists(audit_path))
-#   file_lines <- base::readLines(audit_path)
-#   testthat::expect_true(
-#     substring(tail(file_lines, n = 1), 2, 4) == "100"
-#   )
-# })
-
-# testthat::test_that("", {})
-
 testthat::test_that("audit_start writes header with deap_name", {
   withr::local_tempdir()
   tmp <- base::file.path(base::tempdir(), "audit_hdr")
@@ -81,7 +56,9 @@ testthat::test_that("audit_add errors if called before audit_start", {
     "audit_add\\(\\) called before audit_start\\(\\)"
   )
 })
-
+###############################
+# Tests for audit_add
+###############################
 testthat::test_that("audit_add appends text lines", {
   withr::local_tempdir()
   tmp <- base::file.path(base::tempdir(), "audit_add_txt")
@@ -121,7 +98,9 @@ testthat::test_that("audit_add writes a data.table (overwrites file)", {
   testthat::expect_identical(lines[1], "\"id\" \"n\"")
   testthat::expect_identical(lines[2], "1 2")
 })
-
+###############################
+# Tests for .get_release_version
+###############################
 testthat::test_that(".get_release_version returns tag and time in a git repo", {
   testthat::skip_on_os("windows")
   if (!nzchar(base::Sys.which("git"))) {
@@ -162,7 +141,9 @@ testthat::test_that(".get_release_version returns tag and time in a git repo", {
     testthat::expect_true(grepl("\\)", ver))
   })
 })
-
+###############################
+# Tests for audit_end
+###############################
 testthat::test_that("audit_end writes footer and clears options", {
   testthat::skip_on_os("windows")
   if (!nzchar(base::Sys.which("git"))) {

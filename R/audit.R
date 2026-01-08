@@ -29,7 +29,7 @@ audit_start <- function(
 
   file_name_sens <- file_name
   file_name <- paste0(
-    base::format(base::Sys.time(), "%Y-%m-%d_%H:%M_"), file_name
+    base::format(base::Sys.time(), "%Y-%m-%d_%H%M%S_"), file_name
   )
 
   if (tools::file_ext(file_name) == "") {
