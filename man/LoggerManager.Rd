@@ -13,11 +13,27 @@ cleaning up old logs, and creating step-specific loggers.
 \describe{
 \item{\code{log_dir}}{Directory where logs are stored.}
 
+\item{\code{run_id}}{Unique identifier for the current run.}
+
 \item{\code{global_log_file}}{Path to the global log file.}
+
+\item{\code{step_log_file}}{Path to the step-specific log file.}
 
 \item{\code{global_appender}}{Function for appending logs to console and file.}
 
-\item{\code{step_log_file}}{Path to the step-specific log file.
+\item{\code{step_appender}}{Function for appending logs to step-specific file.}
+
+\item{\code{run_start_time}}{Timestamp when the run started.}
+
+\item{\code{step_start_time}}{Timestamp when the current step started.}
+
+\item{\code{script_start_time}}{Timestamp when the current script started.}
+
+\item{\code{last_log_time}}{Timestamp of the last log entry.}
+
+\item{\code{current_step}}{Name of the current step being executed.}
+
+\item{\code{current_script}}{Name of the current script being executed.
 Initialize LoggerManager
 Constructor for the LoggerManager class.}
 }
@@ -29,8 +45,11 @@ Constructor for the LoggerManager class.}
 \item \href{#method-LoggerManager-new}{\code{LoggerManager$new()}}
 \item \href{#method-LoggerManager-configure}{\code{LoggerManager$configure()}}
 \item \href{#method-LoggerManager-cleanup_old_logs}{\code{LoggerManager$cleanup_old_logs()}}
-\item \href{#method-LoggerManager-create_dual_appender}{\code{LoggerManager$create_dual_appender()}}
 \item \href{#method-LoggerManager-init_step_logger}{\code{LoggerManager$init_step_logger()}}
+\item \href{#method-LoggerManager-end_step_logger}{\code{LoggerManager$end_step_logger()}}
+\item \href{#method-LoggerManager-start_script}{\code{LoggerManager$start_script()}}
+\item \href{#method-LoggerManager-end_script}{\code{LoggerManager$end_script()}}
+\item \href{#method-LoggerManager-.layout_with_timers}{\code{LoggerManager$.layout_with_timers()}}
 \item \href{#method-LoggerManager-start_capturing_prints}{\code{LoggerManager$start_capturing_prints()}}
 \item \href{#method-LoggerManager-stop_capturing_prints}{\code{LoggerManager$stop_capturing_prints()}}
 \item \href{#method-LoggerManager-clone}{\code{LoggerManager$clone()}}
@@ -83,35 +102,11 @@ Deletes log files older than a specified number of days.}
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{days_to_keep}}{Number of days to retain logs. Defaults to 30 days.
-Create Dual Appender
-
-Creates an appender that logs to both the global log file and
-a step-specific log file.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-create_dual_appender"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-create_dual_appender}{}}}
-\subsection{Method \code{create_dual_appender()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$create_dual_appender(step_log_path)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{step_log_path}}{Path to the step-specific log file.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A function that appends logs to both the global and
-step-specific log files.
 Initialize Step Logger
 
-Sets up a step-specific logger that logs only to the log file.
+Sets up a step-specific logger that logs only to the log file.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -126,12 +121,105 @@ Sets up a step-specific logger that logs only to the log file.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{step_name}}{Name of the step for which the log is being initialized.
+End Step Logger
+
+Reset the step-specific logger.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LoggerManager-end_step_logger"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-end_step_logger}{}}}
+\subsection{Method \code{end_step_logger()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$end_step_logger()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+None
+Start Script Timer
+
+As for init_step_logger, but for scripts within steps.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LoggerManager-start_script"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-start_script}{}}}
+\subsection{Method \code{start_script()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_script(script_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{script_name}}{Name of the script being started.
+End Script Timer
+
+Resets the script timer.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LoggerManager-end_script"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-end_script}{}}}
+\subsection{Method \code{end_script()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$end_script()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+None
+Layout with Timers
+
+Custom log layout function that includes timing information.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LoggerManager-.layout_with_timers"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-.layout_with_timers}{}}}
+\subsection{Method \code{.layout_with_timers()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$.layout_with_timers(
+  level,
+  msg = NULL,
+  namespace = NULL,
+  .logcall = NULL,
+  .topcall = NULL,
+  .topenv = NULL,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{level}}{Log level.}
+
+\item{\code{msg}}{Log message.}
+
+\item{\code{namespace}}{Namespace of the log message.}
+
+\item{\code{.logcall}}{Call information.}
+
+\item{\code{.topcall}}{Top-level call information.}
+
+\item{\code{.topenv}}{Top-level environment.}
+
+\item{\code{...}}{Additional arguments.}
+
+\item{\code{record}}{Log record.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Formatted log message string.
 Start Capturing Print Statements
 
 Redirects all \code{stdout} output (e.g., print statements)
-to the global log file.}
-}
-\if{html}{\out{</div>}}
+to the global log file.
 }
 }
 \if{html}{\out{<hr>}}
