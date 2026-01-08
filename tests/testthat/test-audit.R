@@ -1,24 +1,28 @@
-testthat::test_that("audit_start creates file, header, and option", {
-  tmp_dir <- base::tempdir()
-  tmp_file <- "my_step_audit.txt"
+###############################
+# Tests for audit_start
+###############################
+testthat::test_that("audit_start creates exactly one audit file", {
+  testthat::expect_no_error(audit_start())
 
-  # make sure the option is clean
-  base::options(.current_audit_file = NULL)
+  tmp <- base::file.path(base::tempdir(), "blabla")
+  base::unlink(tmp, recursive = TRUE, force = TRUE)
 
-  file_name <- audit_start(
-    dir_output = tmp_dir,
-    file_name  = tmp_file
+  created <- audit_start(dir_output = tmp, file_name = "unit")
+  testthat::expect_true(base::dir.exists(tmp))
+  testthat::expect_true(base::file.exists(base::file.path(tmp, created)))
+
+  audit_start(dir_output = tmp, file_name = "bob")
+  audit_start(dir_output = tmp, file_name = "bob")
+
+  bob_files <- base::list.files(
+    tmp, pattern = "bob.*\\.txt$", full.names = TRUE
   )
+  testthat::expect_equal(length(bob_files), 1)
 
-  df <- create_test_data()
-  audit_add(df)
-  audit_path <- base::file.path(tmp_dir, file_name)
-  testthat::expect_true(base::file.exists(audit_path))
-  file_lines <- base::readLines(audit_path)
-  # testthat::expect_true(
-  #   substring(tail(file_lines, n = 1), 2, 4) == "100"
-  # )
+  base::unlink(tmp, recursive = TRUE, force = TRUE)
 })
+
+
 # testthat::test_that("audit_start creates file, header, and option", {
 #   tmp_dir <- base::tempdir()
 #   tmp_file <- "my_step_audit.txt"
@@ -26,161 +30,201 @@ testthat::test_that("audit_start creates file, header, and option", {
 #   # make sure the option is clean
 #   base::options(.current_audit_file = NULL)
 
-#   audit_start(
+#   file_name <- audit_start(
 #     dir_output = tmp_dir,
-#     file_name  = tmp_file,
-#     overwrite  = TRUE
+#     file_name  = tmp_file
 #   )
 
-#   # file should exist
-#   audit_path <- base::file.path(tmp_dir, tmp_file)
+#   df <- create_test_data()
+#   audit_add(df)
+#   audit_path <- base::file.path(tmp_dir, file_name)
 #   testthat::expect_true(base::file.exists(audit_path))
-
-#   # option should point to that file
-#   testthat::expect_identical(
-#     fs::path_norm(base::getOption(".current_audit_file")),
-#     fs::path_norm(audit_path)
-#   )
-
-#   # file should start with the header line
 #   file_lines <- base::readLines(audit_path)
 #   testthat::expect_true(
-#     base::grepl("=== AUDIT FOR my_step_audit.txt ===", file_lines[1])
+#     substring(tail(file_lines, n = 1), 2, 4) == "100"
 #   )
 # })
 
-# testthat::test_that("audit_add appends lines after audit_start", {
-#   tmp_dir <- base::tempdir()
-#   tmp_file <- "step_b_audit.txt"
+# testthat::test_that("", {})
 
-#   # reset option
-#   base::options(.current_audit_file = NULL)
+testthat::test_that("audit_start writes header with deap_name", {
+  withr::local_tempdir()
+  tmp <- base::file.path(base::tempdir(), "audit_hdr")
+  base::unlink(tmp, recursive = TRUE, force = TRUE)
 
-#   audit_start(
-#     dir_output = tmp_dir,
-#     file_name  = tmp_file,
-#     overwrite  = TRUE
-#   )
+  withr::local_options(list(
+    .current_audit_file = NULL,
+    .current_start_time = NULL
+  ))
 
-#   audit_add(
-#     "total cases in D3_RSVPRODUCTS: ",
-#     123L
-#   )
+  audit_start(
+    dir_output = tmp,
+    file_name = "unit",
+    deap_name = "DEAP_X"
+  )
 
-#   audit_add(
-#     "after filtering invalid rows: ",
-#     120L,
-#     " rows"
-#   )
+  audit_file <- base::getOption(".current_audit_file")
+  testthat::expect_true(base::file.exists(audit_file))
 
-#   audit_path <- base::file.path(tmp_dir, tmp_file)
-#   file_lines <- base::readLines(audit_path)
+  lines <- base::readLines(audit_file, warn = FALSE)
+  testthat::expect_identical(lines[1], "=== Audit for unit (DEAP_X) ===")
+})
 
-#   # header should be first line
-#   testthat::expect_true(
-#     base::grepl("=== AUDIT FOR step_b_audit.txt ===", file_lines[1])
-#   )
+testthat::test_that("audit_add errors if called before audit_start", {
+  withr::local_options(list(
+    .current_audit_file = NULL,
+    .current_start_time = NULL
+  ))
 
-#   # then our two audit_add() calls, one per line
-#   testthat::expect_identical(
-#     file_lines[4],
-#     "total cases in D3_RSVPRODUCTS: 123"
-#   )
+  testthat::expect_error(
+    audit_add("x"),
+    "audit_add\\(\\) called before audit_start\\(\\)"
+  )
+})
 
-#   testthat::expect_identical(
-#     file_lines[5],
-#     "after filtering invalid rows: 120 rows"
-#   )
-# })
+testthat::test_that("audit_add appends text lines", {
+  withr::local_tempdir()
+  tmp <- base::file.path(base::tempdir(), "audit_add_txt")
+  base::unlink(tmp, recursive = TRUE, force = TRUE)
 
-# testthat::test_that("audit_add fails if audit_start not called", {
-#   # reset option to simulate missing start
-#   base::options(.current_audit_file = NULL)
+  withr::local_options(list(
+    .current_audit_file = NULL,
+    .current_start_time = NULL
+  ))
 
-#   testthat::expect_error(
-#     audit_add("hello world"),
-#     regexp = "audit_add\\(\\) called before audit_start\\(\\)"
-#   )
-# })
+  audit_start(dir_output = tmp, file_name = "unit")
+  audit_file <- base::getOption(".current_audit_file")
 
-# testthat::test_that("audit_start does not overwrite when overwrite=FALSE", {
-#   tmp_dir <- base::tempdir()
-#   tmp_file <- "no_overwrite_audit.txt"
+  audit_add("Hello", " ", "World")
 
-#   # clean option
-#   base::options(.current_audit_file = NULL)
+  lines <- base::readLines(audit_file, warn = FALSE)
+  testthat::expect_true(any(lines == "Hello World"))
+})
 
-#   # first run, overwrite = TRUE -> creates header A
-#   audit_start(
-#     dir_output = tmp_dir,
-#     file_name  = tmp_file,
-#     overwrite  = TRUE
-#   )
+testthat::test_that("audit_add writes a data.table (overwrites file)", {
+  withr::local_tempdir()
+  tmp <- base::file.path(base::tempdir(), "audit_add_dt")
+  base::unlink(tmp, recursive = TRUE, force = TRUE)
 
-#   audit_add("first run line")
+  withr::local_options(list(
+    .current_audit_file = NULL,
+    .current_start_time = NULL
+  ))
 
-#   audit_path <- base::file.path(tmp_dir, tmp_file)
-#   first_lines <- base::readLines(audit_path)
+  audit_start(dir_output = tmp, file_name = "unit")
+  audit_file <- base::getOption(".current_audit_file")
 
-#   # second run, overwrite = FALSE -> should append a
-#   # new header and new content, not clear the file
-#   audit_start(
-#     dir_output = tmp_dir,
-#     file_name  = tmp_file,
-#     overwrite  = FALSE
-#   )
-#   audit_add("second run line")
+  dt <- data.table::data.table(id = 1L, n = 2L)
+  audit_add(dt)
 
-#   second_lines <- base::readLines(audit_path)
+  lines <- base::readLines(audit_file, warn = FALSE)
+  testthat::expect_identical(lines[1], "\"id\" \"n\"")
+  testthat::expect_identical(lines[2], "1 2")
+})
 
-#   # should contain both "first run line" and "second run line"
-#   testthat::expect_true(
-#     base::any(base::grepl("first run line", second_lines))
-#   )
-#   testthat::expect_true(
-#     base::any(base::grepl("second run line", second_lines))
-#   )
+testthat::test_that(".get_release_version returns tag and time in a git repo", {
+  testthat::skip_on_os("windows")
+  if (!nzchar(base::Sys.which("git"))) {
+    testthat::skip("git not available")
+  }
 
-#   # should contain two headers (one from each audit_start)
-#   header_matches <- base::grep(
-#     "^=== AUDIT FOR no_overwrite_audit.txt ===$",
-#     second_lines
-#   )
-#   testthat::expect_equal(
-#     base::length(header_matches),
-#     2L
-#   )
-# })
+  withr::local_tempdir()
+  repo <- base::file.path(base::tempdir(), "audit_git_repo")
+  base::unlink(repo, recursive = TRUE, force = TRUE)
+  base::dir.create(repo, recursive = TRUE, showWarnings = FALSE)
 
-# testthat::test_that("audit_start auto-derives extension when missing", {
-#   tmp_dir <- base::tempdir()
+  withr::with_dir(repo, {
+    base::system2("git", "init", stdout = TRUE, stderr = TRUE)
+    base::system2(
+      "git",
+      c("config", "user.email", "test@example.com"),
+      stdout = TRUE, stderr = TRUE
+    )
+    base::system2(
+      "git",
+      c("config", "user.name", "Test User"),
+      stdout = TRUE, stderr = TRUE
+    )
+    base::writeLines("x", "README.md")
+    base::system2("git", c("add", "README.md"), stdout = TRUE, stderr = TRUE)
+    base::system2(
+      "git",
+      c("commit", "-m", "init"),
+      stdout = TRUE, stderr = TRUE
+    )
+    base::system2("git", c("tag", "v0.0.1"), stdout = TRUE, stderr = TRUE)
 
-#   # no extension in file_name, should add .txt
-#   base::options(.current_audit_file = NULL)
-#   audit_start(
-#     dir_output = tmp_dir,
-#     file_name  = "step_c_audit",
-#     overwrite  = TRUE,
-#     format     = ".txt"
-#   )
+    ver <- .get_release_version()
+    testthat::expect_true(is.character(ver))
+    testthat::expect_equal(length(ver), 1)
+    testthat::expect_true(grepl("v0\\.0\\.1", ver))
+    testthat::expect_true(grepl("\\(", ver))
+    testthat::expect_true(grepl("\\)", ver))
+  })
+})
 
-#   # expected name
-#   expected_path <- base::file.path(
-#     tmp_dir,
-#     "step_c_audit.txt"
-#   )
+testthat::test_that("audit_end writes footer and clears options", {
+  testthat::skip_on_os("windows")
+  if (!nzchar(base::Sys.which("git"))) {
+    testthat::skip("git not available")
+  }
 
-#   testthat::expect_identical(
-#     fs::path_norm(base::getOption(".current_audit_file")),
-#     fs::path_norm(expected_path)
-#   )
+  withr::local_tempdir()
+  repo <- base::file.path(base::tempdir(), "audit_end_repo")
+  out <- base::file.path(repo, "audits")
+  base::unlink(repo, recursive = TRUE, force = TRUE)
+  base::dir.create(repo, recursive = TRUE, showWarnings = FALSE)
 
-#   testthat::expect_true(
-#     base::file.exists(expected_path)
-#   )
+  withr::local_options(list(
+    .current_audit_file = NULL,
+    .current_start_time = NULL
+  ))
 
-#   header_line <- base::readLines(expected_path)[1]
-#   testthat::expect_true(
-#     base::grepl("=== AUDIT FOR step_c_audit.txt ===", header_line)
-#   )
-# })
+  withr::with_dir(repo, {
+    base::system2("git", "init", stdout = TRUE, stderr = TRUE)
+    base::system2(
+      "git",
+      c("config", "user.email", "test@example.com"),
+      stdout = TRUE, stderr = TRUE
+    )
+    base::system2(
+      "git",
+      c("config", "user.name", "Test User"),
+      stdout = TRUE, stderr = TRUE
+    )
+    base::writeLines("x", "README.md")
+    base::system2("git", c("add", "README.md"), stdout = TRUE, stderr = TRUE)
+    base::system2(
+      "git",
+      c("commit", "-m", "init"),
+      stdout = TRUE, stderr = TRUE
+    )
+    base::system2("git", c("tag", "v0.0.1"), stdout = TRUE, stderr = TRUE)
+
+    audit_start(dir_output = out, file_name = "unit")
+    audit_file <- base::getOption(".current_audit_file")
+
+    audit_add("Step: ", "1")
+    audit_end()
+
+    testthat::expect_true(is.null(base::getOption(".current_audit_file")))
+    testthat::expect_true(is.null(base::getOption(".current_start_time")))
+
+    lines <- base::readLines(audit_file, warn = FALSE)
+    testthat::expect_true(any(grepl("^Audit completed:", lines)))
+    testthat::expect_true(any(grepl("^Generated by:", lines)))
+    testthat::expect_true(any(grepl("^Finished at:", lines)))
+  })
+})
+
+testthat::test_that("audit_add stops if called before audit_start", {
+  withr::local_options(list(
+    .current_audit_file = NULL,
+    .current_start_time = NULL
+  ))
+
+  testthat::expect_error(
+    audit_add("x"),
+    regexp = "audit_add"
+  )
+})
