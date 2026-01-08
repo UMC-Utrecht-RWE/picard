@@ -269,3 +269,103 @@ testthat::test_that(".init_writer_registry clears existing writers", {
 ###############################
 # Tests for .init_writer_registry
 ###############################
+testthat::test_that("save_data writes xlsx via built-in writer", {
+  testthat::skip_if_not_installed("openxlsx")
+  testthat::skip_if_not_installed("fs")
+
+  picard:::.init_writer_registry()
+
+  dir <- withr::local_tempdir()
+  path <- base::file.path(dir, "out.xlsx")
+
+  df <- data.frame(a = 1:3, b = c("x", "y", "z"))
+
+  save_data(df, file_path = path)
+
+  testthat::expect_true(base::file.exists(path))
+
+  # optional: verify content (also increases confidence)
+  read_back <- openxlsx::read.xlsx(path)
+  testthat::expect_equal(read_back$a, df$a)
+  testthat::expect_equal(read_back$b, df$b)
+})
+
+testthat::test_that("save_data writes rdata via built-in writer", {
+  testthat::skip_if_not_installed("fs")
+
+  .init_writer_registry()
+
+  dir <- withr::local_tempdir()
+  path <- base::file.path(dir, "out.rdata")
+
+  obj <- data.frame(a = 1:3, b = c("x", "y", "z"))
+
+  save_data(obj, file_path = path)
+  testthat::expect_true(base::file.exists(path))
+
+  # Verify the fixed object name exists and content matches
+  e <- base::new.env(parent = base::emptyenv())
+  base::load(path, envir = e)
+  testthat::expect_true(base::exists("data_to_save", envir = e))
+
+  loaded <- base::get("data_to_save", envir = e)
+  testthat::expect_equal(loaded, obj)
+})
+
+testthat::test_that("save_data writes fst via built-in writer", {
+  testthat::skip_if_not_installed("fst")
+  testthat::skip_if_not_installed("data.table")
+  testthat::skip_if_not_installed("fs")
+
+  .init_writer_registry()
+
+  dir <- withr::local_tempdir()
+  path <- base::file.path(dir, "out.fst")
+
+  df <- data.frame(a = 1:3, b = c("x", "y", "z"))
+
+  save_data(df, file_path = path)
+  testthat::expect_true(base::file.exists(path))
+
+  dt <- fst::read_fst(path, as.data.table = TRUE)
+  testthat::expect_equal(dt$a, df$a)
+  testthat::expect_equal(dt$b, df$b)
+})
+
+testthat::test_that("save_data writes txt via built-in writer", {
+  testthat::skip_if_not_installed("fs")
+
+  .init_writer_registry()
+
+  dir <- withr::local_tempdir()
+  path <- base::file.path(dir, "out.txt")
+
+  df <- data.frame(a = 1:3, b = c("x", "y", "z"))
+
+  save_data(df, file_path = path)
+  testthat::expect_true(base::file.exists(path))
+
+  # Read back (match utils::write.table defaults)
+  back <- utils::read.table(path, header = TRUE, stringsAsFactors = FALSE)
+  testthat::expect_equal(back$a, df$a)
+  testthat::expect_equal(back$b, df$b)
+})
+
+testthat::test_that("save_data writes parquet via built-in writer", {
+  testthat::skip_if_not_installed("arrow")
+  testthat::skip_if_not_installed("fs")
+
+  .init_writer_registry()
+
+  dir <- withr::local_tempdir()
+  path <- base::file.path(dir, "out.parquet")
+
+  df <- data.frame(a = 1:3, b = c("x", "y", "z"))
+
+  save_data(df, file_path = path)
+  testthat::expect_true(base::file.exists(path))
+
+  back <- arrow::read_parquet(path)
+  back <- as.data.frame(back, stringsAsFactors = FALSE)
+  testthat::expect_equal(back, df)
+})
