@@ -1,16 +1,3 @@
-# rm(list = ls())
-# source("/Users/mcinelli/repos/picard/R/run_logger.R", encoding = "UTF-8")
-# logger_manager$configure()
-# logger_manager$init_step_logger("T2")
-# logger_manager$start_script("create_something.R")
-
-# logger::log_info("Doing something...")
-# logger::log_debug("Debug details...")
-# logger::log_success("Success")
-# logger::log_warn("Warning message")
-
-# logger_manager$end_script()
-# logger_manager$end_step_logger()
 testthat::test_that("main log is created and has run marker", {
   log_dir <- base::file.path(base::tempdir(), "picard_logs_basic_1")
   if (base::dir.exists(log_dir)) {
