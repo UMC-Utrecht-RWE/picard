@@ -88,12 +88,7 @@ LoggerManager <- R6::R6Class( # nolint
       logger::log_threshold(logger::TRACE, namespace = namespaces)
 
       logger::log_appender(function(line) {
-        clean_line <- gsub(
-          "\\|\\s*run\\+\\s*[0-9.]+s\\s*\\|\\s*scr\\+\\s*[0-9.]+s\\s*",
-          "| ",
-          line
-        )
-        self$global_appender(clean_line)
+        self$global_appender(line)
         if (!base::is.null(self$step_appender)) {
           self$step_appender(line)
         }
