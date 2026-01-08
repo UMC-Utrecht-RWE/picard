@@ -88,7 +88,12 @@ LoggerManager <- R6::R6Class( # nolint
       logger::log_threshold(logger::TRACE, namespace = namespaces)
 
       logger::log_appender(function(line) {
-        self$global_appender(line)
+        clean_line <- gsub(
+          "\\|\\s*run\\+[0-9.]+s\\s*\\|\\s*scr\\+[0-9.]+s\\s*",
+          "| ",
+          line
+        )
+        self$global_appender(clean_line)
         if (!base::is.null(self$step_appender)) {
           self$step_appender(line)
         }
@@ -273,13 +278,11 @@ LoggerManager <- R6::R6Class( # nolint
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
       base::sprintf(
-        "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s",
+        "%s | %-5s | run+%8.2fs | scr+%8ss | %s/%s | %s",
         base::format(now, "%Y-%m-%d %H:%M:%S"),
         lvl_txt,
         run_s,
-        step_txt,
         scr_txt,
-        delta_s,
         step,
         scr,
         message
