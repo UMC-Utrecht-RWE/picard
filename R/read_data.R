@@ -310,13 +310,13 @@ define_column_types <- function(df, col_types) {
 
       # If only one table, return it directly
       if (length(tables) == 1) {
-        return(DBI::dbReadTable(con, tables, ...))
+        DBI::dbReadTable(con, tables, ...)
       } else { # Multiple tables, return a named list
         result <- base::lapply(tables, function(tbl) {
           DBI::dbReadTable(con, tbl, ...)
         })
         names(result) <- tables
-        return(result)
+        result
       }
     }
   )
