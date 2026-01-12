@@ -74,7 +74,6 @@ LoggerManager <- R6::R6Class( # nolint
         base::paste0("pipeline_", self$run_id, ".log")
       )
       # If verbose not provided, set to "Normal"
-      # verbose <- base::match.arg(verbose, c("Normal", "Low", "High"))
       self$verbose <- base::match.arg(verbose)
 
       self$cleanup_old_logs()

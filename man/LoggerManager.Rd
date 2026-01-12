@@ -14,7 +14,7 @@ cleaning up old logs, and creating step-specific loggers.
 \item{\code{log_dir}}{Directory where logs are stored.}
 
 \item{\code{verbose}}{Verbosity level for logging.
-Options are "Normal", "None", or "High".}
+Options are "Normal", "Low", or "High".}
 
 \item{\code{run_id}}{Unique identifier for the current run.}
 
@@ -79,10 +79,7 @@ Cleans up old logs and configures the global logger.
 \if{latex}{\out{\hypertarget{method-LoggerManager-configure}{}}}
 \subsection{Method \code{configure()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(
-  log_dir = "logs",
-  verbose = c("Normal", "High", "None")
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(log_dir = "logs", verbose = c("Normal", "High", "Low"))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
