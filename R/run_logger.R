@@ -39,9 +39,14 @@ LoggerManager <- R6::R6Class( # nolint
     current_step = NULL,
     #' @field current_script Name of the current script being executed.
     current_script = NULL,
-    # output_con = NULL,
-    # message_con = NULL,
-
+    #' @field output_con Connection for capturing stdout.
+    output_con = NULL,
+    #' @field message_con Connection for capturing messages/warnings.
+    message_con = NULL,
+    #' @field capture_active Whether capturing of print statements is active.
+    capture_active = FALSE,
+    #' @field capture_target Target log file for captured prints.
+    capture_target = NULL,
 
     #' Initialize LoggerManager
     #' Constructor for the LoggerManager class.
@@ -99,9 +104,18 @@ LoggerManager <- R6::R6Class( # nolint
       logger::log_threshold(logger::TRACE, namespace = namespaces)
 
       logger::log_appender(function(line) {
-        self$global_appender(line)
+        app_console(line)
+
+        if (!(isTRUE(self$capture_active) &&
+                base::identical(self$capture_target, "global"))) {
+          app_main(line)
+        }
+
         if (!base::is.null(self$step_appender)) {
-          self$step_appender(line)
+          if (!(isTRUE(self$capture_active) &&
+                  base::identical(self$capture_target, "step"))) {
+            self$step_appender(line)
+          }
         }
       }, namespace = namespaces)
 
@@ -327,37 +341,41 @@ LoggerManager <- R6::R6Class( # nolint
     #'  Options are "global" or "step".
     #' @param capture_messages Whether to also capture messages/warnings.
     #' @return None
-    start_capturing_prints = function() {
-      sink_file <- self$step_log_file
-      invisible(NULL)
+    start_capturing_prints = function(target = c("step", "global"),
+                                      capture_messages = TRUE) {
+      target <- base::match.arg(target)
+
+      sink_file <- if (target == "global") self$global_log_file else self$step_log_file
+      if (base::is.null(sink_file)) {
+        return(invisible(FALSE))
+      }
+
+      self$stop_capturing_prints()
+
+      self$capture_active <- TRUE
+      self$capture_target <- target
+
+      sink_path <- base::as.character(sink_file)
+
+      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
+      base::sink(self$output_con, type = "output", split = TRUE)
+
+      if (isTRUE(capture_messages)) {
+        self$message_con <- file(sink_path, open = "at", encoding = "UTF-8")
+
+        ok <- TRUE
+        tryCatch(
+          base::sink(self$message_con, type = "message", split = TRUE),
+          error = function(e) ok <<- FALSE
+        )
+
+        if (!ok) {
+          # fallback: capture messages to file only
+          base::sink(self$message_con, type = "message")
+        }
+      }
+      invisible(TRUE)
     },
-    # start_capturing_prints = function(target = c("global", "step"),
-    #                                   capture_messages = TRUE) {
-    #   base::sink(sink_file, append = TRUE, type = "output")
-    # start_capturing_prints = function(target = c("global", "step"),
-    #                                   capture_messages = TRUE) {
-    #   target <- base::match.arg(target)
-
-    #   sink_file <- if (target == "global") self$global_log_file else self$step_log_file
-    #   if (base::is.null(sink_file)) {
-    #     stop("No log file available for target: ", target)
-    #   }
-
-    #   # If already sinking, stop first (prevents nested sink weirdness)
-    #   self$stop_capturing_prints()
-
-    #   sink_path <- base::as.character(sink_file)
-
-    #   self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-    #   base::sink(self$output_con, type = "output", split = TRUE)
-
-    #   if (isTRUE(capture_messages)) {
-    #     self$message_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-    #     base::sink(self$message_con, type = "message", split = TRUE)
-    #   }
-
-    #   invisible(NULL)
-    # },
 
     #' Stop Capturing Print Statements
     #'
@@ -365,28 +383,30 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @return None
     stop_capturing_prints = function() {
-      base::sink(type = "output")
-      invisible(NULL)
+      if (!isTRUE(self$capture_active)) {
+        return(invisible(TRUE))
+      }
+
+      self$capture_active <- FALSE
+      self$capture_target <- NULL
+
+      if (sink.number(type = "message") > 0 && !is.null(self$message_con)) {
+        base::sink(type = "message")
+      }
+      if (sink.number(type = "output") > 0 && !is.null(self$output_con)) {
+        base::sink(type = "output")
+      }
+
+      if (!base::is.null(self$message_con)) {
+        base::close(self$message_con)
+        self$message_con <- NULL
+      }
+      if (!base::is.null(self$output_con)) {
+        base::close(self$output_con)
+        self$output_con <- NULL
+      }
+      invisible(TRUE)
     }
-    # stop_capturing_prints = function() {
-    #   while (base::sink.number(type = "message") > 0) {
-    #     base::sink(type = "message")
-    #   }
-    #   while (base::sink.number(type = "output") > 0) {
-    #     base::sink(type = "output")
-    #   }
-
-    #   if (!base::is.null(self$message_con)) {
-    #     base::close(self$message_con)
-    #     self$message_con <- NULL
-    #   }
-    #   if (!base::is.null(self$output_con)) {
-    #     base::close(self$output_con)
-    #     self$output_con <- NULL
-    #   }
-
-    #   invisible(NULL)
-    # }
   )
 )
 

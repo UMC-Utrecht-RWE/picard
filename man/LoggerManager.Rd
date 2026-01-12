@@ -36,7 +36,15 @@ Options are "Normal", "Low", or "High".}
 
 \item{\code{current_step}}{Name of the current step being executed.}
 
-\item{\code{current_script}}{Name of the current script being executed.
+\item{\code{current_script}}{Name of the current script being executed.}
+
+\item{\code{output_con}}{Connection for capturing stdout.}
+
+\item{\code{message_con}}{Connection for capturing messages/warnings.}
+
+\item{\code{capture_active}}{Whether capturing of print statements is active.}
+
+\item{\code{capture_target}}{Target log file for captured prints.
 Initialize LoggerManager
 Constructor for the LoggerManager class.}
 }
@@ -232,7 +240,10 @@ to the global log file.
 \if{latex}{\out{\hypertarget{method-LoggerManager-start_capturing_prints}{}}}
 \subsection{Method \code{start_capturing_prints()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_capturing_prints()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_capturing_prints(
+  target = c("step", "global"),
+  capture_messages = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
