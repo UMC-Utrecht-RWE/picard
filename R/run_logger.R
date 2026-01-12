@@ -328,8 +328,6 @@ LoggerManager <- R6::R6Class( # nolint
           scr,
           message
         )
-      }  else {
-        stop("Invalid verbosity level: ", verbose)
       }
     },
 
@@ -346,9 +344,6 @@ LoggerManager <- R6::R6Class( # nolint
       target <- base::match.arg(target)
 
       sink_file <- if (target == "global") self$global_log_file else self$step_log_file
-      if (base::is.null(sink_file)) {
-        return(invisible(FALSE))
-      }
 
       self$stop_capturing_prints()
 
