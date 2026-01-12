@@ -2,7 +2,10 @@
 # Tests for audit_start
 ###############################
 testthat::test_that("audit_start creates exactly one audit file", {
-  testthat::expect_no_error(audit_start())
+  tmp <- base::file.path(base::tempdir(), "blabla")
+  testthat::expect_no_error(audit_start(tmp))
+
+  base::unlink(tmp, recursive = TRUE, force = TRUE)
 
   tmp <- base::file.path(base::tempdir(), "blabla")
   base::unlink(tmp, recursive = TRUE, force = TRUE)
@@ -15,7 +18,8 @@ testthat::test_that("audit_start creates exactly one audit file", {
   audit_start(dir_output = tmp, file_name = "bob")
 
   bob_files <- base::list.files(
-    tmp, pattern = "bob.*\\.txt$", full.names = TRUE
+    tmp,
+    pattern = "bob.*\\.txt$", full.names = TRUE
   )
   testthat::expect_equal(length(bob_files), 1)
 

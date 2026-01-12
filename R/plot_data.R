@@ -112,7 +112,7 @@ get_feature_plotter <- function(name) {
 
   # numeric - FIXED: use density scale for histogram
   for (nm in buckets$numeric) {
-    p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) + #nolint
+    p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) + # nolint
       ggplot2::geom_histogram(
         ggplot2::aes(y = ggplot2::after_stat(density)),
         bins = 30,
@@ -141,7 +141,7 @@ get_feature_plotter <- function(name) {
 
   # logical
   for (nm in buckets$logical) {
-    p <- ggplot2::ggplot(dts, ggplot2::aes(x = as.factor(.data[[nm]]))) + #nolint
+    p <- ggplot2::ggplot(dts, ggplot2::aes(x = as.factor(.data[[nm]]))) + # nolint
       ggplot2::geom_bar(na.rm = TRUE, fill = "steelblue") +
       ggplot2::labs(
         title = paste0(nm, " (logical)"),
@@ -159,7 +159,7 @@ get_feature_plotter <- function(name) {
 
   # date
   for (nm in buckets$date) {
-    p <- ggplot2::ggplot(dts, ggplot2::aes(x = as.Date(.data[[nm]]))) + #nolint
+    p <- ggplot2::ggplot(dts, ggplot2::aes(x = as.Date(.data[[nm]]))) + # nolint
       ggplot2::geom_histogram(
         na.rm = TRUE,
         bins = 30,
@@ -182,7 +182,7 @@ get_feature_plotter <- function(name) {
 
   # factor
   for (nm in buckets$factor) {
-    p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) + #nolint
+    p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) + # nolint
       ggplot2::geom_bar(na.rm = TRUE, fill = "steelblue") +
       ggplot2::labs(
         title = paste0(nm, " (factor)"),
@@ -204,7 +204,7 @@ get_feature_plotter <- function(name) {
   # character
   for (nm in buckets$char) {
     fac <- .top_n_factor(dts[[nm]], n = opts$max_levels)
-    p <- ggplot2::ggplot(data.frame(x = fac), ggplot2::aes(x = x)) + #nolint
+    p <- ggplot2::ggplot(data.frame(x = fac), ggplot2::aes(x = x)) + # nolint
       ggplot2::geom_bar(na.rm = TRUE, fill = "steelblue") +
       ggplot2::labs(
         title = paste0(nm, " (char)"),
@@ -246,7 +246,7 @@ get_feature_plotter <- function(name) {
     pct_missing = missing_pct
   )
 
-  p <- ggplot2::ggplot(missing_df, ggplot2::aes(x = column, y = pct_missing)) + #nolint
+  p <- ggplot2::ggplot(missing_df, ggplot2::aes(x = column, y = pct_missing)) + # nolint
     ggplot2::geom_col(
       fill = ifelse(
         missing_df$pct_missing > 50, "darkred",
@@ -280,7 +280,7 @@ get_feature_plotter <- function(name) {
 
   # Only numeric columns
   for (nm in buckets$numeric) {
-    p <- ggplot2::ggplot(dt, ggplot2::aes(y = .data[[nm]])) + #nolint
+    p <- ggplot2::ggplot(dt, ggplot2::aes(y = .data[[nm]])) + # nolint
       ggplot2::geom_boxplot(
         fill = "steelblue",
         outlier.color = "red",
