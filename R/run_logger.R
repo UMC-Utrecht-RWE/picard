@@ -12,6 +12,9 @@ LoggerManager <- R6::R6Class( # nolint
   public = list(
     #' @field log_dir Directory where logs are stored.
     log_dir = NULL,
+    #' @field verbose Verbosity level for logging.
+    #' Options are "Normal", "Low", or "High".
+    verbose = NULL,
     #' @field run_id Unique identifier for the current run.
     run_id = NULL,
     #' @field global_log_file Path to the global log file.
@@ -36,8 +39,9 @@ LoggerManager <- R6::R6Class( # nolint
     current_step = NULL,
     #' @field current_script Name of the current script being executed.
     current_script = NULL,
-    output_con = NULL,
-    message_con = NULL,
+    # output_con = NULL,
+    # message_con = NULL,
+
 
     #' Initialize LoggerManager
     #' Constructor for the LoggerManager class.
@@ -52,7 +56,10 @@ LoggerManager <- R6::R6Class( # nolint
     #' Cleans up old logs and configures the global logger.
     #'
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
-    configure = function(log_dir = "logs") {
+    #' @param verbose Verbosity level.
+    configure = function(
+      log_dir = "logs", verbose = c("Normal", "High", "Low")
+    ) {
       self$log_dir <- log_dir
       if (!base::dir.exists(self$log_dir)) {
         base::dir.create(self$log_dir, recursive = TRUE)
@@ -66,6 +73,9 @@ LoggerManager <- R6::R6Class( # nolint
         self$log_dir,
         base::paste0("pipeline_", self$run_id, ".log")
       )
+      # If verbose not provided, set to "Normal"
+      # verbose <- base::match.arg(verbose, c("Normal", "Low", "High"))
+      self$verbose <- base::match.arg(verbose)
 
       self$cleanup_old_logs()
 
@@ -205,7 +215,6 @@ LoggerManager <- R6::R6Class( # nolint
     #' @param .logcall Call information.
     #' @param .topcall Top-level call information.
     #' @param .topenv Top-level environment.
-    #' @param verbose Verbosity level.
     #' @param ... Additional arguments.
     #' @return Formatted log message string.
     .layout_with_timers = function(
@@ -215,7 +224,6 @@ LoggerManager <- R6::R6Class( # nolint
       .logcall = NULL,
       .topcall = NULL,
       .topenv = NULL,
-      verbose = c("Normal", "None", "High"),
       ...
     ) {
       if (base::is.list(level) && !base::is.null(level$msg)) {
@@ -276,15 +284,14 @@ LoggerManager <- R6::R6Class( # nolint
       step_txt <- if (is.na(step_s)) "NA" else base::sprintf("%.2f", step_s)
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
-      verbose <- base::match.arg(verbose) # "Normal" is the default
-      if (verbose == "None") {
+      if (self$verbose == "Low") {
         base::sprintf(
           "%s | %-5s | %s",
           base::format(now, "%Y-%m-%d %H:%M:%S"),
           lvl_txt,
           message
         )
-      } else if (verbose == "Normal") {
+      } else if (self$verbose == "Normal") {
         base::sprintf(
           "%s | %-5s | run+%8.2fs | scr+%8ss | %s/%s | %s",
           base::format(now, "%Y-%m-%d %H:%M:%S"),
@@ -295,7 +302,7 @@ LoggerManager <- R6::R6Class( # nolint
           scr,
           message
         )
-      } else if (verbose == "High") {
+      } else if (self$verbose == "High") {
         base::sprintf( # Original with step and script times
           "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s", # nolint
           base::format(now, "%Y-%m-%d %H:%M:%S"), # nolint
@@ -321,30 +328,37 @@ LoggerManager <- R6::R6Class( # nolint
     #'  Options are "global" or "step".
     #' @param capture_messages Whether to also capture messages/warnings.
     #' @return None
-    start_capturing_prints = function(target = c("global", "step"),
-                                      capture_messages = TRUE) {
-      target <- base::match.arg(target)
-
-      sink_file <- if (target == "global") self$global_log_file else self$step_log_file
-      if (base::is.null(sink_file)) {
-        stop("No log file available for target: ", target)
-      }
-
-      # If already sinking, stop first (prevents nested sink weirdness)
-      self$stop_capturing_prints()
-
-      sink_path <- base::as.character(sink_file)
-
-      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-      base::sink(self$output_con, type = "output", split = TRUE)
-
-      if (isTRUE(capture_messages)) {
-        self$message_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-        base::sink(self$message_con, type = "message", split = TRUE)
-      }
-
+    start_capturing_prints = function() {
+      sink_file <- self$step_log_file
       invisible(NULL)
     },
+    # start_capturing_prints = function(target = c("global", "step"),
+    #                                   capture_messages = TRUE) {
+    #   base::sink(sink_file, append = TRUE, type = "output")
+    # start_capturing_prints = function(target = c("global", "step"),
+    #                                   capture_messages = TRUE) {
+    #   target <- base::match.arg(target)
+
+    #   sink_file <- if (target == "global") self$global_log_file else self$step_log_file
+    #   if (base::is.null(sink_file)) {
+    #     stop("No log file available for target: ", target)
+    #   }
+
+    #   # If already sinking, stop first (prevents nested sink weirdness)
+    #   self$stop_capturing_prints()
+
+    #   sink_path <- base::as.character(sink_file)
+
+    #   self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
+    #   base::sink(self$output_con, type = "output", split = TRUE)
+
+    #   if (isTRUE(capture_messages)) {
+    #     self$message_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
+    #     base::sink(self$message_con, type = "message", split = TRUE)
+    #   }
+
+    #   invisible(NULL)
+    # },
 
     #' Stop Capturing Print Statements
     #'
@@ -352,24 +366,28 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @return None
     stop_capturing_prints = function() {
-      while (base::sink.number(type = "message") > 0) {
-        base::sink(type = "message")
-      }
-      while (base::sink.number(type = "output") > 0) {
-        base::sink(type = "output")
-      }
-
-      if (!base::is.null(self$message_con)) {
-        base::close(self$message_con)
-        self$message_con <- NULL
-      }
-      if (!base::is.null(self$output_con)) {
-        base::close(self$output_con)
-        self$output_con <- NULL
-      }
-
+      base::sink(type = "output")
       invisible(NULL)
     }
+    # stop_capturing_prints = function() {
+    #   while (base::sink.number(type = "message") > 0) {
+    #     base::sink(type = "message")
+    #   }
+    #   while (base::sink.number(type = "output") > 0) {
+    #     base::sink(type = "output")
+    #   }
+
+    #   if (!base::is.null(self$message_con)) {
+    #     base::close(self$message_con)
+    #     self$message_con <- NULL
+    #   }
+    #   if (!base::is.null(self$output_con)) {
+    #     base::close(self$output_con)
+    #     self$output_con <- NULL
+    #   }
+
+    #   invisible(NULL)
+    # }
   )
 )
 
