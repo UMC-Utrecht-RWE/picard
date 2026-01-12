@@ -21,8 +21,6 @@ LoggerManager <- R6::R6Class( # nolint
     global_log_file = NULL,
     #' @field step_log_file Path to the step-specific log file.
     step_log_file = NULL,
-    #' @field global_appender Function for appending logs to console and file.
-    global_appender = NULL,
     #' @field step_appender Function for appending logs to step-specific file.
     step_appender = NULL,
 
@@ -91,12 +89,6 @@ LoggerManager <- R6::R6Class( # nolint
       # Create console and file appenders
       app_console <- function(line) base::cat(line, "\n")
       app_main <- logger::appender_file(self$global_log_file)
-
-      # Store the true global appender here
-      self$global_appender <- function(line) {
-        app_console(line)
-        app_main(line)
-      }
 
       # Configure logger for global and package namespaces.
       namespaces <- c("global", "picard")

@@ -22,8 +22,6 @@ Options are "Normal", "Low", or "High".}
 
 \item{\code{step_log_file}}{Path to the step-specific log file.}
 
-\item{\code{global_appender}}{Function for appending logs to console and file.}
-
 \item{\code{step_appender}}{Function for appending logs to step-specific file.}
 
 \item{\code{run_start_time}}{Timestamp when the run started.}
