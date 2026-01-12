@@ -2,7 +2,8 @@
 
 testthat::test_that("T5Pipeline initializes and loads config", {
   cfg <- create_substep_config(
-    c("s1", "s2"), step_name = "T5", marker_path = tempfile()
+    c("s1", "s2"),
+    step_name = "T5", marker_path = tempfile()
   )
   yaml_path <- file.path(tempdir(), "config_T5.yaml")
   yaml::write_yaml(cfg, yaml_path)

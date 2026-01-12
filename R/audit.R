@@ -105,7 +105,8 @@ audit_add <- function(...) {
   args <- list(...)
   if (length(args) == 1 && data.table::is.data.table(args[[1]])) {
     utils::write.table(
-      args[[1]], audit_file, append = FALSE,
+      args[[1]], audit_file,
+      append = FALSE,
       sep = " ", dec = ".",
       row.names = FALSE, col.names = TRUE
     )

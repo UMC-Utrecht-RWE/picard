@@ -168,7 +168,8 @@ testthat::test_that("tests for validate_and_normalize_path", {
 testthat::test_that("tests for case_sensitive_filename", {
   testthat::expect_error(
     case_sensitive_filename(
-      "test_file.txt", "test_file", actual_files = "test_file.txt"
+      "test_file.txt", "test_file",
+      actual_files = "test_file.txt"
     ),
     regexp = "File not found: "
   )
@@ -406,7 +407,6 @@ testthat::test_that("load_rdata more the one object", {
     load_rdata(tf),
     regexp = "The RData file"
   )
-
 })
 ###############################
 # Tests for read_data_batch

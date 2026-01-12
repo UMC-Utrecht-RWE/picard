@@ -48,7 +48,7 @@ testthat::test_that("Test for file_path null and at least a yaml file exists", {
   # create a temporary configuration directory
   tmp <- withr::local_tempdir()
   config_dir <- file.path(tmp, "configuration")
-  # dir.create(config_dir, showWarnings = FALSE)
+
   fs::dir_create(config_dir)
 
   # create a temporary YAML file in the configuration directory
@@ -87,7 +87,7 @@ testthat::test_that("read_yaml reads a valid yaml mapping", {
 
 testthat::test_that("read_yaml rejects yaml that is not a mapping", {
   tmp <- tempfile(fileext = ".yaml")
-  writeLines("hello world", tmp)  # valid YAML scalar, not a mapping
+  writeLines("hello world", tmp) # valid YAML scalar, not a mapping
 
   testthat::expect_error(
     read_yaml(tmp),

@@ -1,16 +1,3 @@
-# rm(list = ls())
-# source("/Users/mcinelli/repos/picard/R/run_logger.R", encoding = "UTF-8")
-# logger_manager$configure()
-# logger_manager$init_step_logger("T2")
-# logger_manager$start_script("create_something.R")
-
-# logger::log_info("Doing something...")
-# logger::log_debug("Debug details...")
-# logger::log_success("Success")
-# logger::log_warn("Warning message")
-
-# logger_manager$end_script()
-# logger_manager$end_step_logger()
 testthat::test_that("main log is created and has run marker", {
   log_dir <- base::file.path(base::tempdir(), "picard_logs_basic_1")
   if (base::dir.exists(log_dir)) {
@@ -18,7 +5,7 @@ testthat::test_that("main log is created and has run marker", {
   }
 
   lm <- picard:::LoggerManager$new()
-  lm$configure(log_dir = log_dir)  # Config level
+  lm$configure(log_dir = log_dir) # Config level
 
   testthat::expect_true(base::file.exists(lm$global_log_file))
 
@@ -35,10 +22,10 @@ testthat::test_that("step log is created, receives messages and, closed", {
 
   # Code
   lm <- picard:::LoggerManager$new()
-  lm$configure(log_dir = log_dir)  # Config level
+  lm$configure(log_dir = log_dir) # Config level
 
   lm$init_step_logger("T2") # Step level
-  temp_tep_log_t2 <- lm$step_log_file  # Need to store for tests
+  temp_tep_log_t2 <- lm$step_log_file # Need to store for tests
   logger::log_info("Begin T2")
 
   lm$start_script("substep_a.R") # Script level
@@ -52,7 +39,7 @@ testthat::test_that("step log is created, receives messages and, closed", {
 
   lm$init_step_logger("T3") # Step level
   logger::log_info("Begin T3")
-  temp_tep_log_t3 <- lm$step_log_file  # Step level
+  temp_tep_log_t3 <- lm$step_log_file # Step level
 
   lm$start_script("substep_c.R") # Script level
   logger::log_success("Inside the script c")

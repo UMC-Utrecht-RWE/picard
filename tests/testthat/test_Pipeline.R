@@ -105,14 +105,16 @@ testthat::test_that("Testing skip step function", {
     config_step
   )
   yaml::write_yaml(
-    list(A = list(
-      input = "file_A.txt",
-      output = output_a
+    list(
+      A = list(
+        input = "file_A.txt",
+        output = output_a
+      ),
+      B = list(
+        input = "file_B.txt",
+        output = output_b
+      )
     ),
-    B = list(
-      input = "file_B.txt",
-      output = output_b
-    )),
     config_project
   )
   # Create output file for step A to simulate existing output

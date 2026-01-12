@@ -312,4 +312,10 @@ list_writers <- function() {
     arrow::write_parquet(data, path, ...)
     base::invisible(path)
   })
+
+  # EXCEL WRITER
+  register_writer("xlsx", function(data, path, ...) {
+    openxlsx::write.xlsx(data, path, ...)
+    base::invisible(path)
+  })
 }
