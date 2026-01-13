@@ -12,14 +12,15 @@ LoggerManager <- R6::R6Class( # nolint
   public = list(
     #' @field log_dir Directory where logs are stored.
     log_dir = NULL,
+    #' @field verbose Verbosity level for logging.
+    #' Options are "Normal", "Low", or "High".
+    verbose = NULL,
     #' @field run_id Unique identifier for the current run.
     run_id = NULL,
     #' @field global_log_file Path to the global log file.
     global_log_file = NULL,
     #' @field step_log_file Path to the step-specific log file.
     step_log_file = NULL,
-    #' @field global_appender Function for appending logs to console and file.
-    global_appender = NULL,
     #' @field step_appender Function for appending logs to step-specific file.
     step_appender = NULL,
 
@@ -36,6 +37,14 @@ LoggerManager <- R6::R6Class( # nolint
     current_step = NULL,
     #' @field current_script Name of the current script being executed.
     current_script = NULL,
+    #' @field output_con Connection for capturing stdout.
+    output_con = NULL,
+    #' @field message_con Connection for capturing messages/warnings.
+    message_con = NULL,
+    #' @field capture_active Whether capturing of print statements is active.
+    capture_active = FALSE,
+    #' @field capture_target Target log file for captured prints.
+    capture_target = NULL,
 
     #' Initialize LoggerManager
     #' Constructor for the LoggerManager class.
@@ -50,7 +59,10 @@ LoggerManager <- R6::R6Class( # nolint
     #' Cleans up old logs and configures the global logger.
     #'
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
-    configure = function(log_dir = "logs") {
+    #' @param verbose Verbosity level.
+    configure = function(
+      log_dir = "logs", verbose = c("Normal", "High", "Low")
+    ) {
       self$log_dir <- log_dir
       if (!base::dir.exists(self$log_dir)) {
         base::dir.create(self$log_dir, recursive = TRUE)
@@ -64,6 +76,8 @@ LoggerManager <- R6::R6Class( # nolint
         self$log_dir,
         base::paste0("pipeline_", self$run_id, ".log")
       )
+      # If verbose not provided, set to "Normal"
+      self$verbose <- base::match.arg(verbose)
 
       self$cleanup_old_logs()
 
@@ -76,21 +90,24 @@ LoggerManager <- R6::R6Class( # nolint
       app_console <- function(line) base::cat(line, "\n")
       app_main <- logger::appender_file(self$global_log_file)
 
-      # Store the true global appender here
-      self$global_appender <- function(line) {
-        app_console(line)
-        app_main(line)
-      }
-
       # Configure logger for global and package namespaces.
       namespaces <- c("global", "picard")
       logger::log_layout(self$.layout_with_timers, namespace = namespaces)
       logger::log_threshold(logger::TRACE, namespace = namespaces)
 
       logger::log_appender(function(line) {
-        self$global_appender(line)
+        app_console(line)
+
+        if (!(isTRUE(self$capture_active) &&
+                base::identical(self$capture_target, "global"))) {
+          app_main(line)
+        }
+
         if (!base::is.null(self$step_appender)) {
-          self$step_appender(line)
+          if (!(isTRUE(self$capture_active) &&
+                  base::identical(self$capture_target, "step"))) {
+            self$step_appender(line)
+          }
         }
       }, namespace = namespaces)
 
@@ -272,43 +289,79 @@ LoggerManager <- R6::R6Class( # nolint
       step_txt <- if (is.na(step_s)) "NA" else base::sprintf("%.2f", step_s)
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
-
-      #   base::sprintf( # Original with step and script times
-      #     "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s", # nolint
-      #     base::format(now, "%Y-%m-%d %H:%M:%S"), # nolint
-      #     lvl_txt,
-      #     run_s,
-      #     step_txt,
-      #     scr_txt,
-      #     delta_s,
-      #     step,
-      #     scr,
-      #     message
-      #   )
-      # },
-
-      base::sprintf(
-        "%s | %-5s | run+%8.2fs | scr+%8ss | %s/%s | %s",
-        base::format(now, "%Y-%m-%d %H:%M:%S"),
-        lvl_txt,
-        run_s,
-        scr_txt,
-        step,
-        scr,
-        message
-      )
+      if (self$verbose == "Low") {
+        base::sprintf(
+          "%s | %-5s | %s",
+          base::format(now, "%Y-%m-%d %H:%M:%S"),
+          lvl_txt,
+          message
+        )
+      } else if (self$verbose == "Normal") {
+        base::sprintf(
+          "%s | %-5s | run+%8.2fs | scr+%8ss | %s/%s | %s",
+          base::format(now, "%Y-%m-%d %H:%M:%S"),
+          lvl_txt,
+          run_s,
+          scr_txt,
+          step,
+          scr,
+          message
+        )
+      } else if (self$verbose == "High") {
+        base::sprintf( # Original with step and script times
+          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s", # nolint
+          base::format(now, "%Y-%m-%d %H:%M:%S"), # nolint
+          lvl_txt,
+          run_s,
+          step_txt,
+          scr_txt,
+          delta_s,
+          step,
+          scr,
+          message
+        )
+      }
     },
 
     #' Start Capturing Print Statements
     #'
     #' Redirects all `stdout` output (e.g., print statements)
     #' to the global log file.
-    #'
+    #' @param target Target log file to capture prints.
+    #'  Options are "global" or "step".
+    #' @param capture_messages Whether to also capture messages/warnings.
     #' @return None
-    start_capturing_prints = function() {
-      sink_file <- self$step_log_file
-      base::sink(sink_file, append = TRUE, type = "output")
-      invisible(NULL)
+    start_capturing_prints = function(target = c("step", "global"),
+                                      capture_messages = TRUE) {
+      target <- base::match.arg(target)
+
+      sink_file <- if (target == "global") self$global_log_file else self$step_log_file
+
+      self$stop_capturing_prints()
+
+      self$capture_active <- TRUE
+      self$capture_target <- target
+
+      sink_path <- base::as.character(sink_file)
+
+      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
+      base::sink(self$output_con, type = "output", split = TRUE)
+
+      if (isTRUE(capture_messages)) {
+        self$message_con <- file(sink_path, open = "at", encoding = "UTF-8")
+
+        ok <- TRUE
+        tryCatch(
+          base::sink(self$message_con, type = "message", split = TRUE),
+          error = function(e) ok <<- FALSE
+        )
+
+        if (!ok) {
+          # fallback: capture messages to file only
+          base::sink(self$message_con, type = "message")
+        }
+      }
+      invisible(TRUE)
     },
 
     #' Stop Capturing Print Statements
@@ -317,8 +370,29 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @return None
     stop_capturing_prints = function() {
-      base::sink(type = "output")
-      invisible(NULL)
+      if (!isTRUE(self$capture_active)) {
+        return(invisible(TRUE))
+      }
+
+      self$capture_active <- FALSE
+      self$capture_target <- NULL
+
+      if (sink.number(type = "message") > 0 && !is.null(self$message_con)) {
+        base::sink(type = "message")
+      }
+      if (sink.number(type = "output") > 0 && !is.null(self$output_con)) {
+        base::sink(type = "output")
+      }
+
+      if (!base::is.null(self$message_con)) {
+        base::close(self$message_con)
+        self$message_con <- NULL
+      }
+      if (!base::is.null(self$output_con)) {
+        base::close(self$output_con)
+        self$output_con <- NULL
+      }
+      invisible(TRUE)
     }
   )
 )

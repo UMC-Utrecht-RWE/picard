@@ -82,8 +82,79 @@ testthat::test_that("step log is created, receives messages and, closed", {
   rm(temp_tep_log_t2, temp_tep_log_t3)
 })
 
+testthat::test_that("Low verbose format is short", {
+  withr::local_tempdir()
+  log_dir <- base::tempdir()
+
+  lm <- picard:::LoggerManager$new()
+  lm$configure(log_dir = log_dir, verbose = "Low")
+
+  logger::log_info("marker_low")
+
+  lines <- base::readLines(lm$global_log_file, warn = FALSE)
+  last <- utils::tail(lines, 1)
+
+  parts <- strsplit(last, "\\|")[[1]]
+  parts <- trimws(parts)
+
+  testthat::expect_equal(length(parts), 3)
+  testthat::expect_false(grepl("run\\+", last))
+
+  testthat::expect_equal(length(strsplit(last, "\\|")[[1]]), 3)
+})
+
+testthat::test_that("Normal verbose includes run+ but not full timers", {
+  withr::local_tempdir()
+  log_dir <- base::tempdir()
+
+  lm <- picard:::LoggerManager$new()
+  lm$configure(log_dir = log_dir, verbose = "Normal")
+
+  logger::log_info("marker_normal")
+
+  lines <- base::readLines(lm$global_log_file, warn = FALSE)
+  last <- utils::tail(lines, 1)
+
+  testthat::expect_true(grepl("run\\+", last))
+  testthat::expect_false(grepl("d\\+", last))
+
+  testthat::expect_equal(length(strsplit(last, "\\|")[[1]]), 6)
+})
+
+testthat::test_that("High verbose includes full timers", {
+  withr::local_tempdir()
+  log_dir <- base::tempdir()
+
+  lm <- picard:::LoggerManager$new()
+  lm$configure(log_dir = log_dir, verbose = "High")
+
+  logger::log_info("marker_high")
+
+  lines <- base::readLines(lm$global_log_file, warn = FALSE)
+  last <- utils::tail(lines, 1)
+
+  testthat::expect_true(grepl("run\\+", last))
+  testthat::expect_true(grepl("d\\+", last))
+
+  testthat::expect_equal(length(strsplit(last, "\\|")[[1]]), 8)
+})
+
+
+testthat::test_that("Test error verbose options", {
+  lm <- picard:::LoggerManager$new()
+  testthat::expect_error(
+    lm$configure(
+      log_dir = base::tempdir(),
+      verbose = "Pizza"
+    ),
+    regexp = "'arg' should be one of "
+  )
+})
+
+
 #######################
 # Log cleanup tests
+#######################
 testthat::test_that("cleanup_old_logs removes files older than cutoff", {
   log_dir <- base::file.path(base::tempdir(), "picard_logs_4")
   if (base::dir.exists(log_dir)) {
@@ -118,6 +189,7 @@ testthat::test_that("cleanup_old_logs removes files older than cutoff", {
 
 #######################
 # Test .get_logger_manager_instance
+#######################
 testthat::test_that("singleton can be reset to a new instance", {
   picard:::.reset_logger_manager_instance()
 

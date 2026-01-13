@@ -13,13 +13,14 @@ cleaning up old logs, and creating step-specific loggers.
 \describe{
 \item{\code{log_dir}}{Directory where logs are stored.}
 
+\item{\code{verbose}}{Verbosity level for logging.
+Options are "Normal", "Low", or "High".}
+
 \item{\code{run_id}}{Unique identifier for the current run.}
 
 \item{\code{global_log_file}}{Path to the global log file.}
 
 \item{\code{step_log_file}}{Path to the step-specific log file.}
-
-\item{\code{global_appender}}{Function for appending logs to console and file.}
 
 \item{\code{step_appender}}{Function for appending logs to step-specific file.}
 
@@ -33,7 +34,15 @@ cleaning up old logs, and creating step-specific loggers.
 
 \item{\code{current_step}}{Name of the current step being executed.}
 
-\item{\code{current_script}}{Name of the current script being executed.
+\item{\code{current_script}}{Name of the current script being executed.}
+
+\item{\code{output_con}}{Connection for capturing stdout.}
+
+\item{\code{message_con}}{Connection for capturing messages/warnings.}
+
+\item{\code{capture_active}}{Whether capturing of print statements is active.}
+
+\item{\code{capture_target}}{Target log file for captured prints.
 Initialize LoggerManager
 Constructor for the LoggerManager class.}
 }
@@ -76,13 +85,15 @@ Cleans up old logs and configures the global logger.
 \if{latex}{\out{\hypertarget{method-LoggerManager-configure}{}}}
 \subsection{Method \code{configure()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(log_dir = "logs")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(log_dir = "logs", verbose = c("Normal", "High", "Low"))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{log_dir}}{Directory where logs will be stored. Defaults to "logs".
+\item{\code{log_dir}}{Directory where logs will be stored. Defaults to "logs".}
+
+\item{\code{verbose}}{Verbosity level.
 Cleanup Old Logs
 
 Deletes log files older than a specified number of days.}
@@ -227,9 +238,22 @@ to the global log file.
 \if{latex}{\out{\hypertarget{method-LoggerManager-start_capturing_prints}{}}}
 \subsection{Method \code{start_capturing_prints()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_capturing_prints()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_capturing_prints(
+  target = c("step", "global"),
+  capture_messages = TRUE
+)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{target}}{Target log file to capture prints.
+Options are "global" or "step".}
+
+\item{\code{capture_messages}}{Whether to also capture messages/warnings.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 None
 Stop Capturing Print Statements
