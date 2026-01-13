@@ -70,9 +70,6 @@ read_data <- function(file_path, file_name = NULL, col_types = NULL, ...) {
 #' actual_files
 #' @keywords internal
 validate_and_normalize_path <- function(file_path, file_name = NULL) {
-  # Trim whitespace
-  file_path <- trimws(file_path)
-
   # Validate file_path
   if (is.null(file_path)) {
     stop("file_path cannot be NULL", call. = FALSE)
@@ -85,6 +82,9 @@ validate_and_normalize_path <- function(file_path, file_name = NULL) {
       call. = FALSE
     )
   }
+
+  # Trim whitespace
+  file_path <- trimws(file_path)
 
   if (length(file_path) != 1) {
     stop(
@@ -132,26 +132,8 @@ validate_and_normalize_path <- function(file_path, file_name = NULL) {
   dir_path <- dirname(file_path)
   file_name <- basename(file_path)
 
-  # Check if directory exists
-  if (!dir.exists(dir_path)) {
-    stop(
-      "Directory does not exist: ", dir_path, "\n",
-      "Please check the path or create the directory first.",
-      call. = FALSE
-    )
-  }
-
   # List actual files in directory
-  actual_files <- tryCatch(
-    list.files(dir_path),
-    error = function(e) {
-      stop(
-        "Cannot list files in directory: ", dir_path, "\n",
-        "Error: ", e$message,
-        call. = FALSE
-      )
-    }
-  )
+  actual_files <- list.files(dir_path)
 
   # Return normalized components
   list(
@@ -211,7 +193,7 @@ case_sensitive_filename <- function(
 }
 
 
-#' Fix and define the value of column
+#' Fix and define the value of columns within a data.table
 #'
 #' @param df A data.table
 #' @param col_types Optional, define the column type in output per column.
@@ -236,10 +218,8 @@ define_column_types <- function(df, col_types) {
           # Handle both function and character input
           converter <- if (is.function(type)) {
             type
-          } else if (is.character(type)) {
-            get(paste0("as.", type))
           } else {
-            stop("col_types values must be functions or character strings")
+            get(paste0("as.", type))
           }
 
           data.table::set(df, j = col, value = converter(df[[col]]))
@@ -248,13 +228,13 @@ define_column_types <- function(df, col_types) {
           )
         },
         error = function(e) {
-          logger::log_warn(paste0(
+          warning(paste0(
             "Failed to convert column '", col, "': ", e$message
           ))
         }
       )
     } else {
-      logger::log_warn(paste0("Column '", col, "' not present in data"))
+      warning(paste0("Column '", col, "' not present in data"))
     }
   }
 
@@ -330,13 +310,13 @@ define_column_types <- function(df, col_types) {
 
       # If only one table, return it directly
       if (length(tables) == 1) {
-        return(DBI::dbReadTable(con, tables, ...))
+        DBI::dbReadTable(con, tables, ...)
       } else { # Multiple tables, return a named list
         result <- base::lapply(tables, function(tbl) {
           DBI::dbReadTable(con, tbl, ...)
         })
         names(result) <- tables
-        return(result)
+        result
       }
     }
   )
