@@ -10,8 +10,6 @@
 #' @param encoding file encoding passed to readLines(); default "UTF-8"
 #' @param params named list of parameters to interpolate into the SQL.
 #'   Use \code{\{param\}} in your SQL file to reference these.
-#' @param safe_interpolation logical; if TRUE (default), validates that
-#'   all placeholders are replaced to avoid SQL injection risks
 #'
 #' @return character(1) containing the full SQL with interpolated values
 #' @export
@@ -31,8 +29,7 @@
 load_sql_query <- function(
     file_path,
     encoding = "UTF-8",
-    params = NULL,
-    safe_interpolation = TRUE) {
+    params = NULL) {
   # Validate file exists
   if (!file.exists(file_path)) {
     stop("SQL file not found: ", file_path, call. = FALSE)
@@ -68,8 +65,7 @@ load_sql_query <- function(
   if (!is.null(params)) {
     sql <- interpolate_sql_params(
       sql,
-      params,
-      safe_interpolation = safe_interpolation
+      params
     )
   }
 
@@ -81,11 +77,10 @@ load_sql_query <- function(
 #'
 #' @param sql character string containing SQL with \code{\{param\}} placeholders
 #' @param params named list of parameters
-#' @param safe_interpolation logical; validate all placeholders are replaced
 #'
 #' @return character string with interpolated values
 #' @keywords internal
-interpolate_sql_params <- function(sql, params, safe_interpolation = TRUE) {
+interpolate_sql_params <- function(sql, params) {
   if (!is.list(params) || is.null(names(params))) {
     stop("params must be a named list", call. = FALSE)
   }
@@ -100,7 +95,7 @@ interpolate_sql_params <- function(sql, params, safe_interpolation = TRUE) {
 
   # Check for missing parameters
   missing_params <- setdiff(placeholder_names, names(params))
-  if (length(missing_params) > 0 && safe_interpolation) {
+  if (length(missing_params) > 0) {
     stop(
       "Missing required parameters: ",
       paste(missing_params, collapse = ", "),
@@ -136,18 +131,6 @@ interpolate_sql_params <- function(sql, params, safe_interpolation = TRUE) {
 
     sql <- gsub(placeholder, replacement, sql, fixed = TRUE)
   }
-
-  # Final check for unreplaced placeholders
-  if (safe_interpolation) {
-    remaining <- regmatches(sql, gregexpr("\\{[^}]+\\}", sql))[[1]]
-    if (length(remaining) > 0) {
-      warning(
-        "Unreplaced placeholders found: ",
-        paste(remaining, collapse = ", ")
-      )
-    }
-  }
-
   sql
 }
 

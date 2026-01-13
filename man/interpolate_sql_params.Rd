@@ -4,14 +4,12 @@
 \alias{interpolate_sql_params}
 \title{Interpolate parameters into SQL query}
 \usage{
-interpolate_sql_params(sql, params, safe_interpolation = TRUE)
+interpolate_sql_params(sql, params)
 }
 \arguments{
 \item{sql}{character string containing SQL with \code{\{param\}} placeholders}
 
 \item{params}{named list of parameters}
-
-\item{safe_interpolation}{logical; validate all placeholders are replaced}
 }
 \value{
 character string with interpolated values

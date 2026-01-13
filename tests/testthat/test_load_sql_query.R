@@ -1,4 +1,13 @@
-# test-load_sql_query.R
+#######################################
+# tests for load_sql_query
+#######################################
+testthat::test_that("file_path not present", {
+  testthat::expect_error(
+    load_sql_query("non_existent_file.sql"),
+    regexp = "SQL file not found: non_existent_file.sql"
+  )
+})
+
 testthat::test_that("load_sql_query returns a single string", {
   tmp <- tempfile(fileext = ".sql")
   writeLines(
@@ -153,4 +162,97 @@ testthat::test_that("function does not leave connection open", {
   # some OS/filesystems would error on re-opening with 'file in use'
   out2 <- load_sql_query(tmp)
   testthat::expect_match(out2, "SELECT 1;")
+})
+
+testthat::test_that("test params passing", {
+  tmp <- tempfile(fileext = ".sql")
+  writeLines(
+    c(
+      "SELECT 1 AS {a};",
+      "SELECT 2 AS {b};"
+    ),
+    tmp,
+    useBytes = TRUE
+  )
+
+  out <- load_sql_query(tmp, params = list(a = "aa", b = "bb"))
+
+  # Expect the two lines joined by newline
+  testthat::expect_equal(
+    out,
+    "SELECT 1 AS aa;\nSELECT 2 AS bb;"
+  )
+})
+
+#######################################
+# tests for interpolate_sql_params
+#######################################
+testthat::test_that("Passing nulls", {
+  sql_file <- tempfile(fileext = ".sql")
+  sql <- "SELECT 1 AS {a} WHERE name AS {b};"
+
+  writeLines(sql, sql_file, useBytes = TRUE)
+
+  testthat::expect_error(
+    interpolate_sql_params(sql, params = NULL),
+    regexp = "params must be a named list"
+  )
+
+  testthat::expect_error(
+    interpolate_sql_params(sql, params = list(a = "aa")),
+    regexp = "Missing required parameters: b"
+  )
+
+  testthat::expect_no_error(
+    interpolate_sql_params(
+      "{a}, {b}, {c}, {d}, {e}",
+      params = list(
+        a = "aa", b = 1, c = 1, d = c("x", "y"), e = c(1, 2)
+      )
+    )
+  )
+
+  testthat::expect_error(
+    interpolate_sql_params(
+      "{a}",
+      params = list(a = TRUE)
+    ),
+    regexp = "Unsupported parameter type for 'a': logical"
+  )
+})
+
+#######################################
+# tests for execute_sql_file
+#######################################
+testthat::test_that("execute=FALSE returns sql and does not hit DBI", {
+  conn <- structure(list(), class = "dummy_conn")
+  sql <- "SELECT 1"
+
+  testthat::expect_equal(
+    execute_sql_file(sql = sql, conn = conn, execute = FALSE),
+    sql
+  )
+})
+
+testthat::test_that("INSERT executes and SELECT returns a data frame", {
+
+  conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+
+  DBI::dbExecute(conn, "CREATE TABLE t (x INTEGER)")
+
+  ins_n <- execute_sql_file(
+    sql = "INSERT INTO t (x) VALUES (1)",
+    conn = conn,
+    execute = TRUE
+  )
+  testthat::expect_equal(ins_n, 1)
+
+  out <- execute_sql_file(
+    sql = "SELECT x FROM t",
+    conn = conn,
+    execute = TRUE
+  )
+  testthat::expect_s3_class(out, "data.frame")
+  testthat::expect_equal(out$x, 1)
+  DBI::dbDisconnect(conn)
 })

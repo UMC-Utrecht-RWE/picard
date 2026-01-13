@@ -1,20 +1,3 @@
-# Helper to create test data
-create_test_data <- function() {
-  data.table::data.table(
-    num = stats::rnorm(100),
-    int = base::sample.int(50, 100, replace = TRUE),
-    logi = base::sample(c(TRUE, FALSE, NA), 100,
-      replace = TRUE,
-      prob = c(0.45, 0.45, 0.10)
-    ),
-    fct = base::factor(base::sample(LETTERS[1:4], 100, replace = TRUE)),
-    chr = base::sample(c(letters[1:3], NA), 100, replace = TRUE),
-    date = as.Date("2023-01-01") + base::sample.int(365, 100, replace = TRUE),
-    time = as.POSIXct("2023-01-01", tz = "UTC") +
-      base::sample.int(86400, 100, replace = TRUE)
-  )
-}
-
 # Test: Registry initialization
 testthat::test_that("plotter registry initializes with built-in plotters", {
   # Force re-initialization
@@ -313,20 +296,6 @@ testthat::test_that("plot_data_features respects column selection", {
   unlink(paths)
 })
 
-# testthat::test_that("plot_data_features validates file_path", {
-#   dt <- create_test_data()
-
-#   testthat::expect_error(
-#     plot_data_features(data = dt, file_path = NULL),
-#     "is.character\\(file_path\\) is not TRUE"
-#   )
-
-#   testthat::expect_error(
-#     plot_data_features(data = dt, file_path = c("a", "b")),
-#     "length\\(file_path\\) == 1 is not TRUE"
-#   )
-# })
-
 testthat::test_that("plot_data_features creates multi-page output", {
   # Create data with many columns to force pagination
   dt <- data.table::data.table(
@@ -379,35 +348,3 @@ testthat::test_that(".default_opts merges custom options", {
   testthat::expect_equal(opts$nrow, 3) # default
   testthat::expect_equal(opts$custom_param, "test")
 })
-
-# Test: .path_pngs
-# testthat::test_that(".path_pngs creates directory if missing", {
-#   temp_dir <- file.path(tempdir(), "test_plot_dir", "subdir")
-#   temp_file <- file.path(temp_dir, "data.csv")
-
-#   # Directory shouldn't exist yet
-#   testthat::expect_false(dir.exists(temp_dir))
-
-#   # Calling .path_pngs should create it
-#   result <- .path_pngs(temp_file, "test")
-
-#   testthat::expect_true(dir.exists(temp_dir))
-
-#   # Cleanup
-#   unlink(file.path(tempdir(), "test_plot_dir"), recursive = TRUE)
-# })
-
-# testthat::test_that(".path_pngs builds path and ensures dir", {
-#   tmp_root <- base::tempfile(pattern = "pathpngs_")
-#   base::on.exit(base::unlink(tmp_root, recursive = TRUE, force = TRUE))
-#   out_dir <- base::file.path(tmp_root, "lvl1", "lvl2")
-#   in_path <- base::file.path(out_dir, "table.csv")
-
-#   out <- .path_pngs(in_path, "dist_page1")
-
-#   testthat::expect_true(base::dir.exists(out_dir))
-
-#   exp_base <- tools::file_path_sans_ext(in_path)
-#   exp <- base::paste0(exp_base, "_features_dist_page1.png")
-#   testthat::expect_identical(out, exp)
-# })

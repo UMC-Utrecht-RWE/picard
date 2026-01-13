@@ -29,7 +29,7 @@ audit_start <- function(
 
   file_name_sens <- file_name
   file_name <- paste0(
-    base::format(base::Sys.time(), "%Y-%m-%d_%H:%M_"), file_name
+    base::format(base::Sys.time(), "%Y-%m-%d_%H%M%S_"), file_name
   )
 
   if (tools::file_ext(file_name) == "") {
@@ -83,7 +83,9 @@ audit_start <- function(
   base::options(.current_start_time = start_time)
 
   base::invisible(NULL)
+  file_name
 }
+
 
 #' audit_add
 #' @name audit_add
@@ -100,16 +102,26 @@ audit_add <- function(...) {
     )
   }
 
-  msg <- base::paste0(...)
+  args <- list(...)
+  if (length(args) == 1 && data.table::is.data.table(args[[1]])) {
+    utils::write.table(
+      args[[1]], audit_file,
+      append = FALSE,
+      sep = " ", dec = ".",
+      row.names = FALSE, col.names = TRUE
+    )
+  } else {
+    msg <- base::paste0(...)
 
-  base::cat(
-    msg, "\n",
-    file = audit_file,
-    append = TRUE,
-    sep = ""
-  )
+    base::cat(
+      msg, "\n",
+      file = audit_file,
+      append = TRUE,
+      sep = ""
+    )
 
-  base::invisible(NULL)
+    base::invisible(NULL)
+  }
 }
 
 

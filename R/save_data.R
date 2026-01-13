@@ -131,14 +131,6 @@ prepare_output_path <- function(
     stop("file_path cannot be NULL", call. = FALSE)
   }
 
-  if (!is.character(file_path)) {
-    stop(
-      "file_path must be a character string, not ",
-      class(file_path)[1],
-      call. = FALSE
-    )
-  }
-
   if (length(file_path) != 1) {
     stop(
       "file_path must be a single string, not a vector of length ",
@@ -318,6 +310,12 @@ list_writers <- function() {
   # PARQUET WRITER
   register_writer("parquet", function(data, path, ...) {
     arrow::write_parquet(data, path, ...)
+    base::invisible(path)
+  })
+
+  # EXCEL WRITER
+  register_writer("xlsx", function(data, path, ...) {
+    openxlsx::write.xlsx(data, path, ...)
     base::invisible(path)
   })
 }

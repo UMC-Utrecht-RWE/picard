@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_data.R
 \name{define_column_types}
 \alias{define_column_types}
-\title{Fix and define the value of column}
+\title{Fix and define the value of columns within a data.table}
 \usage{
 define_column_types(df, col_types)
 }
@@ -16,6 +16,6 @@ It requires a list.}
 Data data.table
 }
 \description{
-Fix and define the value of column
+Fix and define the value of columns within a data.table
 }
 \keyword{internal}
