@@ -17,3 +17,16 @@
 
   invisible(NULL)
 }
+
+# Suppress R CMD check notes about data.table's non-standard evaluation
+utils::globalVariables(c(
+  ".",      # data.table's .() syntax
+  ".SD",    # Subset of Data
+  ".N",     # Number of rows
+  ".I",     # Row indices
+  ".GRP",   # Group counter
+  ".BY",    # List of by values
+  # Add any column names you reference without quotes:
+  # "column_name",
+  # "another_column"
+))
