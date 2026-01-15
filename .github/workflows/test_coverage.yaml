@@ -24,28 +24,64 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::covr, any::xml2
+          extra-packages: any::covr, any::DT
           needs: coverage
 
       - name: Test coverage
         run: |
+          # Exclusions
           excl <- list("R/zzz.R" = 1:1e6)
+
+          # Calculate coverage
+          cat("Calculating package coverage...\n\n")
           cov <- covr::package_coverage(
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package"),
             line_exclusions = excl
           )
-          covr::to_cobertura(cov)
-        shell: Rscript {0}
 
-      - uses: codecov/codecov-action@v4
-        with:
-          fail_ci_if_error: false
-          files: ./cobertura.xml
-          plugin: noop
-          disable_search: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          # Print overall coverage
+          cat("\n")
+          cat("========================================\n")
+          cat("OVERALL PACKAGE COVERAGE\n")
+          cat("========================================\n")
+          print(cov)
+          cat("\n")
+
+          # Print per-file coverage
+          cat("========================================\n")
+          cat("COVERAGE BY FILE\n")
+          cat("========================================\n")
+          file_cov <- covr::file_coverage(cov)
+          print(file_cov, group = "filename")
+          cat("\n")
+
+          # Get overall percentage
+          pct <- covr::percent_coverage(cov)
+          cat("========================================\n")
+          cat(sprintf("Total Coverage: %.2f%%\n", pct))
+          cat("========================================\n\n")
+
+          # Check threshold
+          threshold <- 95
+          if (pct < threshold) {
+            cat(sprintf("Coverage (%.2f%%) is below threshold (%.0f%%)\n", pct, threshold))
+            cat("\nFiles below threshold:\n")
+
+            # Show which files are dragging coverage down
+            file_pct <- attr(file_cov, "coverage")
+            for (i in seq_along(file_pct)) {
+              if (file_pct[i] < threshold) {
+                cat(sprintf("  - %s: %.2f%%\n", names(file_pct)[i], file_pct[i]))
+              }
+            }
+
+            quit(status = 1)
+          } else {
+            cat(sprintf("Coverage (%.2f%%) meets threshold (%.0f%%)\n", pct, threshold))
+          }
+        shell: Rscript {0}
 
       - name: Show testthat output
         if: always()
