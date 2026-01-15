@@ -49,6 +49,8 @@ jobs:
           print(cov)
           cat("\n")
 
+          # Get overall percentage
+          pct <- covr::percent_coverage(cov)
           cat("========================================\n")
           cat(sprintf("Total Coverage: %.2f%%\n", pct))
           cat("========================================\n\n")

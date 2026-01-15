@@ -1,7 +1,6 @@
 linters: linters_with_defaults(
-  object_usage_linter = NULL,
-  # return_linter = NULL
-)
+    object_usage_linter = NULL
+  )
 exclusions: list(
-  "tests/testthat.R"
-)
+    "tests/testthat.R"
+  )
