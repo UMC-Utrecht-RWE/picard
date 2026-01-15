@@ -24,7 +24,7 @@ testthat::test_that("step log is created, receives messages and, closed", {
   lm <- picard:::LoggerManager$new()
   lm$configure(log_dir = log_dir) # Config level
 
-  lm$init_step_logger("T2") # Step level
+  lm$start_step_logger("T2") # Step level
   temp_tep_log_t2 <- lm$step_log_file # Need to store for tests
   logger::log_info("Begin T2")
 
@@ -37,7 +37,7 @@ testthat::test_that("step log is created, receives messages and, closed", {
   lm$end_script()
   lm$end_step_logger()
 
-  lm$init_step_logger("T3") # Step level
+  lm$start_step_logger("T3") # Step level
   logger::log_info("Begin T3")
   temp_tep_log_t3 <- lm$step_log_file # Step level
 

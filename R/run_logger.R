@@ -144,7 +144,7 @@ LoggerManager <- R6::R6Class( # nolint
     #' Sets up a step-specific logger that logs only to the log file.
     #'
     #' @param step_name Name of the step for which the log is being initialized.
-    init_step_logger = function(step_name) {
+    start_step_logger = function(step_name) {
       self$current_step <- step_name
       self$step_start_time <- base::Sys.time()
       self$current_script <- NULL
@@ -188,7 +188,7 @@ LoggerManager <- R6::R6Class( # nolint
 
     #' Start Script Timer
     #'
-    #' As for init_step_logger, but for scripts within steps.
+    #' As for start_step_logger, but for scripts within steps.
     #' @param script_name Name of the script being started.
     start_script = function(script_name) {
       self$current_script <- script_name
