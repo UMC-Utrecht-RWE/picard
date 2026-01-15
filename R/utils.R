@@ -12,7 +12,7 @@
 #'
 #' @return A list of configuration values.
 #' @export
-load_config_values <- function(file_path = NULL) {
+load_config <- function(file_path = NULL) {
   if (!base::is.null(file_path)) {
     if (base::file.exists(file_path)) {
       read_yaml(file_path)
