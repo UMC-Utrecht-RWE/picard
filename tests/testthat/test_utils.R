@@ -1,5 +1,5 @@
 ################################################
-# Test functions for load_config_values
+# Test functions for load_config
 ################################################
 # two ifs and two elses plus a for loop to cover.
 # at least five tests needed.
@@ -10,7 +10,7 @@ testthat::test_that("Test for file_path not null, exists and it is a yaml", {
   writeLines(c("start_study_date: 2023-8-24"), temp_yaml)
 
   # Test loading the configuration values
-  config <- load_config_values(temp_yaml)
+  config <- load_config(temp_yaml)
 
   testthat::expect_true(is.list(config))
   testthat::expect_equal(config$start_study_date, "2023-8-24")
@@ -19,7 +19,7 @@ testthat::test_that("Test for file_path not null, exists and it is a yaml", {
 testthat::test_that("Test for file_path not null but it does not exists", {
   # Test loading the configuration values absent
   testthat::expect_error(
-    load_config_values(file_path = ""),
+    load_config(file_path = ""),
     "Configuration file not found at: "
   )
 })
@@ -32,14 +32,14 @@ testthat::test_that("Test for file_path not null, exists but not a yaml", {
 
   # Test loading the configuration values
   testthat::expect_error(
-    load_config_values(file_path = temp_not_yaml),
+    load_config(file_path = temp_not_yaml),
     "Config must be .yaml or .yml"
   )
 })
 
 testthat::test_that("Test for file_path null but yaml file exists", {
   testthat::expect_error(
-    load_config_values(),
+    load_config(),
     "No YAML configuration files found in 'configuration' folder."
   )
 })
@@ -61,7 +61,7 @@ testthat::test_that("Test for file_path null and at least a yaml file exists", {
   here::i_am(".here")
 
   # Test loading the configuration values
-  config <- load_config_values()
+  config <- load_config()
 
   testthat::expect_equal(config_values$start_study_date, "2023-8-24")
 

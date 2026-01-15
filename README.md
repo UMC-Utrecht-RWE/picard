@@ -44,7 +44,7 @@ Besides orchestrating the pipeline, the package also provides I/O helpers and au
   - `read_data.R:read_data`: Unique function to load any kind of file given a path, returns a `data.table`.
   - `save_data.R:save_data`: Unique function to save any kind of file given a path and data.
   - `load_sql_query.R:load_sql_query` and `execute_sql_file`: Loads and execute SQL code.
-  - `utils.R:load_config_values`: Load the YAML files used to configure the pipeline.
+  - `utils.R:load_config`: Load the YAML files used to configure the pipeline.
 - Auditing:
   - `run_logger.R` Integrated Logging: full audit trail using the internal logger.R module.
   - `audit.R`: It creates a `.txt` with user defined information to monitor the script.
@@ -82,7 +82,7 @@ gh::gh_whoami()
 library(picard)
 
 # Load configuration
-config <- picard::load_config_values("configuration/config_pipeline.yaml")
+config <- picard::load_config("configuration/config_pipeline.yaml")
 
 # Initialize and run the pipeline
 pipeline <- picard::Pipeline$new(config)
