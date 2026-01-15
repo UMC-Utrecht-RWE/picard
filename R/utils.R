@@ -304,5 +304,5 @@ get_date_value <- function(
   }
 
   base::warning("Unsupported date_input type; returning NA of class Date.")
-  return(base::as.Date(NA))
+  base::as.Date(NA)
 }

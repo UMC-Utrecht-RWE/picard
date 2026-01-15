@@ -18,7 +18,9 @@
   invisible(NULL)
 }
 
-# Suppress the R CMD check errors
+#' Suppress R CMD check notes for data.table's non-standard evaluation
+#'
+#' @keywords internal
 utils::globalVariables(c(
   # data.table's non-standard evaluation
   ".",      # data.table's .() syntax
@@ -26,12 +28,9 @@ utils::globalVariables(c(
   ".N",     # Number of rows
   ".I",     # Row indices
   ".GRP",   # Group counter
-  ".BY",    # List of by values
-  # For picard
-  ".init_reader_registry",
-  ".init_writer_registry",
-  ".init_plotter_registry"
-  # place holder for something else
+  ".BY"     # List of by values
+
+  # Add unquoted column names here if needed:
   # "column_name",
   # "another_column"
 ))
