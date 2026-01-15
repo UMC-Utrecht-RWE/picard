@@ -30,7 +30,7 @@ utils::globalVariables(c(
   # For picard
   ".init_reader_registry",
   ".init_writer_registry",
-  ".init_plotter_registry",
+  ".init_plotter_registry"
   # place holder for something else
   # "column_name",
   # "another_column"
