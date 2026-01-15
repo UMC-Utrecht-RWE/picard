@@ -335,7 +335,8 @@ LoggerManager <- R6::R6Class( # nolint
                                       capture_messages = TRUE) {
       target <- base::match.arg(target)
 
-      sink_file <- if (target == "global") self$global_log_file else self$step_log_file
+      sink_file <- if (target == "global") self$global_log_file
+      else self$step_log_file
 
       self$stop_capturing_prints()
 

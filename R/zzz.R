@@ -18,15 +18,20 @@
   invisible(NULL)
 }
 
-# Suppress R CMD check notes about data.table's non-standard evaluation
+# Suppress the R CMD check errors
 utils::globalVariables(c(
+  # data.table's non-standard evaluation
   ".",      # data.table's .() syntax
   ".SD",    # Subset of Data
   ".N",     # Number of rows
   ".I",     # Row indices
   ".GRP",   # Group counter
   ".BY",    # List of by values
-  # Add any column names you reference without quotes:
+  # For picard
+  ".init_reader_registry",
+  ".init_writer_registry",
+  ".init_plotter_registry",
+  # place holder for something else
   # "column_name",
   # "another_column"
 ))
