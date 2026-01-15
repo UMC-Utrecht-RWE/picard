@@ -49,34 +49,6 @@ jobs:
           print(cov)
           cat("\n")
 
-          # Print per-file coverage
-          cat("========================================\n")
-          cat("COVERAGE BY FILE\n")
-          cat("========================================\n")
-
-          # Get file-level coverage properly
-          file_report <- covr::file_report(cov, browse = FALSE)
-
-          # Extract per-file percentages
-          df <- attr(cov, "package")
-          if (!is.null(df)) {
-            files <- unique(df$filename)
-            file_pcts <- sapply(files, function(f) {
-              file_lines <- df[df$filename == f, ]
-              sum(file_lines$value > 0) / nrow(file_lines) * 100
-            })
-
-            # Sort by coverage (lowest first)
-            file_pcts <- sort(file_pcts)
-
-            for (i in seq_along(file_pcts)) {
-              cat(sprintf("  %s: %.2f%%\n", names(file_pcts)[i], file_pcts[i]))
-            }
-          }
-          cat("\n")
-
-          # Get overall percentage
-          pct <- covr::percent_coverage(cov)
           cat("========================================\n")
           cat(sprintf("Total Coverage: %.2f%%\n", pct))
           cat("========================================\n\n")
