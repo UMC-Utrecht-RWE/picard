@@ -51,7 +51,7 @@ create_substep_config <- function(
     substep_list <- stats::setNames(as.list(flags), substep_names)
   } else {
     if (is.null(base::names(substep_names)) ||
-      any(base::names(substep_names) == "")
+        any(base::names(substep_names) == "")
     ) {
       base::stop("substep_names must be named or character.")
     }
