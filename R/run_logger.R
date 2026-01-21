@@ -61,7 +61,9 @@ LoggerManager <- R6::R6Class( # nolint
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
     #' @param verbose Verbosity level.
     configure = function(
-      log_dir = "logs", verbose = c("Normal", "High", "Low")
+      log_dir = "logs",
+      verbose = c("Normal", "High", "Low"),
+      check_registry = FALSE
     ) {
       self$log_dir <- log_dir
       if (!base::dir.exists(self$log_dir)) {
@@ -110,6 +112,10 @@ LoggerManager <- R6::R6Class( # nolint
           }
         }
       }, namespace = namespaces)
+
+      if (check_registry) {
+        self$registry <- picard::read_data("logs/registry.csv", header = FALSE)
+      }
 
       logger::log_info("Pipeline configured. run_id={self$run_id}")
       invisible(self)
@@ -292,11 +298,16 @@ LoggerManager <- R6::R6Class( # nolint
       # Be sure current_script is an existing file (not a directory)
       # Not all log message are connected with a file
       if (is.null(self$current_script)) {
-        sh1 <- ""
+        sha1 <- ""
       } else if (file_test("-f", self$current_script)) {
-        sh1 <- digest::digest(file = self$current_script, algo = "sha1")
+        sha1 <- digest::digest(file = self$current_script, algo = "sha1")
+        if (nrow(registry[V1 == current_script] == 1)) {
+          if (sha1 != registry[V1 == current_script]$V2) {
+            sha1 <- paste0(sha1, "\n\n\n\n\n")
+          }
+        }
       } else {
-        sh1 <- ""
+        sha1 <- ""
       }
 
       if (self$verbose == "Low") {
@@ -329,7 +340,7 @@ LoggerManager <- R6::R6Class( # nolint
           step,
           scr,
           message,
-          sh1
+          sha1
         )
       }
     },

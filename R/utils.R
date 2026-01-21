@@ -65,32 +65,25 @@ read_yaml <- function(file_path) {
   out
 }
 
-#' Run an R script and log its execution details
+#' Compute SHA1 for a file and append to a registry CSV
 #'
-#' @description
-#' This function executes an R script, computes its SHA1 hash,
-#' and logs the execution details (timestamp, filename, SHA1 hash)
-#' to a specified log directory. If no registry path is provided,
-#' a new log file is created with a timestamped name.
-#' @param file_path Path to the R script to be executed.
-#' @param log_dir Directory where the log file will be stored.
-#' Default is "log".
-#' @param registry_path Optional path to an existing log file.
-#' If NULL, a new log file will be created.
-#' @param quiet If TRUE, suppresses return value. Default is TRUE.
-#' @return A list containing:
-#' - file: The path to the executed R script.
-#' - sha1: The SHA1 hash of the executed script.
-#' - registry: The path to the log file.
-#' - timing: The time taken to execute the script.ß
-#' - env: The environment in which the script was executed.
-#' @importFrom digest digest
+#' Computes the SHA1 of \code{file_path} and appends a line to a CSV registry.
+#' If \code{registry_path} is NULL, a new registry is created
+#'  under \code{log_dir}.
+#'
+#' @param file_path Character. Path to the file.
+#' @param log_dir Character. Directory to store the registry when
+#'   \code{registry_path} is NULL.
+#' @param registry_path Character or NULL. Output CSV file path.
+#' @param quiet Logical. If TRUE returns invisibly; otherwise returns a list.
+#'
+#' @return If \code{quiet = TRUE}, returns \code{invisible(NULL)}.
+#'   Otherwise a list with \code{file}, \code{sha1}, \code{registry}.
 #' @export
-run_script <- function(
-    file_path,
-    log_dir = "logs",
-    registry_path = NULL,
-    quiet = TRUE) {
+run_sha1 <- function(file_path,
+                     log_dir = "logs",
+                     registry_path = NULL,
+                     quiet = TRUE) {
   file_path <- fs::path_norm(file_path)
   file_path <- base::normalizePath(file_path, mustWork = TRUE)
 
@@ -98,23 +91,13 @@ run_script <- function(
     base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
   }
 
-  # If no registry path is provided, create a new log file
   if (base::is.null(registry_path)) {
-    # If a valid registry_path is already in log_dir, use it
-    existing_logs <- base::list.files(
-      path = log_dir,
-      pattern = "^registry_\\d{8}_\\d{6}\\.log$"
+    reg_name <- base::paste0(
+      "registry",
+      # "_", base::format(base::Sys.time(), "%Y%m%d_%H%M%S"),
+      ".csv"
     )
-    if (length(existing_logs) > 0) { # use the most recent one
-      registry_path <- base::file.path(log_dir, utils::tail(existing_logs, 1))
-    } else {
-      reg_name <- base::paste0(
-        "registry_",
-        base::format(base::Sys.time(), "%Y%m%d_%H%M%S"),
-        ".log"
-      )
-      registry_path <- base::file.path(log_dir, reg_name)
-    }
+    registry_path <- base::file.path(log_dir, reg_name)
   }
 
   sha1 <- digest::digest(file = file_path, algo = "sha1")
@@ -122,36 +105,76 @@ run_script <- function(
   con <- base::file(registry_path, open = "a", encoding = "UTF-8")
   base::on.exit(base::close(con), add = TRUE)
 
-  line <- base::paste(
-    "Date:",
-    base::format(base::Sys.time(), "%Y-%m-%d %H:%M:%S"),
-    "- File:",
-    base::basename(file_path),
-    "- SHA1:",
+  line <- base::paste0(
+    # base::basename(file_path),
+    file_path,
+    ",",
     sha1
   )
   base::writeLines(line, con = con, useBytes = TRUE)
 
-  env <- base::new.env(parent = base::globalenv())
-  timing <- base::system.time(
-    base::sys.source(file = file_path, envir = env, chdir = TRUE)
-  )
-
-  logger::log_debug(
-    base::paste0(base::basename(file_path), ": ", sha1)
-  )
-
   if (quiet) {
-    invisible(NULL)
+    base::invisible(NULL)
   } else {
-    list(
+    base::list(
       file = file_path,
       sha1 = sha1,
-      registry = registry_path,
-      timing = timing,
-      env = env
+      registry = registry_path
     )
   }
+}
+
+#' Compute SHA1 for all files in a folder (and append to a single registry)
+#'
+#' Lists files under \code{path}, excludes hidden files/folders, and calls
+#' \code{run_sha1()} for each file, appending results to one registry CSV.
+#'
+#' @param path Character or NULL. Directory to scan. If NULL, uses current
+#'   working directory.
+#' @param log_dir Character. Directory to store the registry CSV.
+#' @param registry_path Character or NULL. If NULL, a new registry is created
+#'   under \code{log_dir} and reused for all files.
+#'
+#' @return Invisibly returns the registry path used.
+#' @export
+get_sha1_for_all <- function(path = NULL,
+                             log_dir = "logs",
+                             registry_path = NULL) {
+  scan_path <- if (base::is.null(path)) "." else path
+
+  all_files <- base::list.files(
+    path = scan_path,
+    all.files = TRUE,
+    full.names = TRUE,
+    recursive = TRUE,
+    no.. = TRUE
+  )
+
+  all_files <- all_files[!base::grepl("(^|/)\\.[^/]+(/|$)", all_files)]
+  all_files <- all_files[!base::file.info(all_files)$isdir]
+
+  if (base::is.null(registry_path)) {
+    reg_name <- base::paste0(
+      "registry",
+      # "_", base::format(base::Sys.time(), "%Y%m%d_%H%M%S"),
+      ".csv"
+    )
+    if (!base::dir.exists(log_dir)) {
+      base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+    }
+    registry_path <- base::file.path(log_dir, reg_name)
+  }
+
+  for (file_ in all_files) {
+    run_sha1(
+      file_path = file_,
+      log_dir = log_dir,
+      registry_path = registry_path,
+      quiet = TRUE
+    )
+  }
+
+  base::invisible(registry_path)
 }
 
 #' Ensure date columns are of Date type
