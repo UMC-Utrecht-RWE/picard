@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `start_capturing_prints/stop_capturing_prints`: For capturing whatever is printed on terminal.
     - `start_step_logger/end_step_logger`: For capturing logs for the whole step (is not `init_step_logger` any longer)
     - `.layout_with_timers`: The system records turn-around-time of every interaction. User can select the verbose level of messaging.
+    - SHA1 value for logging.
 - `R/audit.R:audit_add`: It can save lists (thus data.table) into the txt files.
 - `R/utils.R:load_config_values` is now `R/utils.R:load_config`.
 - `code-quality.yaml` is now `code_quality.yaml` and it has been refactor.
