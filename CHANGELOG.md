@@ -40,5 +40,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All major functions transfered here from the RSV-1026 repository.
 
 [unreleased]: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
+[V1.1.0]: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.1
 [V1.0.0]: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1
 
