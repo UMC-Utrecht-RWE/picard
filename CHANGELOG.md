@@ -14,9 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Testing: Created tests for every part of the code and brought test coverage >95% (Ubuntu only GitHub action check).
 - `R/utils.R:read_yaml`: Validate if file is yaml or not.
 - `R/zzz.R` added handle for global variable so R-CMD does not give errors for data.table and the plotting functions.
-- Added `.lintr` for
-- Added `r_cmd_check.yaml` for compatibility with CRAN and `pkgdown.yaml` for similar reasons.
-- Added `test_coverage.yaml` to give a clear indication of what has been tested. It fails if coverage is less then 95%.
+- `.lintr` to help with handling error messages.
+- `r_cmd_check.yaml` for compatibility with CRAN and `pkgdown.yaml` for similar reasons.
+- `test_coverage.yaml` to give a clear indication of what has been tested. It fails if coverage is less then 95%.
+- `read_parquet` in `R/read_data.R` to read parquet files, that are now the default in our work.
 
 ### Changed
 - `R/run_logger.R` refactoring of the code so to have a `global` and `step` log. The first captures all log messages from each step, the seconds contain also print message. The idea is the first gives a general overview the second more details. New functions:
