@@ -19,7 +19,7 @@
 }
 
 #' Suppress R CMD check notes for data.table's non-standard evaluation
-#'
+#' @name suppress_cmd_checks
 #' @keywords internal
 utils::globalVariables(c(
   # data.table's non-standard evaluation

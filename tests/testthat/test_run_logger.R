@@ -127,7 +127,10 @@ testthat::test_that("High verbose includes full timers", {
 
   lm <- picard:::LoggerManager$new()
   lm$configure(log_dir = log_dir, verbose = "High")
+  substep_a <- base::tempfile(pattern = "substep_a", fileext = ".R")
 
+  writeLines("Ciao", substep_a)
+  lm$current_script <- substep_a
   logger::log_info("marker_high")
 
   lines <- base::readLines(lm$global_log_file, warn = FALSE)
@@ -136,7 +139,7 @@ testthat::test_that("High verbose includes full timers", {
   testthat::expect_true(grepl("run\\+", last))
   testthat::expect_true(grepl("d\\+", last))
 
-  testthat::expect_equal(length(strsplit(last, "\\|")[[1]]), 8)
+  testthat::expect_equal(length(strsplit(last, "\\|")[[1]]), 9)
 })
 
 

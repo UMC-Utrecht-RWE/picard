@@ -289,6 +289,16 @@ LoggerManager <- R6::R6Class( # nolint
       step_txt <- if (is.na(step_s)) "NA" else base::sprintf("%.2f", step_s)
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
+      # Be sure current_script is an existing file (not a directory)
+      # Not all log message are connected with a file
+      if (is.null(self$current_script)) {
+        sh1 <- ""
+      } else if (file_test("-f", self$current_script)) {
+        sh1 <- digest::digest(file = self$current_script, algo = "sha1")
+      } else {
+        sh1 <- ""
+      }
+
       if (self$verbose == "Low") {
         base::sprintf(
           "%s | %-5s | %s",
@@ -309,7 +319,7 @@ LoggerManager <- R6::R6Class( # nolint
         )
       } else if (self$verbose == "High") {
         base::sprintf( # Original with step and script times
-          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s", # nolint
+          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", # nolint
           base::format(now, "%Y-%m-%d %H:%M:%S"), # nolint
           lvl_txt,
           run_s,
@@ -318,7 +328,8 @@ LoggerManager <- R6::R6Class( # nolint
           delta_s,
           step,
           scr,
-          message
+          message,
+          sh1
         )
       }
     },
