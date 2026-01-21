@@ -261,7 +261,7 @@ testthat::test_that("Resets registry and loads defaults", {
   testthat::expect_false("zzz" %in% readers)
   testthat::expect_true(
     all(
-      c("csv", "rdata", "rds", "xlsx", "fst", "duckdb") %in% readers
+      c("csv", "rdata", "rds", "xlsx", "fst", "duckdb", "parquet") %in% readers
     )
   )
 })

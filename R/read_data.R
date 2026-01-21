@@ -320,6 +320,10 @@ define_column_types <- function(df, col_types) {
       }
     }
   )
+
+  register_reader("parquet", function(path, ...) {
+    arrow::read_parquet(path, ...)
+  })
 }
 
 
