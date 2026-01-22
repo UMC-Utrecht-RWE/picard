@@ -62,8 +62,7 @@ LoggerManager <- R6::R6Class( # nolint
     #' @param verbose Verbosity level.
     configure = function(
       log_dir = "logs",
-      verbose = c("Normal", "High", "Low"),
-      check_registry = FALSE
+      verbose = c("Normal", "High", "Low")
     ) {
       self$log_dir <- log_dir
       if (!base::dir.exists(self$log_dir)) {
@@ -113,9 +112,12 @@ LoggerManager <- R6::R6Class( # nolint
         }
       }, namespace = namespaces)
 
-      if (check_registry) {
-        self$registry <- picard::read_data("logs/registry.csv", header = FALSE)
-      }
+      self$registry <- tryCatch({
+        picard::read_data(picard:::get_hash_file())
+      },
+      error = function(e) {
+        NULL
+      })
 
       logger::log_info("Pipeline configured. run_id={self$run_id}")
       invisible(self)
@@ -297,17 +299,19 @@ LoggerManager <- R6::R6Class( # nolint
 
       # Be sure current_script is an existing file (not a directory)
       # Not all log message are connected with a file
-      if (is.null(self$current_script)) {
-        sha1 <- ""
-      } else if (file_test("-f", self$current_script)) {
-        sha1 <- digest::digest(file = self$current_script, algo = "sha1")
-        if (nrow(registry[V1 == current_script] == 1)) {
-          if (sha1 != registry[V1 == current_script]$V2) {
-            sha1 <- paste0(sha1, "\n\n\n\n\n")
+      if (self$verbose == "High") {
+        if (is.null(self$current_script)) {
+          hash <- ""
+        } else if (file_test("-f", self$current_script)) {
+          hash <- picard:::compute_hash(self$current_script)
+          if (nrow(self$registry[file_path == self$current_script] == 1)) {
+            if (hash != self$registry[file_path == self$current_script]$hash) {
+              hash <- paste0(hash, "\n\n\n\n\n")
+            }
           }
+        } else {
+          hash <- ""
         }
-      } else {
-        sha1 <- ""
       }
 
       if (self$verbose == "Low") {
@@ -340,7 +344,7 @@ LoggerManager <- R6::R6Class( # nolint
           step,
           scr,
           message,
-          sha1
+          hash
         )
       }
     },

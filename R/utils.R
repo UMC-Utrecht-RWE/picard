@@ -65,81 +65,15 @@ read_yaml <- function(file_path) {
   out
 }
 
-#' Compute SHA1 for a file and append to a registry CSV
-#'
-#' Computes the SHA1 of \code{file_path} and appends a line to a CSV registry.
-#' If \code{registry_path} is NULL, a new registry is created
-#'  under \code{log_dir}.
-#'
-#' @param file_path Character. Path to the file.
-#' @param log_dir Character. Directory to store the registry when
-#'   \code{registry_path} is NULL.
-#' @param registry_path Character or NULL. Output CSV file path.
-#' @param quiet Logical. If TRUE returns invisibly; otherwise returns a list.
-#'
-#' @return If \code{quiet = TRUE}, returns \code{invisible(NULL)}.
-#'   Otherwise a list with \code{file}, \code{sha1}, \code{registry}.
-#' @export
-run_sha1 <- function(file_path,
-                     log_dir = "logs",
-                     registry_path = NULL,
-                     quiet = TRUE) {
-  file_path <- fs::path_norm(file_path)
-  file_path <- base::normalizePath(file_path, mustWork = TRUE)
-
-  if (!base::dir.exists(log_dir)) {
-    base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
-  }
-
-  if (base::is.null(registry_path)) {
-    reg_name <- base::paste0(
-      "registry",
-      # "_", base::format(base::Sys.time(), "%Y%m%d_%H%M%S"),
-      ".csv"
-    )
-    registry_path <- base::file.path(log_dir, reg_name)
-  }
-
-  sha1 <- digest::digest(file = file_path, algo = "sha1")
-
-  con <- base::file(registry_path, open = "a", encoding = "UTF-8")
-  base::on.exit(base::close(con), add = TRUE)
-
-  line <- base::paste0(
-    # base::basename(file_path),
-    file_path,
-    ",",
-    sha1
-  )
-  base::writeLines(line, con = con, useBytes = TRUE)
-
-  if (quiet) {
-    base::invisible(NULL)
-  } else {
-    base::list(
-      file = file_path,
-      sha1 = sha1,
-      registry = registry_path
-    )
-  }
-}
-
-#' Compute SHA1 for all files in a folder (and append to a single registry)
-#'
-#' Lists files under \code{path}, excludes hidden files/folders, and calls
-#' \code{run_sha1()} for each file, appending results to one registry CSV.
+#' Get all files of interest
 #'
 #' @param path Character or NULL. Directory to scan. If NULL, uses current
 #'   working directory.
-#' @param log_dir Character. Directory to store the registry CSV.
-#' @param registry_path Character or NULL. If NULL, a new registry is created
-#'   under \code{log_dir} and reused for all files.
-#'
-#' @return Invisibly returns the registry path used.
-#' @export
-get_sha1_for_all <- function(path = NULL,
-                             log_dir = "logs",
-                             registry_path = NULL) {
+#' @return list of all files
+#' @keywords internal
+get_tracked_files <- function(
+  path = NULL
+) {
   scan_path <- if (base::is.null(path)) "." else path
 
   all_files <- base::list.files(
@@ -150,31 +84,69 @@ get_sha1_for_all <- function(path = NULL,
     no.. = TRUE
   )
 
+  # remove directories (hidden and not)
   all_files <- all_files[!base::grepl("(^|/)\\.[^/]+(/|$)", all_files)]
-  all_files <- all_files[!base::file.info(all_files)$isdir]
+  all_files[!base::file.info(all_files)$isdir]
+}
 
-  if (base::is.null(registry_path)) {
-    reg_name <- base::paste0(
+#' Make the name of the file we want to use in output
+#'
+#' @param output_file Default NULL, get name of output file
+#' @param log_dir Character.
+#' @keywords internal
+get_hash_file <- function(output_file = NULL, log_dir = "logs") {
+  if (base::is.null(output_file)) {
+    file_path <- base::paste0(
       "registry",
       # "_", base::format(base::Sys.time(), "%Y%m%d_%H%M%S"),
       ".csv"
     )
-    if (!base::dir.exists(log_dir)) {
-      base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
-    }
-    registry_path <- base::file.path(log_dir, reg_name)
+    base::file.path(log_dir, file_path)
+  } else {
+    output_file
   }
+}
 
-  for (file_ in all_files) {
-    run_sha1(
-      file_path = file_,
-      log_dir = log_dir,
-      registry_path = registry_path,
-      quiet = TRUE
-    )
+#' Get all files of interest and get their has in a CSV file.
+#'
+#' @param file_path Single of list of file paths
+#' @param algo Default sha1
+#' @keywords internal
+compute_hash <- function(file_path = NULL, algo = "sha1") {
+  file_path |>
+    purrr::map_vec(~ digest::digest(.x, algo = algo, file = TRUE))
+}
+
+#' Get all files of interest and get their has in a CSV file.
+#'
+#' @param log_dir Character. Directory to store the registry when
+#'   \code{registry_path} is NULL.
+#' @param path Character. Path to the file(s). Default NULL
+#' @param output_file Output file Default NULL
+#' @export
+track_file_changes <- function(
+  log_dir = "logs", path = NULL, output_file = NULL
+) {
+  # make log folder
+  if (!base::dir.exists(log_dir)) {
+    base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
   }
+  # get the files
+  file_paths <- get_tracked_files(path = path)
+  # get the output file
+  output_file <- get_hash_file(
+    output_file = output_file, log_dir = log_dir
+  )
+  # get hashes from files
+  hashes <- compute_hash(file_path = file_paths)
 
-  base::invisible(registry_path)
+  # export the result
+  dt <- data.table::data.table(file_path = file_paths, hash = hashes)
+  picard::save_data(
+    data = dt,
+    file_path = output_file,
+    create_plot = FALSE
+  )
 }
 
 #' Ensure date columns are of Date type

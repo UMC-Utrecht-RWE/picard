@@ -85,7 +85,11 @@ Cleans up old logs and configures the global logger.
 \if{latex}{\out{\hypertarget{method-LoggerManager-configure}{}}}
 \subsection{Method \code{configure()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(log_dir = "logs", verbose = c("Normal", "High", "Low"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(
+  log_dir = "logs",
+  verbose = c("Normal", "High", "Low"),
+  check_registry = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
