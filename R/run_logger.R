@@ -23,6 +23,8 @@ LoggerManager <- R6::R6Class( # nolint
     step_log_file = NULL,
     #' @field step_appender Function for appending logs to step-specific file.
     step_appender = NULL,
+    #' @field registry A registry of hash values
+    registry = NULL,
 
     #' @field run_start_time Timestamp when the run started.
     run_start_time = NULL,
@@ -113,11 +115,15 @@ LoggerManager <- R6::R6Class( # nolint
       }, namespace = namespaces)
 
       self$registry <- tryCatch({
-        picard::read_data(picard:::get_hash_file())
+        picard::read_data(picard:::get_hash_output(log_dir = self$log_dir))
       },
       error = function(e) {
         NULL
       })
+      if (is.null(self$registry) & self$verbose == "High") {
+        logger::log_error("Registry file necessary!")
+        stop("Registry file necessary!")
+      }
 
       logger::log_info("Pipeline configured. run_id={self$run_id}")
       invisible(self)
@@ -306,7 +312,7 @@ LoggerManager <- R6::R6Class( # nolint
           hash <- picard:::compute_hash(self$current_script)
           if (nrow(self$registry[file_path == self$current_script] == 1)) {
             if (hash != self$registry[file_path == self$current_script]$hash) {
-              hash <- paste0(hash, "\n\n\n\n\n")
+              hash <- paste0(hash, "File modified by user")
             }
           }
         } else {

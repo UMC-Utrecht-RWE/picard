@@ -24,6 +24,8 @@ Options are "Normal", "Low", or "High".}
 
 \item{\code{step_appender}}{Function for appending logs to step-specific file.}
 
+\item{\code{registry}}{A registry of hash values}
+
 \item{\code{run_start_time}}{Timestamp when the run started.}
 
 \item{\code{step_start_time}}{Timestamp when the current step started.}
@@ -85,11 +87,7 @@ Cleans up old logs and configures the global logger.
 \if{latex}{\out{\hypertarget{method-LoggerManager-configure}{}}}
 \subsection{Method \code{configure()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(
-  log_dir = "logs",
-  verbose = c("Normal", "High", "Low"),
-  check_registry = FALSE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(log_dir = "logs", verbose = c("Normal", "High", "Low"))}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

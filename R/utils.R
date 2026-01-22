@@ -76,6 +76,11 @@ get_tracked_files <- function(
 ) {
   scan_path <- if (base::is.null(path)) "." else path
 
+  # Validate path exists
+  if (!base::dir.exists(scan_path)) {
+    stop("Path does not exist: ", scan_path)
+  }
+
   all_files <- base::list.files(
     path = scan_path,
     all.files = TRUE,
@@ -85,16 +90,17 @@ get_tracked_files <- function(
   )
 
   # remove directories (hidden and not)
-  all_files <- all_files[!base::grepl("(^|/)\\.[^/]+(/|$)", all_files)]
-  all_files[!base::file.info(all_files)$isdir]
+  all_files <- all_files[!base::file.info(all_files)$isdir]
+  all_files[!base::grepl("(^|/)\\.", all_files)]
 }
 
-#' Make the name of the file we want to use in output
+#' Compute file hashes
 #'
-#' @param output_file Default NULL, get name of output file
-#' @param log_dir Character.
+#' @param file_path Single or list of file paths
+#' @param algo Hash algorithm (default: "sha1")
+#' @return Character vector of hashes
 #' @keywords internal
-get_hash_file <- function(output_file = NULL, log_dir = "logs") {
+get_hash_output <- function(output_file = NULL, log_dir = "logs") {
   if (base::is.null(output_file)) {
     file_path <- base::paste0(
       "registry",
@@ -127,14 +133,30 @@ compute_hash <- function(file_path = NULL, algo = "sha1") {
 track_file_changes <- function(
   log_dir = "logs", path = NULL, output_file = NULL
 ) {
-  # make log folder
-  if (!base::dir.exists(log_dir)) {
-    base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+  # Validate inputs
+  if (!is.null(path) && !dir.exists(path)) {
+    stop("Specified path does not exist: ", path)
   }
+
+  # Make log folder with error handling
+  if (!base::dir.exists(log_dir)) {
+    tryCatch({
+      base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+    }, error = function(e) {
+      stop("Failed to create log directory: ", e$message)
+    })
+  }
+
   # get the files
   file_paths <- get_tracked_files(path = path)
+
+  if (length(file_paths) == 0) {
+    warning("No files found to track")
+    return(invisible(NULL))
+  }
   # get the output file
-  output_file <- get_hash_file(
+
+  output_file <- get_hash_output(
     output_file = output_file, log_dir = log_dir
   )
   # get hashes from files

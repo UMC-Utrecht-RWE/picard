@@ -34,7 +34,7 @@ testthat::test_that("Errors when no writer registered for extension", {
 })
 
 testthat::test_that("Dispatches to custom writer and returns file_path", {
-  withr::local_tempdir()
+  # withr::local_tempdir()
   testthat::skip_if_not_installed("fs")
 
   .init_writer_registry()
@@ -53,6 +53,8 @@ testthat::test_that("Dispatches to custom writer and returns file_path", {
   testthat::expect_equal(res, fs::path_norm(path))
   testthat::expect_true(base::file.exists(path))
   testthat::expect_equal(base::readLines(path), "ok")
+
+  unlink(root, recursive = TRUE)
 })
 
 testthat::test_that("save_data wraps writer errors with helpful message", {

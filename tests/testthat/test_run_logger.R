@@ -122,8 +122,16 @@ testthat::test_that("Normal verbose includes run+ but not full timers", {
 })
 
 testthat::test_that("High verbose includes full timers", {
-  withr::local_tempdir()
-  log_dir <- base::tempdir()
+  temp_dir <- withr::local_tempdir()
+
+  # Create a test file with a normal name (not from tempfile)
+  test_file <- file.path(temp_dir, "test_file.txt")
+  writeLines("hello world", test_file)
+
+  # Create log directory inside temp_dir
+  log_dir <- file.path(temp_dir, "logs")
+
+  track_file_changes(log_dir = log_dir, path = temp_dir)
 
   lm <- picard:::LoggerManager$new()
   lm$configure(log_dir = log_dir, verbose = "High")
