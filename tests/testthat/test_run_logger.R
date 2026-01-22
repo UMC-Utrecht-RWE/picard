@@ -1,15 +1,17 @@
 testthat::teardown({
-  # 1. Reset the internal singleton (as before)
+  # Reset the internal singleton (as before)
   picard:::.reset_logger_manager_instance()
 
-  # 2. Reset the global logger package to defaults.
+  # Reset the global logger package to defaults.
   try(logger::log_appender(logger::appender_console), silent = TRUE)
   try(logger::log_layout(logger::layout_simple), silent = TRUE)
 
-  # 3. Close any open sinks.
+  # Close any open sinks.
   while (base::sink.number() > 0) {
     base::sink()
   }
+
+  unlink("tests/testthat/data/intermediate_plots/", recursive = TRUE)
 })
 
 testthat::test_that("main log is created and has run marker", {
@@ -162,9 +164,10 @@ testthat::test_that("High verbose includes full timers", {
 
   lm <- picard:::LoggerManager$new()
   lm$configure(log_dir = log_dir, verbose = "High")
-  substep_a <- base::tempfile(pattern = "substep_a", fileext = ".R")
 
+  substep_a <- base::tempfile(pattern = "substep_a", fileext = ".R")
   writeLines("Ciao", substep_a)
+
   lm$current_script <- substep_a
   logger::log_info("marker_high")
 
@@ -174,6 +177,16 @@ testthat::test_that("High verbose includes full timers", {
   testthat::expect_true(grepl("run\\+", last))
   testthat::expect_true(grepl("d\\+", last))
   testthat::expect_equal(length(strsplit(last, "\\|")[[1]]), 9)
+
+  # modify the test file
+  writeLines("ciao mondo", test_file)
+  lm$current_script <- test_file
+  logger::log_info("test_file")
+
+  lines <- base::readLines(lm$global_log_file, warn = FALSE)
+
+  testthat::expect_true("Script modified by user" %in% lines)
+
 })
 
 

@@ -1,3 +1,7 @@
+testthat::teardown({
+  unlink("tests/testthat/data/intermediate_plots/", recursive = TRUE)
+})
+
 # Test: Registry initialization
 testthat::test_that("plotter registry initializes with built-in plotters", {
   # Force re-initialization

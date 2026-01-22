@@ -312,7 +312,7 @@ LoggerManager <- R6::R6Class( # nolint
           hash <- picard:::compute_hash(self$current_script)
           if (nrow(self$registry[file_path == self$current_script] == 1)) {
             if (hash != self$registry[file_path == self$current_script]$hash) {
-              hash <- paste0(hash, "File modified by user")
+              hash <- paste0(hash, "\nScript modified by user\n")
             }
           }
         } else {

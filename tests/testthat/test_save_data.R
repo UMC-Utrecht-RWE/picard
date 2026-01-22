@@ -1,3 +1,6 @@
+testthat::teardown({
+  unlink("tests/testthat/data/intermediate_plots/", recursive = TRUE)
+})
 ###############################
 # Tests for save_data
 ###############################
