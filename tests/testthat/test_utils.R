@@ -156,9 +156,12 @@ testthat::test_that("", {
   tmp <- base::tempfile(fileext = ".txt")
   writeLines("hello world", tmp)
 
-  testthat::expect_equal(
-    compute_hash(tmp),
-    "22596363b3de40b06f981fb85d82312e8c0ed511"
+  testthat::expect_true(
+    compute_hash(tmp) %in%
+      c(
+        "22596363b3de40b06f981fb85d82312e8c0ed511", # this is for mac/linux
+        "88a5b867c3d110207786e66523cd1e4a484da697" # windows
+      )
   )
 })
 
