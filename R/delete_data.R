@@ -47,7 +47,6 @@ delete_parquet_partition <- function(
   dry_run = TRUE
 ) {
   stopifnot(is.character(dataset_dir))
-  stopifnot(length(dataset_dir) > 0)
   stopifnot(length(partition_ids) > 0)
 
   dataset_dir <- unique(fs::path_norm(dataset_dir))
@@ -61,13 +60,19 @@ delete_parquet_partition <- function(
 
       if (dir.exists(partition_path)) {
         if (dry_run) {
-          message("[DRY RUN] Would delete: ", partition_path)
+          msg <- paste0("[DRY RUN] Would delete: ", partition_path)
+          message(msg)
+          logger::log_info(msg)
         } else {
           fs::dir_delete(partition_path)
-          message("Deleted: ", partition_path)
+          msg <- paste0("Deleted: ", partition_path)
+          message(msg)
+          logger::log_info(msg)
         }
       } else {
-        message("Not found: ", partition_path)
+        msg <- paste0("Not found: ", partition_path)
+        message(msg)
+        logger::log_info(msg)
       }
     }
   }
