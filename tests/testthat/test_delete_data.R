@@ -55,5 +55,4 @@ testthat::test_that("Test with dry_run FALSE", {
       fs::path(temp_dir, "parquet_hives", "concept_id=B_COAGDEF_COV")
     )
   )
-
 })

@@ -104,9 +104,16 @@ Delete files
 \if{latex}{\out{\hypertarget{method-T2Pipeline-delete_data}{}}}
 \subsection{Method \code{delete_data()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{t2_pipeline$delete_data()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{t2_pipeline$delete_data(files = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{files}}{Dictionary containing file to be deleted.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 NULL
 }

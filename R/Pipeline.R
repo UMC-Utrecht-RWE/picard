@@ -172,7 +172,7 @@ pipeline <- R6::R6Class(
           partition_col <- "concept_id"
         }
         )
-        self$config
+
         delete_parquet_partition(
           dataset_dir = spec$dataset_dir,
           partition_ids = spec$partition_ids,

@@ -85,6 +85,13 @@ create_substep_config <- function(
     step_name
   )
   out$substep <- substep_list
+
+  dataset_dir <- testthat::test_path("data", "parquet_hives")
+  out$parquet_files <- list(
+    type = "parquet_partition",
+    dataset_dir = dataset_dir,
+    partition_ids = c("B_COAGDEF_AESI", "B_COAGDEF_COV")
+  )
   out
 }
 

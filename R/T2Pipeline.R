@@ -59,10 +59,12 @@ t2_pipeline <- R6::R6Class(
     },
 
     #' Delete files
+    #' @param files Dictionary containing file to be deleted.
     #' @return NULL
-    delete_data = function() {
+    delete_data = function(files = NULL) {
+      spec <- if (is.null(files)) self$t2$parquet_files
       logger::log_debug("Deleting files.")
-      super$delete_data(self$t2$parquet_files)
+      super$delete_data(spec = spec)
       base::invisible(NULL)
     }
   )

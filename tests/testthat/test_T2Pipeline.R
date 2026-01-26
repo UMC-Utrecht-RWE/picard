@@ -8,7 +8,7 @@ testthat::test_that("T2Pipeline initializes and loads config", {
   t2 <- picard::t2_pipeline$new(config_t2 = yaml_path, yaml_path)
 
   testthat::expect_type(t2$t2, "list")
-  testthat::expect_named(t2$t2, c("T2", "substep"))
+  testthat::expect_named(t2$t2, c("T2", "substep", "parquet_files"))
 })
 
 testthat::test_that("T2Pipeline run executes enabled substeps", {
@@ -58,5 +58,26 @@ testthat::test_that("T2Pipeline initializes and skip_substeps", {
   )
 
   testthat::expect_type(t2$t2, "list")
-  testthat::expect_named(t2$t2, c("T2", "substep"))
+  testthat::expect_named(t2$t2, c("T2", "substep", "parquet_files"))
+})
+
+testthat::test_that("Test with dry_run TRUE", {
+  cfg <- create_substep_config(
+    c(s1 = TRUE, s2 = TRUE),
+    marker_path = tempfile()
+  )
+  yaml_path <- file.path(tempdir(), "config_T2.yaml")
+  yaml::write_yaml(cfg, yaml_path)
+
+  t2 <- picard::t2_pipeline$new(
+    config_t2 = yaml_path,
+    yaml_path,
+    skip_substeps = TRUE
+  )
+
+  testthat::expect_message(
+    t2$delete_data(),
+    regexp = "[DRY RUN] Would delete:",
+    fixed = TRUE
+  )
 })

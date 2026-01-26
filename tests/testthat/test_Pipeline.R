@@ -165,5 +165,4 @@ testthat::test_that("Test with dry_run TRUE", {
     regexp = "[DRY RUN] Would delete:",
     fixed = TRUE
   )
-
 })
