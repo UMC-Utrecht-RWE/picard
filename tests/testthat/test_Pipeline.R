@@ -113,7 +113,8 @@ testthat::test_that("Testing skip step function", {
       B = list(
         input = "file_B.txt",
         output = output_b
-      )
+      ),
+      partition_col = "concept_id"
     ),
     config_project
   )

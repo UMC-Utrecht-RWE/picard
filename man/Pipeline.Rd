@@ -20,9 +20,8 @@ run_substeps().
 \describe{
 \item{\code{config}}{Configuration loaded from YAML}
 
-\item{\code{steps}}{List of steps to execute, loaded from the config}
-
-\item{\code{partition_col}}{Initialize the pipeline with a YAML configuration file}
+\item{\code{steps}}{List of steps to execute, loaded from the config
+Initialize the pipeline with a YAML configuration file}
 }
 \if{html}{\out{</div>}}
 }

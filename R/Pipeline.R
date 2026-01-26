@@ -19,8 +19,6 @@ pipeline <- R6::R6Class(
     config = NULL,
     #' @field steps List of steps to execute, loaded from the config
     steps = NULL,
-    #' @field partition_col
-    partition_col = NULL,
 
     #' Initialize the pipeline with a YAML configuration file
     #' @param config_pipeline Path to the YAML configuration file
@@ -31,11 +29,6 @@ pipeline <- R6::R6Class(
       logger::log_info("Initializing Pipeline")
       self$config <- self$load_yaml(config_pipeline)
       self$steps <- self$config$steps
-      self$partition_col <- if (base::is.null(partition_col)) {
-        self$config$partition_col
-      } else {
-        partition_col
-      }
     },
 
     #' Load a YAML configuration file
@@ -171,10 +164,18 @@ pipeline <- R6::R6Class(
     #' @return NULL
     delete_data = function(spec, dry_run = TRUE) {
       if (spec$type == "parquet_partition") {
+        tryCatch({
+          partition_col <- self$config$partition_col
+        },
+        error = function(e) {
+          partition_col <- "concept_id"
+        }
+        )
+        self$config
         delete_parquet_partition(
           dataset_dir = spec$dataset_dir,
           partition_ids = spec$partition_ids,
-          partition_col = self$partition_col,
+          partition_col = partition_col,
           dry_run = dry_run
         )
       } else {
