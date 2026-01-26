@@ -54,7 +54,7 @@ Constructor for the LoggerManager class.}
 \item \href{#method-LoggerManager-new}{\code{LoggerManager$new()}}
 \item \href{#method-LoggerManager-configure}{\code{LoggerManager$configure()}}
 \item \href{#method-LoggerManager-cleanup_old_logs}{\code{LoggerManager$cleanup_old_logs()}}
-\item \href{#method-LoggerManager-init_step_logger}{\code{LoggerManager$init_step_logger()}}
+\item \href{#method-LoggerManager-start_step_logger}{\code{LoggerManager$start_step_logger()}}
 \item \href{#method-LoggerManager-end_step_logger}{\code{LoggerManager$end_step_logger()}}
 \item \href{#method-LoggerManager-start_script}{\code{LoggerManager$start_script()}}
 \item \href{#method-LoggerManager-end_script}{\code{LoggerManager$end_script()}}
@@ -121,11 +121,11 @@ Sets up a step-specific logger that logs only to the log file.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-init_step_logger"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-init_step_logger}{}}}
-\subsection{Method \code{init_step_logger()}}{
+\if{html}{\out{<a id="method-LoggerManager-start_step_logger"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-start_step_logger}{}}}
+\subsection{Method \code{start_step_logger()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$init_step_logger(step_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_step_logger(step_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -151,7 +151,7 @@ Reset the step-specific logger.}
 None
 Start Script Timer
 
-As for init_step_logger, but for scripts within steps.
+As for start_step_logger, but for scripts within steps.
 }
 }
 \if{html}{\out{<hr>}}
