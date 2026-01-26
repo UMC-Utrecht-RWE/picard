@@ -19,6 +19,8 @@ pipeline <- R6::R6Class(
     config = NULL,
     #' @field steps List of steps to execute, loaded from the config
     steps = NULL,
+    #' @field partition_col
+    partition_col = NULL,
 
     #' Initialize the pipeline with a YAML configuration file
     #' @param config_pipeline Path to the YAML configuration file
@@ -29,6 +31,11 @@ pipeline <- R6::R6Class(
       logger::log_info("Initializing Pipeline")
       self$config <- self$load_yaml(config_pipeline)
       self$steps <- self$config$steps
+      self$partition_col <- if (base::is.null(partition_col)) {
+        self$config$partition_col
+      } else {
+        partition_col
+      }
     },
 
     #' Load a YAML configuration file
@@ -152,6 +159,27 @@ pipeline <- R6::R6Class(
       })
 
       base::invisible(NULL)
+    },
+
+    #' Delete data when needed
+    #'
+    #' @param spec Specification of what to delete
+    #' @param dry_run Logical. If TRUE (default), do not delete anything;
+    #' only compute and report which partition paths would be removed.
+    #' If FALSE, the matching partition directories are actually deleted.
+    #'
+    #' @return NULL
+    delete_data = function(spec, dry_run = TRUE) {
+      if (spec$type == "parquet_partition") {
+        delete_parquet_partition(
+          dataset_dir = spec$dataset_dir,
+          partition_ids = spec$partition_ids,
+          partition_col = self$partition_col,
+          dry_run = dry_run
+        )
+      } else {
+        stop("Unknown delete spec type: ", spec$type)
+      }
     }
   )
 )

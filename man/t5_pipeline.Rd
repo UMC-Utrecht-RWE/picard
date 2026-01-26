@@ -35,6 +35,7 @@ Initialize the T5 pipeline with a YAML configuration file}
 \if{html}{\out{
 <details open><summary>Inherited methods</summary>
 <ul>
+<li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="delete_data"><a href='../../picard/html/Pipeline.html#method-Pipeline-delete_data'><code>picard::Pipeline$delete_data()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="load_yaml"><a href='../../picard/html/Pipeline.html#method-Pipeline-load_yaml'><code>picard::Pipeline$load_yaml()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="run_substeps"><a href='../../picard/html/Pipeline.html#method-Pipeline-run_substeps'><code>picard::Pipeline$run_substeps()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="skip_step"><a href='../../picard/html/Pipeline.html#method-Pipeline-skip_step'><code>picard::Pipeline$skip_step()</code></a></span></li>
