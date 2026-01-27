@@ -240,7 +240,6 @@ testthat::test_that("plot_data_features saves PNG files", {
   base::unlink(tmp_log)
 })
 
-
 testthat::test_that("plot_data_features handles multiple chart types", {
   dt <- create_test_data()
   temp_file <- tempfile(fileext = ".csv")
@@ -275,6 +274,8 @@ testthat::test_that("plot_data_features warns on unknown chart type", {
     )
   )
   testthat::expect_length(result, 0)
+  # Cleanup
+  unlink(result)
 })
 
 testthat::test_that("plot_data_features respects column selection", {
@@ -322,7 +323,7 @@ testthat::test_that("plot_data_features creates multi-page output", {
   testthat::expect_true(any(grepl("page3", paths)))
 
   # Cleanup
-  unlink(paths)
+  unlink(paths, recursive = TRUE)
 })
 
 # Test: .default_opts
