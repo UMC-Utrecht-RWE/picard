@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `r_cmd_check.yaml` for compatibility with CRAN and `pkgdown.yaml` for similar reasons.
 - `test_coverage.yaml` to give a clear indication of what has been tested. It fails if coverage is less then 95%.
 - `read_parquet` in `R/read_data.R` to read parquet files, that are now the default in our work.
+- New file `R/delete_data.R` with functionality `delete_parquet_partition`. Such function (and potentially others) can be used by the pipeline class(es) to delete parquet files that are now the way we save intermidate data files.
 
 ### Changed
 - `R/run_logger.R` refactoring of the code so to have a `global` and `step` log. The first captures all log messages from each step, the seconds contain also print message. The idea is the first gives a general overview the second more details. New functions:
