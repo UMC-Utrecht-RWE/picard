@@ -18,7 +18,7 @@ the configuration, and cleans up files as needed.
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{t2}}{Configuration for the T2 pipeline}
+\item{\code{T2}}{Configuration for the T2 pipeline}
 
 \item{\code{project}}{Configuration for the whole pipeline
 Initialize the T2 pipeline with a YAML configuration file}
