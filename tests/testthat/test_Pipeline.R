@@ -134,3 +134,19 @@ testthat::test_that("Testing skip step function", {
     config_file_output$substep$B
   )
 })
+
+## test clean
+testthat::test_that("Check if clean delete files in folder", {
+  files <- create_temp_pipeline_yaml(c("A", "B"), marker_path = tempfile())
+  pl <- picard::pipeline$new(config_pipeline = files$yaml_path)
+
+  file_1 <- file.path(tempdir(), "file_1.txt")
+  file_2 <- file.path(tempdir(), "file_2.txt")
+  writeLines("Ciao", con = file_1)
+  writeLines("Mondo", con = file_2)
+  pl$clean(content_to_delete = tempdir())
+
+  testthat::expect_true(!file.exists(file_1))
+  testthat::expect_true(!file.exists(file_1))
+
+})
