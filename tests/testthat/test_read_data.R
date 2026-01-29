@@ -243,7 +243,7 @@ testthat::test_that("tests for define_column_types", {
   )
 })
 
-testthat::test_that("Changing velue of some columns", {
+testthat::test_that("Changing value of some columns", {
   df <- create_test_data()
   df <- define_column_types(df = df, col_types = c(
     date = "character",
