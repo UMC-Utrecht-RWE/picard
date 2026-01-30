@@ -29,6 +29,7 @@ Initialize the T4 pipeline with a YAML configuration file}
 \item \href{#method-T4Pipeline-new}{\code{t4_pipeline$new()}}
 \item \href{#method-T4Pipeline-clean}{\code{t4_pipeline$clean()}}
 \item \href{#method-T4Pipeline-run}{\code{t4_pipeline$run()}}
+\item \href{#method-T4Pipeline-delete_data}{\code{t4_pipeline$delete_data()}}
 \item \href{#method-T4Pipeline-clone}{\code{t4_pipeline$clone()}}
 }
 }
@@ -82,6 +83,26 @@ Run the T4 pipeline
 \if{html}{\out{<div class="r">}}\preformatted{t4_pipeline$run()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+NULL
+Delete files
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-T4Pipeline-delete_data"></a>}}
+\if{latex}{\out{\hypertarget{method-T4Pipeline-delete_data}{}}}
+\subsection{Method \code{delete_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{t4_pipeline$delete_data(files = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{files}}{Dictionary containing file to be deleted.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 NULL
 }

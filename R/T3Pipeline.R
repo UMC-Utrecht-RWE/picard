@@ -49,6 +49,16 @@ t3_pipeline <- R6::R6Class(
       logger::log_debug("Running T3 substeps via Pipeline engine")
       super$run_substeps(self$T3, step_key = "T3")
       base::invisible(NULL)
+    },
+
+    #' Delete files
+    #' @param files Dictionary containing file to be deleted.
+    #' @return NULL
+    delete_data = function(files = NULL) {
+      spec <- if (is.null(files)) self$T3$parquet_files
+      logger::log_debug("Deleting files.")
+      super$delete_data(spec = spec)
+      base::invisible(NULL)
     }
   )
 )

@@ -11,7 +11,7 @@ testthat::test_that("T4Pipeline initializes and loads config", {
   t4 <- picard::t4_pipeline$new(config_t4 = yaml_path)
 
   testthat::expect_type(t4$T4, "list")
-  testthat::expect_named(t4$T4, c("T4", "substep", "cleanup"))
+  testthat::expect_named(t2$T2, c("T2", "substep", "cleanup", "parquet_files"))
 })
 
 testthat::test_that("T4Pipeline run executes enabled substeps", {
@@ -68,4 +68,23 @@ testthat::test_that("Check if clean delete files in folder", {
 
   testthat::expect_true(!file.exists(file_1))
   testthat::expect_true(!file.exists(file_2))
+})
+
+testthat::test_that("Test with dry_run TRUE", {
+  cfg <- create_substep_config(
+    c(s1 = TRUE, s2 = TRUE),
+    marker_path = tempfile(), step_name = "T4"
+  )
+  yaml_path <- file.path(tempdir(), "config_t4.yaml")
+  yaml::write_yaml(cfg, yaml_path)
+
+  t4 <- picard::t4_pipeline$new(
+    config_t4 = yaml_path
+  )
+
+  testthat::expect_message(
+    t4$delete_data(),
+    regexp = "[DRY RUN] Would delete:",
+    fixed = TRUE
+  )
 })

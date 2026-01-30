@@ -34,6 +34,7 @@ Initialize the pipeline with a YAML configuration file}
 \item \href{#method-Pipeline-skip_step}{\code{pipeline$skip_step()}}
 \item \href{#method-Pipeline-run}{\code{pipeline$run()}}
 \item \href{#method-Pipeline-run_substeps}{\code{pipeline$run_substeps()}}
+\item \href{#method-Pipeline-delete_data}{\code{pipeline$delete_data()}}
 \item \href{#method-Pipeline-clone}{\code{pipeline$clone()}}
 }
 }
@@ -157,6 +158,30 @@ Run substeps defined in a configuration file
 \item{\code{cfg}}{Configuration list containing substeps}
 
 \item{\code{step_key}}{Key for the step in the configuration (e.g., "T}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+NULL
+Delete data when needed
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Pipeline-delete_data"></a>}}
+\if{latex}{\out{\hypertarget{method-Pipeline-delete_data}{}}}
+\subsection{Method \code{delete_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{pipeline$delete_data(spec, dry_run = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{spec}}{Specification of what to delete}
+
+\item{\code{dry_run}}{Logical. If TRUE (default), do not delete anything;
+only compute and report which partition paths would be removed.
+If FALSE, the matching partition directories are actually deleted.}
 }
 \if{html}{\out{</div>}}
 }
