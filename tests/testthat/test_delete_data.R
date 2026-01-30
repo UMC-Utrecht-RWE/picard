@@ -30,6 +30,19 @@ testthat::test_that("Test with input errors", {
   )
 })
 
+testthat::test_that("Test with dry_run TRUE", {
+  dataset_dir <- testthat::test_path("data", "parquet_hives")
+
+  testthat::expect_message(
+    delete_parquet_partition(
+      dataset_dir = dataset_dir,
+      partition_ids = c("B_COAGDEF_COV_xxx")
+    ),
+    regexp = "Not found:",
+    fixed = TRUE
+  )
+})
+
 testthat::test_that("Test with dry_run FALSE", {
   temp_dir <- withr::local_tempdir()
   dataset_dir <- testthat::test_path("data", "parquet_hives")

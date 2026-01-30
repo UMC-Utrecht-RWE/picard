@@ -72,7 +72,7 @@ delete_parquet_partition <- function(
       } else {
         msg <- paste0("Not found: ", partition_path)
         message(msg)
-        logger::log_info(msg)
+        logger::log_error(msg)
       }
     }
   }
