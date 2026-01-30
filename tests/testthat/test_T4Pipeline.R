@@ -11,7 +11,7 @@ testthat::test_that("T4Pipeline initializes and loads config", {
   t4 <- picard::t4_pipeline$new(config_t4 = yaml_path)
 
   testthat::expect_type(t4$T4, "list")
-  testthat::expect_named(t2$T2, c("T2", "substep", "cleanup", "parquet_files"))
+  testthat::expect_named(t4$T4, c("T4", "substep", "cleanup", "parquet_files"))
 })
 
 testthat::test_that("T4Pipeline run executes enabled substeps", {
