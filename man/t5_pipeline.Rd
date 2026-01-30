@@ -29,6 +29,7 @@ Initialize the T5 pipeline with a YAML configuration file}
 \item \href{#method-T5Pipeline-new}{\code{t5_pipeline$new()}}
 \item \href{#method-T5Pipeline-clean}{\code{t5_pipeline$clean()}}
 \item \href{#method-T5Pipeline-run}{\code{t5_pipeline$run()}}
+\item \href{#method-T5Pipeline-delete_data}{\code{t5_pipeline$delete_data()}}
 \item \href{#method-T5Pipeline-clone}{\code{t5_pipeline$clone()}}
 }
 }
@@ -82,6 +83,26 @@ Run the T5 pipeline
 \if{html}{\out{<div class="r">}}\preformatted{t5_pipeline$run()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+NULL
+Delete files
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-T5Pipeline-delete_data"></a>}}
+\if{latex}{\out{\hypertarget{method-T5Pipeline-delete_data}{}}}
+\subsection{Method \code{delete_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{t5_pipeline$delete_data(files = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{files}}{Dictionary containing file to be deleted.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 NULL
 }

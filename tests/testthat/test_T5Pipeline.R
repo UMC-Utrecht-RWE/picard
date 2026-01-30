@@ -11,7 +11,7 @@ testthat::test_that("T5Pipeline initializes and loads config", {
   t5 <- picard::t5_pipeline$new(config_t5 = yaml_path)
 
   testthat::expect_type(t5$T5, "list")
-  testthat::expect_named(t5$T5, c("T5", "substep"))
+  testthat::expect_named(t5$T5, c("T5", "substep", "parquet_files"))
 })
 
 testthat::test_that("T5Pipeline run executes enabled substeps", {
@@ -44,4 +44,23 @@ testthat::test_that("T5Pipeline clean() is a no-op", {
   )
 
   testthat::expect_invisible(t5$clean())
+})
+
+testthat::test_that("Test with dry_run TRUE", {
+  cfg <- create_substep_config(
+    c(s1 = TRUE, s2 = TRUE),
+    marker_path = tempfile(), step_name = "T5"
+  )
+  yaml_path <- file.path(tempdir(), "config_t5.yaml")
+  yaml::write_yaml(cfg, yaml_path)
+
+  t5 <- picard::t5_pipeline$new(
+    config_t5 = yaml_path
+  )
+
+  testthat::expect_message(
+    t5$delete_data(),
+    regexp = "[DRY RUN] Would delete:",
+    fixed = TRUE
+  )
 })

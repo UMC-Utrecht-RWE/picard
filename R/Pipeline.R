@@ -152,6 +152,36 @@ pipeline <- R6::R6Class(
       })
 
       base::invisible(NULL)
+    },
+
+    #' Delete data when needed
+    #'
+    #' @param spec Specification of what to delete
+    #' @param dry_run Logical. If TRUE (default), do not delete anything;
+    #' only compute and report which partition paths would be removed.
+    #' If FALSE, the matching partition directories are actually deleted.
+    #'
+    #' @return NULL
+    delete_data = function(spec, dry_run = TRUE) {
+      if (spec$type == "parquet_partition") {
+        tryCatch({
+          partition_col <- self$config$partition_col
+          partition_col <- if (is.null(partition_col)) "concept_id"
+        },
+        error = function(e) {
+          partition_col <- "concept_id"
+        }
+        )
+
+        delete_parquet_partition(
+          dataset_dir = spec$dataset_dir,
+          partition_ids = spec$partition_ids,
+          partition_col = partition_col,
+          dry_run = dry_run
+        )
+      } else {
+        stop("Unknown delete spec type: ", spec$type)
+      }
     }
   )
 )
