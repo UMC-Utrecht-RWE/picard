@@ -27,7 +27,8 @@ Imports:
     fst (>= 0.9.8),
     fs (>= 1.6.6),
     openxlsx (>= 4.2.7.1),
-    scriptName (>= 1.0.1)
+    scriptName (>= 1.0.1),
+    stats (>= 3.6.2)
 Suggests:
     lintr (>= 3.2.0),
     styler (>= 1.10.3),
