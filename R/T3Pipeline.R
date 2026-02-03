@@ -33,7 +33,13 @@ t3_pipeline <- R6::R6Class(
     clean = function() {
       # Implement if you need to clear intermediates, etc.
       # Keep no-op to preserve current caller expectations.
-      logger::log_debug("T3 clean() - no-op")
+      logger::log_debug("Removing T3 intermediate files")
+      if (self$T3$cleanup$intermediate_data_file) {
+        super$clean(content_to_delete = fs::path(
+          self$T3$T3$root,
+          self$T3$T3$intermediate
+        ))
+      }
       base::invisible(NULL)
     },
 

@@ -43,6 +43,14 @@ pipeline <- R6::R6Class(
       yaml::yaml.load_file(path)
     },
 
+    #' Clean method, delete all files within a folder.
+    #' @param content_to_delete Path to be deleted
+    #' @return NULL
+    clean = function(content_to_delete) {
+      logger::log_info(paste0("Deleting content in: ", content_to_delete))
+      fs::file_delete(fs::dir_ls(content_to_delete))
+    },
+
     #' Take the config YAML file for the substep, looks a the list of substeps.
     #' If the substep is assigned as TRUE but its output is present, it skips
     #' that step.
