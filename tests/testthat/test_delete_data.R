@@ -69,3 +69,53 @@ testthat::test_that("Test with dry_run FALSE", {
     )
   )
 })
+
+######################
+# Tests delete_paths #
+######################
+testthat::test_that("Test delete_paths with paths", {
+  temp_dir <- withr::local_tempdir()
+  file_1 <- fs::file_create(fs::path(temp_dir, "file_1.txt"))
+  file_2 <- fs::file_create(fs::path(temp_dir, "file_2.txt"))
+
+  testthat::expect_message(
+    delete_paths(
+      paths = list(file_1, file_2),
+      dry_run = TRUE
+    ),
+    regexp = "[DRY RUN] The following paths would be deleted:",
+    fixed = TRUE
+  )
+
+  testthat::expect_message(
+    delete_paths(
+      paths = list(file_1, file_2),
+      dry_run = FALSE
+    ),
+    regexp = "Deleted the following paths:",
+    fixed = TRUE
+  )
+
+  testthat::expect_false(fs::file_exists(file_1))
+  testthat::expect_false(fs::file_exists(file_2))
+  testthat::expect_true(fs::dir_exists(temp_dir))
+})
+
+testthat::test_that("Test delete_paths with dirs", {
+  temp_dir <- withr::local_tempdir()
+  file_1 <- fs::file_create(fs::path(temp_dir, "file_1.txt"))
+  file_2 <- fs::file_create(fs::path(temp_dir, "file_2.txt"))
+
+  testthat::expect_message(
+    delete_paths(
+      paths = temp_dir,
+      dry_run = FALSE,
+      del_dir = TRUE
+    ),
+    regexp = "Deleted the following paths:",
+    fixed = TRUE
+  )
+
+  testthat::expect_false(fs::file_exists(file_1))
+  testthat::expect_false(fs::file_exists(file_2))
+})
