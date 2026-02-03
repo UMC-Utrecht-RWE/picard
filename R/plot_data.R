@@ -113,7 +113,7 @@ get_feature_plotter <- function(name) {
   for (nm in buckets$numeric) {
     p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) + # nolint
       ggplot2::geom_histogram(
-        ggplot2::aes(y = ggplot2::after_stat(stats::density)),
+        ggplot2::aes(y = ggplot2::after_stat(density)),
         bins = 30,
         na.rm = TRUE,
         alpha = 0.6,
