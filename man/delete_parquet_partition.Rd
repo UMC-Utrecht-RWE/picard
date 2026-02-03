@@ -42,6 +42,18 @@ inconsistencies.
 }
 \examples{
 \dontrun{
+delete_parquet_partition(
+  dataset_dir = c(
+    dir_parquet_concepts,
+    dir_preprocessing_parquets
+  ),
+  partition_ids = c(
+    events_of_interest,
+    procedures_of_interest,
+    list_new_preprocessing_concept
+  ),
+  dry_run = FALSE
+)
 }
 
 }
