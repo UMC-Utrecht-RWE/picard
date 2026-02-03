@@ -10,7 +10,6 @@
 #' Subclasses (e.g., T2Pipeline) delegate their substep execution to
 #' run_substeps().
 #'
-#' @importFrom purrr iwalk
 #' @export
 pipeline <- R6::R6Class(
   "Pipeline",

@@ -5,7 +5,6 @@
 #' @param name Unique plotter name (e.g., "dist")
 #' @param fun  Function with signature function(dt, opts) -> named list of
 #'             ggplot objects (one per column)
-#' @importFrom stats density
 #' @return Invisibly returns TRUE
 #' @export
 register_feature_plotter <- function(name, fun) {
