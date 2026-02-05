@@ -90,7 +90,6 @@ delete_parquet_partition <- function(
 #' @param dry_run Logical; if `TRUE` (default FALSE), no files are deleted.
 #' @param del_dir Logical; if `TRUE` (default), delete directories as well
 #' as files.
-#' @param stop_on_error Logical; if `TRUE`, stops on first delete error.
 #'
 #' @return NULL
 #'
@@ -104,9 +103,9 @@ delete_parquet_partition <- function(
 delete_paths <- function(
   paths,
   dry_run = FALSE,
-  del_dir = FALSE,
-  stop_on_error = FALSE
+  del_dir = FALSE
 ) {
+  # Validate step
   if (base::missing(paths)) {
     base::stop("`paths` is required.")
   }
@@ -118,24 +117,30 @@ delete_paths <- function(
   if (!base::is.character(paths)) {
     base::stop("`paths` must be a character vector or list of character.")
   }
-
+  # Sanatize paths
   paths <- fs::path_expand(paths)
   paths <- fs::path_norm(paths)
 
-  # make outcomes data.table, start with column names
+  # Initialize outcomes data.table,
   outcomes <- data.table::data.table(
-    path = character(),
-    exists = logical(),
-    type = character()
+    path = character(), # The input path values
+    exists = logical(), # If the path exists
+    type = character() # "file", "directory", or NA
   )
 
+  # FIll the outcomes table
   for (path in paths) {
+    # What type?
     type_ <- NA_character_
     if (fs::is_dir(path)) {
       type_ = "directory"
     } else if (fs::is_file(path)) {
       type_ = "file"
+    } else {
+      type_ = "unrecognized"
     }
+
+    # Does it exist?
     if (type_ == "directory") {
       exists <- as.logical(fs::dir_exists(path))
     } else if (type_ == "file") {
@@ -143,6 +148,8 @@ delete_paths <- function(
     } else {
       exists <- FALSE
     }
+
+    # add it to outcome
     outcomes <- rbind(
       outcomes,
       data.table::data.table(
@@ -153,50 +160,72 @@ delete_paths <- function(
     )
   }
 
-  outcomes <- outcomes[exists == TRUE]
+  # Delete existing paths
+  outcomes_exists <- outcomes[exists == TRUE]
+  outcomes_not_exists <- outcomes[exists == FALSE]
+
+  # Exit if nothing exists.
+  if (nrow(outcomes_exists) == 0) {
+    msg <- "No paths provide exist."
+    message(msg)
+    logger::log_info(msg)
+    return(outcomes)
+  }
+
+
+  # Dry run exit
   if (dry_run) {
     msg <- paste0(
       "[DRY RUN] The following paths would be deleted:\n",
-      paste0(outcomes$path, collapse = "\n ")
+      paste0(outcomes_exists$path, collapse = "\n ")
     )
     message(msg)
     logger::log_info(msg)
-  } else {
-    purrr::map2(
-      outcomes$path,
-      outcomes$type,
-      function(path, type_) {
-        tryCatch(
-          {
-            if (type_ == "directory") {
-              if (del_dir) {
-                fs::dir_delete(path)
-              } else {
-                fs::dir_delete(fs::dir_ls(path))
-              }
-            } else if (type_ == "file") {
-              fs::file_delete(path)
-            } else {
-              stop(paste0("Path is neither file nor directory: ", path))
-            }
-          },
-          error = function(e) {
-            msg <- paste0("Error deleting ", path, ": ", e$message)
-            message(msg)
-            logger::log_error(msg)
-            if (stop_on_error) {
-              stop(e)
-            }
-          }
-        )
-      }
-    )
-    msg <- paste0(
-      "Deleted the following paths:\n",
-      paste0(outcomes$path, collapse = "\n ")
-    )
-    message(msg)
-    logger::log_info(msg)
+
+    if (nrow(outcomes_not_exists) > 0) {
+      msg <- paste0(
+        "[DRY RUN] The following paths do not exist:\n",
+        paste0(outcomes_exists$path, collapse = "\n ")
+      )
+      message(msg)
+      logger::log_warn(msg)
+    }
+
+    return(outcomes)
   }
-  # outcomes
+
+
+  # Move to actual deletion.
+  if (nrow(outcomes_not_exists) > 0) {
+    msg <- paste0(
+      "The following paths do not exist and won't considered.\n",
+      paste0(outcomes_not_exists$path, collapse = "\n ")
+    )
+    message(msg)
+    logger::log_warn(msg)
+  }
+
+  purrr::map2(
+    outcomes_exists$path,
+    outcomes_exists$type,
+    function(path, type_) {
+      if (type_ == "file") {
+        fs::file_delete(path)
+      } else if (type_ == "directory") {
+        if (del_dir) {
+          fs::dir_delete(path)
+        } else {
+          fs::file_delete(fs::dir_ls(path))
+        }
+      }
+    }
+  )
+
+  msg <- paste0(
+    "Deleted the following paths:\n",
+    paste0(outcomes_exists$path, collapse = "\n ")
+  )
+  message(msg)
+  logger::log_info(msg)
+  outcomes
 }

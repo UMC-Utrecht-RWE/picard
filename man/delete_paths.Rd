@@ -4,7 +4,7 @@
 \alias{delete_paths}
 \title{Delete one or more files (optionally expanding directories)}
 \usage{
-delete_paths(paths, dry_run = FALSE, del_dir = FALSE, stop_on_error = FALSE)
+delete_paths(paths, dry_run = FALSE, del_dir = FALSE)
 }
 \arguments{
 \item{paths}{Character vector or list of paths to delete.
@@ -14,8 +14,6 @@ Elements may be files or directories.}
 
 \item{del_dir}{Logical; if \code{TRUE} (default), delete directories as well
 as files.}
-
-\item{stop_on_error}{Logical; if \code{TRUE}, stops on first delete error.}
 }
 \description{
 Deletes files from the filesystem with an optional dry run mode.
