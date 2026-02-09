@@ -113,7 +113,8 @@ testthat::test_that("Testing skip step function", {
       B = list(
         input = "file_B.txt",
         output = output_b
-      )
+      ),
+      partition_col = "concept_id"
     ),
     config_project
   )
@@ -132,5 +133,51 @@ testthat::test_that("Testing skip step function", {
   )
   testthat::expect_true(
     config_file_output$substep$B
+  )
+})
+
+## test clean
+testthat::test_that("Check if clean delete files in folder", {
+  files <- create_temp_pipeline_yaml(c("A", "B"), marker_path = tempfile())
+  pl <- picard::pipeline$new(config_pipeline = files$yaml_path)
+
+  file_1 <- file.path(tempdir(), "file_1.txt")
+  file_2 <- file.path(tempdir(), "file_2.txt")
+  writeLines("Ciao", con = file_1)
+  writeLines("Mondo", con = file_2)
+  pl$clean(content_to_delete = tempdir())
+
+  testthat::expect_true(!file.exists(file_1))
+  testthat::expect_true(!file.exists(file_1))
+})
+
+##################################
+# Tests delete_parquet_partition #
+##################################
+testthat::test_that("Test with dry_run TRUE", {
+
+  files <- create_temp_pipeline_yaml(c("A", "B"), marker_path = tempfile())
+  pl <- picard::pipeline$new(config_pipeline = files$yaml_path)
+
+  dataset_dir <- testthat::test_path("data", "parquet_hives")
+
+  config_step <- tempfile(fileext = ".yaml")
+  on.exit(unlink(config_step))
+  yaml::write_yaml(
+    list(spec = list(
+      type = "parquet_partition",
+      dataset_dir = dataset_dir,
+      partition_ids = c("B_COAGDEF_AESI", "B_COAGDEF_COV")
+    )),
+    config_step
+  )
+  config_file_input <- yaml::read_yaml(config_step)
+
+  testthat::expect_message(
+    pl$delete_data(
+      spec = config_file_input$spec
+    ),
+    regexp = "[DRY RUN] Would delete:",
+    fixed = TRUE
   )
 })
