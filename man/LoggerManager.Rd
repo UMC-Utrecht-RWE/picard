@@ -24,6 +24,8 @@ Options are "Normal", "Low", or "High".}
 
 \item{\code{step_appender}}{Function for appending logs to step-specific file.}
 
+\item{\code{registry}}{A registry of hash values}
+
 \item{\code{run_start_time}}{Timestamp when the run started.}
 
 \item{\code{step_start_time}}{Timestamp when the current step started.}

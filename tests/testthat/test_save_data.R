@@ -1,3 +1,6 @@
+testthat::teardown({
+  unlink("tests/testthat/data/intermediate_plots/", recursive = TRUE)
+})
 ###############################
 # Tests for save_data
 ###############################
@@ -34,7 +37,13 @@ testthat::test_that("Errors when no writer registered for extension", {
 })
 
 testthat::test_that("Dispatches to custom writer and returns file_path", {
-  withr::local_tempdir()
+  log_dir <- base::file.path(base::tempdir(), "picard_logs_basic_1")
+  if (base::dir.exists(log_dir)) {
+    base::unlink(log_dir, recursive = TRUE, force = TRUE)
+  }
+  lm <- picard::LoggerManager$new()
+  lm$configure(log_dir = log_dir)
+
   testthat::skip_if_not_installed("fs")
 
   .init_writer_registry()
@@ -53,6 +62,8 @@ testthat::test_that("Dispatches to custom writer and returns file_path", {
   testthat::expect_equal(res, fs::path_norm(path))
   testthat::expect_true(base::file.exists(path))
   testthat::expect_equal(base::readLines(path), "ok")
+
+  unlink(root, recursive = TRUE)
 })
 
 testthat::test_that("save_data wraps writer errors with helpful message", {

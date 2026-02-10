@@ -115,111 +115,89 @@ testthat::test_that("read_yaml rejects invalid YAML syntax", {
 })
 
 ##############################
-# Test run_script
+# Test get_tracked_files
 ##############################
-testthat::test_that("run_script creates log dir, logs, and returns meta", {
-  log_dir <- base::file.path(base::tempdir(), "logs_run_script_a")
-  script <- base::tempfile(fileext = ".R")
-
-  base::writeLines(c(
-    "a <- 1:3",
-    "b <- base::sum(a)"
-  ), con = script, useBytes = TRUE)
-
-  sha1 <- digest::digest(file = script, algo = "sha1")
-
-  res <- run_script(file_path = script, log_dir = log_dir, quiet = FALSE)
-
-  testthat::expect_true(base::dir.exists(log_dir))
-  testthat::expect_true(base::file.exists(res$registry))
-  testthat::expect_equal(res$sha1, sha1)
-
-  b_val <- base::get("b", envir = res$env, inherits = FALSE)
-  testthat::expect_equal(b_val, 6L)
-
-  log_txt <- base::readLines(res$registry, warn = FALSE)
-  testthat::expect_true(any(base::grepl(sha1, log_txt, fixed = TRUE)))
-
-  testthat::expect_true(base::inherits(res$timing, "proc_time"))
-})
-
-testthat::test_that("run_script appends to provided registry_path", {
-  log_dir <- base::file.path(base::tempdir(), "logs_run_script_b")
-  base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
-
-  registry_path <- base::file.path(
-    log_dir,
-    base::paste0(
-      "registry_", base::format(base::Sys.time(), "%Y%m%d"),
-      "_custom.log"
-    )
-  )
-  base::writeLines("header", con = registry_path, useBytes = TRUE)
-
-  script <- base::tempfile(fileext = ".R")
-  base::writeLines("x <- 42L", con = script, useBytes = TRUE)
-
-  res1 <- run_script(
-    file_path = script, log_dir = log_dir,
-    registry_path = registry_path, quiet = FALSE
-  )
-  res2 <- run_script(
-    file_path = script, log_dir = log_dir,
-    registry_path = registry_path, quiet = FALSE
+testthat::test_that("get_tracked_files finds file on all OS", {
+  test_dir <- normalizePath(
+    withr::local_tempdir(), winslash = "/", mustWork = FALSE
   )
 
-  testthat::expect_identical(res1$registry, registry_path)
-  testthat::expect_identical(res2$registry, registry_path)
+  tmp <- tempfile(tmpdir = test_dir, fileext = ".txt")
+  writeLines("hello world", tmp)
 
-  lines_now <- base::readLines(registry_path, warn = FALSE)
-  testthat::expect_gte(base::length(lines_now), 3L)
+  tmp_normalized <- normalizePath(tmp, winslash = "/", mustWork = FALSE)
 
-  testthat::expect_true(any(base::grepl("SHA1:", lines_now, fixed = TRUE)))
-})
+  tracked_files <- get_tracked_files(path = test_dir)
 
-testthat::test_that("run_script logs even if script errors", {
-  log_dir <- base::file.path(base::tempdir(), "logs_run_script_c")
-  err_script <- base::tempfile(fileext = ".R")
-  base::writeLines("base::stop(\"boom\")", con = err_script, useBytes = TRUE)
-
-  sha1 <- digest::digest(file = err_script, algo = "sha1")
-  reg <- base::file.path(log_dir, "registry_err.log")
-
-  testthat::expect_error(
-    run_script(file_path = err_script, log_dir = log_dir, registry_path = reg),
-    "boom"
+  tracked_files_normalized <- normalizePath(
+    tracked_files, winslash = "/", mustWork = FALSE
   )
-
-  testthat::expect_true(base::file.exists(reg))
-  log_txt <- base::readLines(reg, warn = FALSE)
-  testthat::expect_true(any(base::grepl(sha1, log_txt, fixed = TRUE)))
+  testthat::expect_true(tmp_normalized %in% tracked_files_normalized)
 })
 
 
-testthat::test_that("uses existing registry in log_dir when none passed", {
-  log_dir <- base::file.path(base::tempdir(), "logs_run_script_use_existing")
-  base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+##############################
+# Test get_hash_output
+##############################
+testthat::test_that("", {
+  withr::local_tempdir()
+  log_dir <- base::tempdir()
 
-  # Pre-create an empty registry file that matches the pattern
-  existing_log <- base::file.path(
-    log_dir,
-    base::paste0(
-      "registry_",
-      base::format(base::Sys.time(), "%Y%m%d_%H%M%S"),
-      ".log"
-    )
+  tmp <- base::tempfile(fileext = ".txt", tmpdir = log_dir)
+  writeLines("hello world", tmp)
+
+  output_file <- get_hash_output(tmp)
+  testthat::expect_equal(output_file, tmp)
+
+  output_file <- get_hash_output(output_file = NULL, log_dir = log_dir)
+  testthat::expect_equal(
+    output_file, base::file.path(log_dir, "registry.csv")
   )
-  base::file.create(existing_log)
-
-  # Create a tiny script file that actually exists
-  script <- base::tempfile(fileext = ".R")
-  base::writeLines("x <- 1L", con = script, useBytes = TRUE)
-  run_script(file_path = script, log_dir = log_dir)
-
-  # One new line should have been appended to the existing file
-  lines_now <- base::readLines(existing_log, warn = FALSE)
-  testthat::expect_equal(base::length(lines_now), 1L)
 })
+
+##############################
+# Test compute_hash
+##############################
+testthat::test_that("", {
+  tmp <- base::tempfile(fileext = ".txt")
+  writeLines("hello world", tmp)
+
+  testthat::expect_true(
+    compute_hash(tmp) %in%
+      c(
+        "22596363b3de40b06f981fb85d82312e8c0ed511", # this is for mac/linux
+        "88a5b867c3d110207786e66523cd1e4a484da697" # windows
+      )
+  )
+})
+
+##############################
+# Test track_file_changes
+##############################
+testthat::test_that("track_file_changes creates registry correctly", {
+  # Create a clean temp directory
+  temp_dir <- withr::local_tempdir()
+
+  # Create a test file with a normal name (not from tempfile)
+  test_file <- file.path(temp_dir, "test_file.txt")
+  writeLines("hello world", test_file)
+
+  # Create log directory inside temp_dir
+  log_dir <- file.path(temp_dir, "logs")
+
+  # Track changes in temp_dir
+  track_file_changes(log_dir = log_dir, path = temp_dir)
+
+  # Read the registry
+  dt <- picard::read_data(
+    file_path = log_dir,
+    file_name = "registry.csv"
+  )
+
+  testthat::expect_true(test_file %in% dt$file_path)
+  testthat::expect_equal(nrow(dt), 1)  # Should only have our test file
+})
+
 
 
 ################################################
