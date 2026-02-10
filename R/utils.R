@@ -96,8 +96,9 @@ get_tracked_files <- function(
 
 #' Compute file hashes
 #'
-#' @param file_path Single or list of file paths
-#' @param algo Hash algorithm (default: "sha1")
+#' @param output_file Character or NULL. If NULL, a default file name is
+#' generated in the specified log directory.
+#' @param log_dir Character. Directory to store the registry when created.
 #' @return Character vector of hashes
 #' @keywords internal
 get_hash_output <- function(output_file = NULL, log_dir = "logs") {

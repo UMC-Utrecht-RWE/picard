@@ -7,9 +7,10 @@
 get_hash_output(output_file = NULL, log_dir = "logs")
 }
 \arguments{
-\item{file_path}{Single or list of file paths}
+\item{output_file}{Character or NULL. If NULL, a default file name is
+generated in the specified log directory.}
 
-\item{algo}{Hash algorithm (default: "sha1")}
+\item{log_dir}{Character. Directory to store the registry when created.}
 }
 \value{
 Character vector of hashes
