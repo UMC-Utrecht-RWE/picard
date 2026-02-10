@@ -33,7 +33,13 @@ t4_pipeline <- R6::R6Class(
     clean = function() {
       # Implement if you need to clear intermediates, etc.
       # Keep no-op to preserve current caller expectations.
-      logger::log_debug("T4 clean() - no-op")
+      logger::log_debug("Removing T4 intermediate files")
+      if (self$T4$cleanup$intermediate_data_file) {
+        super$clean(content_to_delete = fs::path(
+          self$T4$T4$root,
+          self$T4$T4$intermediate
+        ))
+      }
       base::invisible(NULL)
     },
 
@@ -42,6 +48,16 @@ t4_pipeline <- R6::R6Class(
     run = function() {
       logger::log_debug("Running T4 substeps via Pipeline engine")
       super$run_substeps(self$T4, step_key = "T4")
+      base::invisible(NULL)
+    },
+
+    #' Delete files
+    #' @param files Dictionary containing file to be deleted.
+    #' @return NULL
+    delete_data = function(files = NULL) {
+      spec <- if (is.null(files)) self$T4$parquet_files
+      logger::log_debug("Deleting files.")
+      super$delete_data(spec = spec)
       base::invisible(NULL)
     }
   )

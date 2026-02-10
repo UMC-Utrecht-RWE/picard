@@ -10,7 +10,6 @@
 #' Subclasses (e.g., T2Pipeline) delegate their substep execution to
 #' run_substeps().
 #'
-#' @importFrom purrr iwalk
 #' @export
 pipeline <- R6::R6Class(
   "Pipeline",
@@ -41,6 +40,14 @@ pipeline <- R6::R6Class(
         base::stop("Missing configuration file")
       }
       yaml::yaml.load_file(path)
+    },
+
+    #' Clean method, delete all files within a folder.
+    #' @param content_to_delete Path to be deleted
+    #' @return NULL
+    clean = function(content_to_delete) {
+      logger::log_info(paste0("Deleting content in: ", content_to_delete))
+      fs::file_delete(fs::dir_ls(content_to_delete))
     },
 
     #' Take the config YAML file for the substep, looks a the list of substeps.
@@ -152,6 +159,36 @@ pipeline <- R6::R6Class(
       })
 
       base::invisible(NULL)
+    },
+
+    #' Delete data when needed
+    #'
+    #' @param spec Specification of what to delete
+    #' @param dry_run Logical. If TRUE (default), do not delete anything;
+    #' only compute and report which partition paths would be removed.
+    #' If FALSE, the matching partition directories are actually deleted.
+    #'
+    #' @return NULL
+    delete_data = function(spec, dry_run = TRUE) {
+      if (spec$type == "parquet_partition") {
+        tryCatch({
+          partition_col <- self$config$partition_col
+          partition_col <- if (is.null(partition_col)) "concept_id"
+        },
+        error = function(e) {
+          partition_col <- "concept_id"
+        }
+        )
+
+        delete_parquet_partition(
+          dataset_dir = spec$dataset_dir,
+          partition_ids = spec$partition_ids,
+          partition_col = partition_col,
+          dry_run = dry_run
+        )
+      } else {
+        stop("Unknown delete spec type: ", spec$type)
+      }
     }
   )
 )

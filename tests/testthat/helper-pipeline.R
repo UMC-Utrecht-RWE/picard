@@ -79,12 +79,22 @@ create_substep_config <- function(
     list(
       list(
         root = fs::path_norm(base::file.path(base::tempdir(), root)),
-        source_code = src
+        source_code = src,
+        intermediate = "intermediate_data_file"
       )
     ),
     step_name
   )
   out$substep <- substep_list
+
+  out$cleanup$intermediate_data_file <- TRUE
+
+  dataset_dir <- testthat::test_path("data", "parquet_hives")
+  out$parquet_files <- list(
+    type = "parquet_partition",
+    dataset_dir = dataset_dir,
+    partition_ids = c("B_COAGDEF_AESI", "B_COAGDEF_COV")
+  )
   out
 }
 

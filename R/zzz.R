@@ -19,7 +19,7 @@
 }
 
 #' Suppress R CMD check notes for data.table's non-standard evaluation
-#'
+#' @name suppress_cmd_checks
 #' @keywords internal
 utils::globalVariables(c(
   # data.table's non-standard evaluation
@@ -28,9 +28,15 @@ utils::globalVariables(c(
   ".N",     # Number of rows
   ".I",     # Row indices
   ".GRP",   # Group counter
-  ".BY"     # List of by values
+  ".BY",    # List of by values
 
   # Add unquoted column names here if needed:
   # "column_name",
   # "another_column"
+
+  # Silence R CMD check NSE notes from ggplot2/rlang
+  ".data",
+  "x",
+  "column",
+  "pct_missing"
 ))
