@@ -23,6 +23,8 @@ LoggerManager <- R6::R6Class( # nolint
     step_log_file = NULL,
     #' @field step_appender Function for appending logs to step-specific file.
     step_appender = NULL,
+    #' @field registry A registry of hash values
+    registry = NULL,
 
     #' @field run_start_time Timestamp when the run started.
     run_start_time = NULL,
@@ -61,7 +63,8 @@ LoggerManager <- R6::R6Class( # nolint
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
     #' @param verbose Verbosity level.
     configure = function(
-      log_dir = "logs", verbose = c("Normal", "High", "Low")
+      log_dir = "logs",
+      verbose = c("Normal", "High", "Low")
     ) {
       self$log_dir <- log_dir
       if (!base::dir.exists(self$log_dir)) {
@@ -110,6 +113,17 @@ LoggerManager <- R6::R6Class( # nolint
           }
         }
       }, namespace = namespaces)
+
+      self$registry <- tryCatch({
+        picard::read_data(picard:::get_hash_output(log_dir = self$log_dir))
+      },
+      error = function(e) {
+        NULL
+      })
+      if (is.null(self$registry) & self$verbose == "High") {
+        logger::log_error("Registry file necessary!")
+        stop("Registry file necessary!")
+      }
 
       logger::log_info("Pipeline configured. run_id={self$run_id}")
       invisible(self)
@@ -289,6 +303,23 @@ LoggerManager <- R6::R6Class( # nolint
       step_txt <- if (is.na(step_s)) "NA" else base::sprintf("%.2f", step_s)
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
+      # Be sure current_script is an existing file (not a directory)
+      # Not all log message are connected with a file
+      if (self$verbose == "High") {
+        if (is.null(self$current_script)) {
+          hash <- ""
+        } else if (file_test("-f", self$current_script)) {
+          hash <- picard:::compute_hash(self$current_script)
+          if (nrow(self$registry[file_path == self$current_script] == 1)) {
+            if (hash != self$registry[file_path == self$current_script]$hash) {
+              hash <- paste0(hash, "\nScript modified by user\n")
+            }
+          }
+        } else {
+          hash <- ""
+        }
+      }
+
       if (self$verbose == "Low") {
         base::sprintf(
           "%s | %-5s | %s",
@@ -309,7 +340,7 @@ LoggerManager <- R6::R6Class( # nolint
         )
       } else if (self$verbose == "High") {
         base::sprintf( # Original with step and script times
-          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s", # nolint
+          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", # nolint
           base::format(now, "%Y-%m-%d %H:%M:%S"), # nolint
           lvl_txt,
           run_s,
@@ -318,7 +349,8 @@ LoggerManager <- R6::R6Class( # nolint
           delta_s,
           step,
           scr,
-          message
+          message,
+          hash
         )
       }
     },
