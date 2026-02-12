@@ -79,3 +79,153 @@ delete_parquet_partition <- function(
 
   invisible(TRUE)
 }
+
+#' Delete one or more files (optionally expanding directories)
+#'
+#' Deletes files from the filesystem with an optional dry run mode.
+#' Can also accept directories and delete all files inside them (opt-in).
+#'
+#' @param paths Character vector or list of paths to delete.
+#'   Elements may be files or directories.
+#' @param dry_run Logical; if `TRUE` (default FALSE), no files are deleted.
+#' @param del_dir Logical; if `TRUE` (default), delete directories as well
+#' as files.
+#'
+#' @return NULL
+#'
+#' @examples
+#' \dontrun{
+#'    delete_paths("path/to/file.txt")
+#'    delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
+#'    delete_paths("data/", del_dir = TRUE)
+#' }
+#' @export
+delete_paths <- function(
+  paths,
+  dry_run = FALSE,
+  del_dir = FALSE
+) {
+  # Validate step
+  if (base::missing(paths)) {
+    base::stop("`paths` is required.")
+  }
+
+  if (base::is.list(paths)) {
+    paths <- base::unlist(paths, use.names = FALSE)
+  }
+
+  if (!base::is.character(paths)) {
+    base::stop("`paths` must be a character vector or list of character.")
+  }
+  # Sanatize paths
+  paths <- fs::path_expand(paths)
+  paths <- fs::path_norm(paths)
+
+  # Initialize registry_files data.table,
+  registry_files <- data.table::data.table(
+    path = character(), # The input path values
+    exists = logical(), # If the path exists
+    type = character() # "file", "directory", or NA
+  )
+
+  # FIll the registry_files table
+  for (path in paths) {
+    # What type?
+    type_ <- NA_character_
+    if (fs::is_dir(path)) {
+      type_ = "directory"
+    } else if (fs::is_file(path)) {
+      type_ = "file"
+    } else {
+      type_ = "unrecognized"
+    }
+
+    # Does it exist?
+    if (type_ == "directory") {
+      exists <- as.logical(fs::dir_exists(path))
+    } else if (type_ == "file") {
+      exists <- as.logical(fs::file_exists(path))
+    } else {
+      exists <- FALSE
+    }
+
+    # add it to registry_files
+    registry_files <- rbind(
+      registry_files,
+      data.table::data.table(
+        path = path,
+        exists = exists,
+        type = type_
+      )
+    )
+  }
+
+  # Delete existing paths
+  registry_files_exists <- registry_files[exists == TRUE]
+  registry_files_not_exists <- registry_files[exists == FALSE]
+
+  # Exit if nothing exists.
+  if (nrow(registry_files_exists) == 0) {
+    msg <- "No paths provide exist."
+    message(msg)
+    logger::log_info(msg)
+    return(registry_files)
+  }
+
+
+  # Dry run exit
+  if (dry_run) {
+    msg <- paste0(
+      "[DRY RUN] The following paths would be deleted:\n",
+      paste0(registry_files_exists$path, collapse = "\n ")
+    )
+    message(msg)
+    logger::log_info(msg)
+
+    if (nrow(registry_files_not_exists) > 0) {
+      msg <- paste0(
+        "[DRY RUN] The following paths do not exist:\n",
+        paste0(registry_files_exists$path, collapse = "\n ")
+      )
+      message(msg)
+      logger::log_warn(msg)
+    }
+
+    return(registry_files)
+  }
+
+
+  # Move to actual deletion.
+  if (nrow(registry_files_not_exists) > 0) {
+    msg <- paste0(
+      "The following paths do not exist and won't considered.\n",
+      paste0(registry_files_not_exists$path, collapse = "\n ")
+    )
+    message(msg)
+    logger::log_warn(msg)
+  }
+
+  purrr::map2(
+    registry_files_exists$path,
+    registry_files_exists$type,
+    function(path, type_) {
+      if (type_ == "file") {
+        fs::file_delete(path)
+      } else if (type_ == "directory") {
+        if (del_dir) {
+          fs::dir_delete(path)
+        } else {
+          fs::file_delete(fs::dir_ls(path))
+        }
+      }
+    }
+  )
+
+  msg <- paste0(
+    "Deleted the following paths:\n",
+    paste0(registry_files_exists$path, collapse = "\n ")
+  )
+  message(msg)
+  logger::log_info(msg)
+  registry_files
+}
