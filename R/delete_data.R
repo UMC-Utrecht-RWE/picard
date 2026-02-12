@@ -121,14 +121,14 @@ delete_paths <- function(
   paths <- fs::path_expand(paths)
   paths <- fs::path_norm(paths)
 
-  # Initialize outcomes data.table,
-  outcomes <- data.table::data.table(
+  # Initialize registry_files data.table,
+  registry_files <- data.table::data.table(
     path = character(), # The input path values
     exists = logical(), # If the path exists
     type = character() # "file", "directory", or NA
   )
 
-  # FIll the outcomes table
+  # FIll the registry_files table
   for (path in paths) {
     # What type?
     type_ <- NA_character_
@@ -149,9 +149,9 @@ delete_paths <- function(
       exists <- FALSE
     }
 
-    # add it to outcome
-    outcomes <- rbind(
-      outcomes,
+    # add it to registry_files
+    registry_files <- rbind(
+      registry_files,
       data.table::data.table(
         path = path,
         exists = exists,
@@ -161,15 +161,15 @@ delete_paths <- function(
   }
 
   # Delete existing paths
-  outcomes_exists <- outcomes[exists == TRUE]
-  outcomes_not_exists <- outcomes[exists == FALSE]
+  registry_files_exists <- registry_files[exists == TRUE]
+  registry_files_not_exists <- registry_files[exists == FALSE]
 
   # Exit if nothing exists.
-  if (nrow(outcomes_exists) == 0) {
+  if (nrow(registry_files_exists) == 0) {
     msg <- "No paths provide exist."
     message(msg)
     logger::log_info(msg)
-    return(outcomes)
+    return(registry_files)
   }
 
 
@@ -177,37 +177,37 @@ delete_paths <- function(
   if (dry_run) {
     msg <- paste0(
       "[DRY RUN] The following paths would be deleted:\n",
-      paste0(outcomes_exists$path, collapse = "\n ")
+      paste0(registry_files_exists$path, collapse = "\n ")
     )
     message(msg)
     logger::log_info(msg)
 
-    if (nrow(outcomes_not_exists) > 0) {
+    if (nrow(registry_files_not_exists) > 0) {
       msg <- paste0(
         "[DRY RUN] The following paths do not exist:\n",
-        paste0(outcomes_exists$path, collapse = "\n ")
+        paste0(registry_files_exists$path, collapse = "\n ")
       )
       message(msg)
       logger::log_warn(msg)
     }
 
-    return(outcomes)
+    return(registry_files)
   }
 
 
   # Move to actual deletion.
-  if (nrow(outcomes_not_exists) > 0) {
+  if (nrow(registry_files_not_exists) > 0) {
     msg <- paste0(
       "The following paths do not exist and won't considered.\n",
-      paste0(outcomes_not_exists$path, collapse = "\n ")
+      paste0(registry_files_not_exists$path, collapse = "\n ")
     )
     message(msg)
     logger::log_warn(msg)
   }
 
   purrr::map2(
-    outcomes_exists$path,
-    outcomes_exists$type,
+    registry_files_exists$path,
+    registry_files_exists$type,
     function(path, type_) {
       if (type_ == "file") {
         fs::file_delete(path)
@@ -223,9 +223,9 @@ delete_paths <- function(
 
   msg <- paste0(
     "Deleted the following paths:\n",
-    paste0(outcomes_exists$path, collapse = "\n ")
+    paste0(registry_files_exists$path, collapse = "\n ")
   )
   message(msg)
   logger::log_info(msg)
-  outcomes
+  registry_files
 }
