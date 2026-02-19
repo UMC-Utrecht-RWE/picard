@@ -130,13 +130,15 @@ audit_add <- function(...) {
 #' @keywords internal
 .get_release_version <- function() {
   # get the git tag if possible otherwise unknown
-  latest_tag <- try(
-    base::system(
-      "git describe --tags $(git rev-list --tags --max-count=1)",
-      intern = TRUE
-    ),
-    silent = TRUE
-  )
+  latest_tag <- tryCatch({
+    res <- processx::run(
+      "git",
+      c("describe", "--tags", "$(git rev-list --tags --max-count=1)")
+    )
+    res$stdout
+  }, error = function(e) {
+    "unknown"
+  })
 
   # if Git failed fall back to DESCRIPTION
   if (inherits(latest_tag, "try-error") ||
