@@ -144,7 +144,9 @@ audit_add <- function(...) {
 
   if (is.na(latest_tag) || !nzchar(latest_tag)) {
     latest_tag <- tryCatch(
-      base::as.character(base::read.dcf("DESCRIPTION")[, "Version"]),
+      base::suppressWarnings(
+        base::as.character(base::read.dcf("DESCRIPTION")[, "Version"])
+      ),
       error = function(e) "unknown"
     )
   }

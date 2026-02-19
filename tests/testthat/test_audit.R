@@ -145,6 +145,47 @@ testthat::test_that(".get_release_version returns tag and time in a git repo", {
     testthat::expect_true(grepl("\\)", ver))
   })
 })
+
+testthat::test_that(
+  ".get_release_version falls back to DESCRIPTION when git fails",
+  {
+    testthat::skip_if_not(nzchar(base::Sys.which("git")))
+
+    tmp <- withr::local_tempdir(pattern = "no_git_repo_")
+
+    withr::with_dir(tmp, {
+      base::writeLines(
+        c("Package: x", "Version: 9.9.9"),
+        "DESCRIPTION"
+      )
+
+      ver <- .get_release_version()
+
+      testthat::expect_type(ver, "character")
+      testthat::expect_length(ver, 1)
+      testthat::expect_true(grepl("^9\\.9\\.9", ver))
+      testthat::expect_true(grepl("\\(", ver))
+      testthat::expect_true(grepl("\\)", ver))
+    })
+  }
+)
+
+testthat::test_that(
+  ".get_release_version returns unknown when git fails and DESCRIPTION missing",
+  {
+    testthat::skip_if_not(nzchar(base::Sys.which("git")))
+
+    tmp <- withr::local_tempdir(pattern = "no_git_repo_no_desc_")
+
+    withr::with_dir(tmp, {
+      ver <- .get_release_version()
+
+      testthat::expect_type(ver, "character")
+      testthat::expect_length(ver, 1)
+      testthat::expect_true(grepl("^unknown", ver))
+    })
+  }
+)
 ###############################
 # Tests for audit_end
 ###############################
