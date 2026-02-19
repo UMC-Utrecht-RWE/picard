@@ -141,14 +141,12 @@ audit_add <- function(...) {
   })
 
   # if Git failed fall back to DESCRIPTION
-  if (inherits(latest_tag, "try-error") ||
-        !is.null(attr(latest_tag, "status"))) {
-
-    latest_tag <- tryCatch({
+  if (latest_tag == "unknown") {
+    latest_tag <- tryCatch(suppressWarnings({
       # Attempt to read version from DESCRIPTION
       desc_data <- read.dcf("DESCRIPTION")
       desc_data[, "Version"]
-    }, error = function(e) {
+    }), error = function(e) {
       warning("Could not read DESCRIPTION file: ", conditionMessage(e))
       "unknown" # Final fallback
     })
