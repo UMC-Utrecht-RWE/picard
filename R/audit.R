@@ -129,36 +129,29 @@ audit_add <- function(...) {
 #' @return Character string with version info
 #' @keywords internal
 .get_release_version <- function() {
-  # get the git tag if possible otherwise unknown
-  latest_tag <- tryCatch({
-    res <- processx::run(
-      "git",
-      c("describe", "--tags", "$(git rev-list --tags --max-count=1)")
-    )
-    res$stdout
-  }, error = function(e) {
-    "unknown"
-  })
-
-  # if Git failed fall back to DESCRIPTION
-  if (latest_tag == "unknown") {
-    latest_tag <- tryCatch(suppressWarnings({
-      # Attempt to read version from DESCRIPTION
-      desc_data <- read.dcf("DESCRIPTION")
-      desc_data[, "Version"]
-    }), error = function(e) {
-      warning("Could not read DESCRIPTION file: ", conditionMessage(e))
-      "unknown" # Final fallback
-    })
-
+  run_git <- function(args) {
+    res <- processx::run("git", args, error_on_status = FALSE)
+    if (res$status != 0) return(NA_character_)
+    base::trimws(res$stdout)
   }
-  tag_time <- base::system(
-    base::sprintf(
-      "git show -s --format=%%ai %s",
-      base::shQuote(latest_tag)
-    ),
-    intern = TRUE
-  )
+
+  sha <- run_git(c("rev-list", "--tags", "--max-count=1"))
+  latest_tag <- if (!is.na(sha) && nzchar(sha)) {
+    run_git(c("describe", "--tags", sha))
+  } else {
+    NA_character_
+  }
+
+  if (is.na(latest_tag) || !nzchar(latest_tag)) {
+    latest_tag <- tryCatch(
+      base::as.character(base::read.dcf("DESCRIPTION")[, "Version"]),
+      error = function(e) "unknown"
+    )
+  }
+
+  tag_time <- run_git(c("show", "-s", "--format=%ai", latest_tag))
+  if (is.na(tag_time) || !nzchar(tag_time)) tag_time <- "unknown time"
+
   paste0(latest_tag, " (", tag_time, ")")
 }
 

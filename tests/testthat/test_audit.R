@@ -140,7 +140,7 @@ testthat::test_that(".get_release_version returns tag and time in a git repo", {
     ver <- .get_release_version()
     testthat::expect_true(is.character(ver))
     testthat::expect_equal(length(ver), 1)
-    # testthat::expect_true(grepl("v0\\.0\\.1", ver))
+    testthat::expect_true(grepl("v0\\.0\\.1", ver))
     testthat::expect_true(grepl("\\(", ver))
     testthat::expect_true(grepl("\\)", ver))
   })
