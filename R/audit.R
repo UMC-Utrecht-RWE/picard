@@ -130,17 +130,28 @@ audit_add <- function(...) {
 #' @keywords internal
 .get_release_version <- function() {
   # get the git tag if possible otherwise unknown
-  tryCatch(
-    {
-      latest_tag <- base::system(
-        "git describe --tags $(git rev-list --tags --max-count=1)",
-        intern = TRUE
-      )
-    },
-    error = function(e) {
-      "unknown"
-    }
+  latest_tag <- try(
+    base::system(
+      "git describe --tags $(git rev-list --tags --max-count=1)",
+      intern = TRUE
+    ),
+    silent = TRUE
   )
+
+  # if Git failed fall back to DESCRIPTION
+  if (inherits(latest_tag, "try-error") ||
+        !is.null(attr(latest_tag, "status"))) {
+
+    latest_tag <- tryCatch({
+      # Attempt to read version from DESCRIPTION
+      desc_data <- read.dcf("DESCRIPTION")
+      desc_data[, "Version"]
+    }, error = function(e) {
+      warning("Could not read DESCRIPTION file: ", conditionMessage(e))
+      "unknown" # Final fallback
+    })
+
+  }
   tag_time <- base::system(
     base::sprintf(
       "git show -s --format=%%ai %s",
