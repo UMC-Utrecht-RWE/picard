@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [V1.2.0]
+### Added
+- `R/delete_data.R`: File that deletes whetever path you pass to in not a dry run.
+
+### Changed
+- `R/audit.R`: Expanded and fixed but in `.get_release_version` that created a bug when git was not prosent. Infos are now also gathered from `DESCRIPTION`. It does not create errors if none if present.
+
+### Fixed
+- `DESCRIPTION`'s Version was not updated to 1.1.0, creating installation problems. It is now fixed with release 1.2.0.
 
 ## [V1.1.0]
 
@@ -43,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All major functions transfered here from the RSV-1026 repository.
 
 [unreleased]: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
+[V1.2.0]: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2
 [V1.1.0]: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.1
 [V1.0.0]: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1
 
