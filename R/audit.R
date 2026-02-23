@@ -136,25 +136,31 @@ audit_add <- function(...) {
   }
 
   sha <- run_git(c("rev-list", "--tags", "--max-count=1"))
+  tag_origin <- "unknown tag origin"
   latest_tag <- if (!is.na(sha) && nzchar(sha)) {
     run_git(c("describe", "--tags", sha))
+    tag_origin <- "from git tags"
   } else {
     NA_character_
   }
 
   if (is.na(latest_tag) || !nzchar(latest_tag)) {
-    latest_tag <- tryCatch(
-      base::suppressWarnings(
-        base::as.character(base::read.dcf("DESCRIPTION")[, "Version"])
-      ),
-      error = function(e) "unknown"
-    )
+    latest_tag <- tryCatch({
+      tag <- base::as.character(base::read.dcf("DESCRIPTION")[, "Version"])
+      tag_origin <- "from DESCRIPTION"
+      tag
+    }, error = function(e) "unknown")
   }
 
   tag_time <- run_git(c("show", "-s", "--format=%ai", latest_tag))
-  if (is.na(tag_time) || !nzchar(tag_time)) tag_time <- "unknown time"
-
-  paste0(latest_tag, " (", tag_time, ")")
+  if (is.na(tag_time) || !nzchar(tag_time)) {
+    tag_time <- tryCatch(
+      base::Sys.time(),
+      error = function(e) "unknown time"
+    )
+  }
+  paste0(latest_tag, " (", tag_origin, ").
+  Time of creation of this file: ", tag_time)
 }
 
 #' audit_end
