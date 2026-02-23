@@ -135,6 +135,8 @@ audit_add <- function(...) {
     base::trimws(res$stdout)
   }
 
+  # sha is the most recent commit that has a tag.
+  # if this fails, we know git cannot be used.
   sha <- run_git(c("rev-list", "--tags", "--max-count=1"))
   tag_origin <- "unknown tag origin"
   if (!is.na(sha) && nzchar(sha)) {
