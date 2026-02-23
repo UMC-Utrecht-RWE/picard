@@ -137,11 +137,12 @@ audit_add <- function(...) {
 
   sha <- run_git(c("rev-list", "--tags", "--max-count=1"))
   tag_origin <- "unknown tag origin"
-  latest_tag <- if (!is.na(sha) && nzchar(sha)) {
-    run_git(c("describe", "--tags", sha))
+  if (!is.na(sha) && nzchar(sha)) {
+    latest_tag <- run_git(c("describe", "--tags", sha))
     tag_origin <- "from git tags"
   } else {
-    NA_character_
+    latest_tag <- NA_character_
+    tag_origin <- "unknown tag origin"
   }
 
   if (is.na(latest_tag) || !nzchar(latest_tag)) {
