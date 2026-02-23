@@ -129,26 +129,41 @@ audit_add <- function(...) {
 #' @return Character string with version info
 #' @keywords internal
 .get_release_version <- function() {
-  # get the git tag if possible otherwise unknown
-  tryCatch(
-    {
-      latest_tag <- base::system(
-        "git describe --tags $(git rev-list --tags --max-count=1)",
-        intern = TRUE
-      )
-    },
-    error = function(e) {
-      "unknown"
-    }
-  )
-  tag_time <- base::system(
-    base::sprintf(
-      "git show -s --format=%%ai %s",
-      base::shQuote(latest_tag)
-    ),
-    intern = TRUE
-  )
-  paste0(latest_tag, " (", tag_time, ")")
+  run_git <- function(args) {
+    res <- processx::run("git", args, error_on_status = FALSE)
+    if (res$status != 0) return(NA_character_)
+    base::trimws(res$stdout)
+  }
+
+  # sha is the most recent commit that has a tag.
+  # if this fails, we know git cannot be used.
+  sha <- run_git(c("rev-list", "--tags", "--max-count=1"))
+  tag_origin <- "unknown tag origin"
+  if (!is.na(sha) && nzchar(sha)) {
+    latest_tag <- run_git(c("describe", "--tags", sha))
+    tag_origin <- "from git tags"
+  } else {
+    latest_tag <- NA_character_
+    tag_origin <- "unknown tag origin"
+  }
+
+  if (is.na(latest_tag) || !nzchar(latest_tag)) {
+    latest_tag <- tryCatch({
+      tag <- base::as.character(base::read.dcf("DESCRIPTION")[, "Version"])
+      tag_origin <- "from DESCRIPTION"
+      tag
+    }, error = function(e) "unknown")
+  }
+
+  tag_time <- run_git(c("show", "-s", "--format=%ai", latest_tag))
+  if (is.na(tag_time) || !nzchar(tag_time)) {
+    tag_time <- tryCatch(
+      base::Sys.time(),
+      error = function(e) "unknown time"
+    )
+  }
+  paste0(latest_tag, " (", tag_origin, ").
+  Time of creation of this file: ", tag_time)
 }
 
 #' audit_end
