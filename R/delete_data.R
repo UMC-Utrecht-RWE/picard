@@ -80,6 +80,7 @@ delete_parquet_partition <- function(
   invisible(TRUE)
 }
 
+
 #' Delete one or more files (optionally expanding directories)
 #'
 #' Deletes files from the filesystem with an optional dry run mode.
