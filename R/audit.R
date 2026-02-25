@@ -130,27 +130,28 @@ audit_add <- function(...) {
 #' @keywords internal
 .get_release_version <- function() {
   
-  tag_time <- NA_character_
-  latest_tag <- NA_character_
-  tag_origin <- "unknown tag origin"
+  desc <- tryCatch(
+    base::read.dcf("DESCRIPTION"),
+    error = function(e) NULL
+  )
   
+  if (!is.null(desc) && "Version" %in% colnames(desc)) {
+    latest_tag <- as.character(desc[, "Version"])
+    tag_origin <- "from DESCRIPTION"
+  } else {
+    latest_tag <- "unknown"
+    tag_origin <- "unknown tag origin"
+  }
   
-  if (is.na(latest_tag) || !nzchar(latest_tag)) {
-    latest_tag <- tryCatch({
-      tag <- base::as.character(base::read.dcf("DESCRIPTION")[, "Version"])
-      tag_origin <- "from DESCRIPTION"
-      tag
-    }, error = function(e) "unknown")
-  }
-
-  if (is.na(tag_time) || !nzchar(tag_time)) {
-    tag_time <- tryCatch(
-      base::Sys.time(),
-      error = function(e) "unknown time"
-    )
-  }
-  paste0(latest_tag, " (", tag_origin, ").
-  Time of creation of this file: ", tag_time)
+  tag_time <- tryCatch(
+    base::Sys.time(),
+    error = function(e) "unknown time"
+  )
+  
+  paste0(
+    latest_tag, " (", tag_origin, ").\n",
+    "Time of creation of this file: ", tag_time
+  )
 }
 
 #' audit_end
