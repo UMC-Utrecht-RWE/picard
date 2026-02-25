@@ -105,53 +105,10 @@ testthat::test_that("audit_add writes a data.table (overwrites file)", {
 ###############################
 # Tests for .get_release_version
 ###############################
-testthat::test_that(".get_release_version returns tag and time in a git repo", {
-  testthat::skip_on_os("windows")
-  if (!nzchar(base::Sys.which("git"))) {
-    testthat::skip("git not available")
-  }
-
-  withr::local_tempdir()
-  repo <- base::file.path(base::tempdir(), "audit_git_repo")
-  base::unlink(repo, recursive = TRUE, force = TRUE)
-  base::dir.create(repo, recursive = TRUE, showWarnings = FALSE)
-
-  withr::with_dir(repo, {
-    base::system2("git", "init", stdout = TRUE, stderr = TRUE)
-    base::system2(
-      "git",
-      c("config", "user.email", "test@example.com"),
-      stdout = TRUE, stderr = TRUE
-    )
-    base::system2(
-      "git",
-      c("config", "user.name", "Test User"),
-      stdout = TRUE, stderr = TRUE
-    )
-    base::writeLines("x", "README.md")
-    base::system2("git", c("add", "README.md"), stdout = TRUE, stderr = TRUE)
-    base::system2(
-      "git",
-      c("commit", "-m", "init"),
-      stdout = TRUE, stderr = TRUE
-    )
-    base::system2("git", c("tag", "v0.0.1"), stdout = TRUE, stderr = TRUE)
-
-    ver <- .get_release_version()
-    testthat::expect_true(is.character(ver))
-    testthat::expect_equal(length(ver), 1)
-    testthat::expect_true(grepl("v0\\.0\\.1", ver))
-    testthat::expect_true(grepl("\\(", ver))
-    testthat::expect_true(grepl("\\)", ver))
-  })
-})
-
 testthat::test_that(
-  ".get_release_version falls back to DESCRIPTION when git fails",
+  ".get_release_version falls back to DESCRIPTION",
   {
-    testthat::skip_if_not(nzchar(base::Sys.which("git")))
-
-    tmp <- withr::local_tempdir(pattern = "no_git_repo_")
+    tmp <- withr::local_tempdir(pattern = "from_description")
 
     withr::with_dir(tmp, {
       base::writeLines(
@@ -171,18 +128,17 @@ testthat::test_that(
 )
 
 testthat::test_that(
-  ".get_release_version returns unknown when git fails and DESCRIPTION missing",
+  ".get_release_version returns unknown when DESCRIPTION missing",
   {
-    testthat::skip_if_not(nzchar(base::Sys.which("git")))
-
-    tmp <- withr::local_tempdir(pattern = "no_git_repo_no_desc_")
+    tmp <- withr::local_tempdir(pattern = "no_desc_")
 
     withr::with_dir(tmp, {
       ver <- .get_release_version()
 
       testthat::expect_type(ver, "character")
       testthat::expect_length(ver, 1)
-      testthat::expect_true(grepl("^unknown", ver))
+      testthat::expect_match(ver, "^unknown \\(unknown tag origin\\)")
+      testthat::expect_match(ver, "Time of creation")
     })
   }
 )
