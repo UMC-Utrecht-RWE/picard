@@ -97,7 +97,8 @@ save_data <- function(
       {
         picard::plot_data_features(
           data = data_to_plot,
-          file_path = file_path,
+          file_name = tools::file_path_sans_ext(basename(file_path)),
+          plot_path = plot_path,
           ...
         )
       },
@@ -120,9 +121,12 @@ save_data <- function(
 #' @return Named list with normalized_path
 #' @keywords internal
 prepare_output_path <- function(
-    file_path,
-    file_name = NULL,
-    create_dir = TRUE) {
+  file_path,
+  file_name = NULL,
+  create_dir = TRUE
+) {
+
+  ## STEP 1. Check if everything is good with file_path
   # Trim whitespace
   file_path <- trimws(file_path)
 
@@ -146,7 +150,7 @@ prepare_output_path <- function(
   # Normalize path
   file_path <- fs::path_norm(file_path)
 
-  # Handle optional file_name parameter
+  ## STEP 2. Check if everything is good with optional file_name parameter
   if (!is.null(file_name)) {
     if (!is.character(file_name)) {
       stop(
@@ -169,13 +173,44 @@ prepare_output_path <- function(
     if (nzchar(file_name) == 0) {
       stop("file_name cannot be an empty string", call. = FALSE)
     }
-
-    file_path <- file.path(file_path, file_name)
   }
 
-  # Extract directory
-  out_dir <- dirname(file_path)
+  # Step 3. Create a final file_path to be used
+  path_dir  <- base::dirname(file_path)
+  path_base <- base::basename(file_path)
+  path_has_file <- nzchar(tools::file_ext(path_base))
 
+  if (!path_has_file) {
+    # file_path is a directory — file_name is required
+    if (is.null(file_name)) {
+      stop(
+        "file_path contains no filename and file_name is NULL. ",
+        "Please supply a filename via file_name.",
+        call. = FALSE
+      )
+    }
+    file_path <- fs::path(file_path, file_name)
+
+  } else {
+    # file_path already carries a filename
+    if (!is.null(file_name)) {
+      name_ext <- tools::file_ext(file_name)
+
+      if (nzchar(name_ext)) {
+        # file_name has an extension — full replacement
+        file_path <- fs::path(path_dir, file_name)
+      } else {
+        # file_name has no extension — replace stem, keep original extension
+        original_ext <- tools::file_ext(path_base)
+        file_path <- fs::path(path_dir, paste0(file_name, ".", original_ext))
+      }
+    }
+    # if file_name is NULL, file_path stays as-is
+  }
+
+  # STEP 4. Ensure directory exists and is writable
+  # Extract directory
+  out_dir <- base::dirname(file_path)
   # Create directory if needed
   if (!dir.exists(out_dir)) {
     if (create_dir) {

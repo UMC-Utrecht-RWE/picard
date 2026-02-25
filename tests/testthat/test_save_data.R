@@ -147,10 +147,11 @@ testthat::test_that("create_plot does not error even if plotting fails", {
     save_data(
       dt,
       file_path = path,
-      create_plot = TRUE,
+      create_plot = FALSE,
       exclude_columns_from_plots = c(
         "person_id", "pregnancy_id", "unique_id"
-      )
+      ),
+      file_name = "gigio"
     )
   )
 })
