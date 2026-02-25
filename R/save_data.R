@@ -35,16 +35,8 @@ save_data <- function(
   path_info <- prepare_output_path(file_path, file_name)
   file_path <- path_info$normalized_path
 
-  # Extract extension
+  # Extract extension # It cannot fails cause tested in prepare_output_path
   ext <- tools::file_ext(file_path)
-  if (ext == "") {
-    stop(
-      "File has no extension or extension could not be detected: ",
-      file_path,
-      "\nSupported extensions: ", paste(list_writers(), collapse = ", "),
-      call. = FALSE
-    )
-  }
 
   # Normalize extension (lowercase)
   ext <- tolower(ext)
@@ -93,20 +85,11 @@ save_data <- function(
       }
     }
 
-    tryCatch(
-      {
-        picard::plot_data_features(
-          data = data_to_plot,
-          file_name = tools::file_path_sans_ext(basename(file_path)),
-          plot_path = plot_path,
-          ...
-        )
-      },
-      error = function(e) {
-        logger::log_warn(paste0(
-          "Failed to create plots: ", e$message
-        ))
-      }
+    picard::plot_data_features(
+      data = data_to_plot,
+      file_name = tools::file_path_sans_ext(basename(file_path)),
+      plot_path = plot_path,
+      ...
     )
   }
 
@@ -127,13 +110,13 @@ prepare_output_path <- function(
 ) {
 
   ## STEP 1. Check if everything is good with file_path
-  # Trim whitespace
-  file_path <- trimws(file_path)
-
   # Validate file_path
   if (is.null(file_path)) {
     stop("file_path cannot be NULL", call. = FALSE)
   }
+
+  # Trim whitespace
+  file_path <- trimws(file_path)
 
   if (length(file_path) != 1) {
     stop(

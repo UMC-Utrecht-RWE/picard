@@ -15,7 +15,7 @@ testthat::test_that("save_data errors when file has no extension", {
 
   testthat::expect_error(
     save_data(data.frame(a = 1), file_path = path),
-    "File has no extension",
+    "file_path contains no filename and file_name is NULL. Please supply a filename via file_name.",
     fixed = TRUE
   )
 })
@@ -147,11 +147,17 @@ testthat::test_that("create_plot does not error even if plotting fails", {
     save_data(
       dt,
       file_path = path,
-      create_plot = FALSE,
+      create_plot = TRUE,
       exclude_columns_from_plots = c(
         "person_id", "pregnancy_id", "unique_id"
       ),
       file_name = "gigio"
+    )
+  )
+
+  testthat::expect_true(
+    base::file.exists(
+      "data/intermediate_plots/gigio_features_dist_page1.png"
     )
   )
 })
@@ -164,7 +170,7 @@ testthat::test_that("prepare_output_path validates file_path", {
 
   testthat::expect_error(
     prepare_output_path(NULL),
-    regexp = "file_path must be a single string, not a vector of length"
+    regexp = "file_path cannot be NULL"
   )
 
   testthat::expect_error(
