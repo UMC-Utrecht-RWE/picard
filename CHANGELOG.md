@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [V1.2.1]
+### Fixed
+- `R/audit.R:.get_release_version` kept giving us problems with the DEAPs, we decided to remove any call to git as not prosent in DEAPs'enviroment.
+- Fixed bug with `save_data:save_data.R` it was not passing file name correctly to `plot_data`
+
+### Added
+- `save_data.R:prepare_output_path` handles all combinations of `file_path` and `file_name`. If `file_name` is present will overwrite the name in `file_path` (if that is present). If `file_name` has no extension, it will take the one in `file_path` (if that is present). If that is not possible, it will give an error.
+
 ## [V1.2.0]
 ### Added
 - `R/delete_data.R`: File that deletes whetever path you pass to in not a dry run.
@@ -51,8 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [V1.0.0]
 - All major functions transfered here from the RSV-1026 repository.
 
-[unreleased]: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
-[V1.2.0]: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2
-[V1.1.0]: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.1
-[V1.0.0]: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1
+# List of releases
+- unreleased: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
+- V1.2.1: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.1
+- V1.2.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.0
+- V1.1.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.1
+- V1.0.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1
 
