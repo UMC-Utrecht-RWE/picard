@@ -108,8 +108,6 @@ testthat::test_that("audit_add writes a data.table (overwrites file)", {
 testthat::test_that(
   ".get_release_version falls back to DESCRIPTION",
   {
-    #testthat::skip_if_not(nzchar(base::Sys.which("git")))
-
     tmp <- withr::local_tempdir(pattern = "from_description")
 
     withr::with_dir(tmp, {
@@ -132,8 +130,6 @@ testthat::test_that(
 testthat::test_that(
   ".get_release_version returns unknown when DESCRIPTION missing",
   {
-    #testthat::skip_if_not(nzchar(base::Sys.which("git")))
-
     tmp <- withr::local_tempdir(pattern = "no_desc_")
 
     withr::with_dir(tmp, {

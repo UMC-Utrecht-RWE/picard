@@ -129,12 +129,12 @@ audit_add <- function(...) {
 #' @return Character string with version info
 #' @keywords internal
 .get_release_version <- function() {
-  
+
   desc <- tryCatch(
     base::read.dcf("DESCRIPTION"),
     error = function(e) NULL
   )
-  
+
   if (!is.null(desc) && "Version" %in% colnames(desc)) {
     latest_tag <- as.character(desc[, "Version"])
     tag_origin <- "from DESCRIPTION"
@@ -142,12 +142,12 @@ audit_add <- function(...) {
     latest_tag <- "unknown"
     tag_origin <- "unknown tag origin"
   }
-  
+
   tag_time <- tryCatch(
     base::Sys.time(),
     error = function(e) "unknown time"
   )
-  
+
   paste0(
     latest_tag, " (", tag_origin, ").\n",
     "Time of creation of this file: ", tag_time
