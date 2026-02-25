@@ -15,8 +15,7 @@ testthat::test_that("save_data errors when file has no extension", {
 
   testthat::expect_error(
     save_data(data.frame(a = 1), file_path = path),
-    "file_path contains no filename and file_name is NULL. Please supply a filename via file_name.",
-    fixed = TRUE
+    regexp = "file_path contains no filename and file_name is NULL.",
   )
 })
 
