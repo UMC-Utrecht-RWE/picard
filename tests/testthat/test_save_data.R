@@ -148,7 +148,9 @@ testthat::test_that("create_plot does not error even if plotting fails", {
       file_path = path,
       create_plot = TRUE,
       exclude_columns_from_plots = c(
-        "person_id", "pregnancy_id", "unique_id"
+        "person_id",
+        "pregnancy_id",
+        "unique_id"
       ),
       file_name = "gigio"
     )
@@ -385,4 +387,44 @@ testthat::test_that("save_data writes parquet via built-in writer", {
   back <- arrow::read_parquet(path)
   back <- as.data.frame(back, stringsAsFactors = FALSE)
   testthat::expect_equal(back, df)
+})
+
+testthat::test_that("save_data writes yaml via built-in writer", {
+  testthat::skip_if_not_installed("yaml")
+
+  .init_writer_registry()
+
+  dir <- withr::local_tempdir()
+  path <- base::file.path(dir, "out.yaml")
+
+  object <- list(a = 1:3, b = "pizza", c = as.Date("2024-01-02"))
+
+  save_data(object, file_path = path)
+  testthat::expect_true(base::file.exists(path))
+  testthat::expect_message(
+    save_data(object, path),
+    "YAML file successfully written to:"
+  )
+
+  # Read back
+  back <- load_config(file_path = path)
+  testthat::expect_identical(back, list(a = 1:3, b = "pizza", c = "2024-01-02"))
+
+  testthat::expect_error(
+    save_data("a string", path),
+    "'data' must be a YAML mapping",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    save_data(123, path),
+    "'data' must be a YAML mapping",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    save_data(TRUE, path),
+    "'data' must be a YAML mapping",
+    fixed = TRUE
+  )
 })
