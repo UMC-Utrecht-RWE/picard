@@ -69,6 +69,118 @@ testthat::test_that("Test for file_path null and at least a yaml file exists", {
   on.exit(setwd(old_wd), add = TRUE) # ensure we return to old
 })
 
+##############################
+# Test save_config
+##############################
+testthat::test_that("save_config: Tests for correct arguments", {
+  # create a temporary YAML file
+  temp_yaml <- tempfile(fileext = ".yaml")
+  on.exit(unlink(temp_yaml)) # ensure the file is deleted after the test
+
+  config = list(a = "a", b = "c", d = Sys.Date())
+  # Test saving the configuration values
+  save_config(config = config, file_path = temp_yaml)
+
+  testthat::expect_true(dir.exists(dirname(temp_yaml)))
+  testthat::expect_true(file.exists(temp_yaml))
+  testthat::expect_message(
+    save_config(list(a = "a", b = "c", d = Sys.Date()), temp_yaml),
+    "YAML file successfully written to:"
+  )
+})
+
+testthat::test_that("save_config: Tests for written config can be read back and match original", {
+  # create a temporary YAML file
+  temp_yaml <- tempfile(fileext = ".yaml")
+  on.exit(unlink(temp_yaml)) # ensure the file is deleted after the test
+
+  base_config = list(a = "a", b = "c", d = Sys.Date())
+  # Test saving the configuration values
+  save_config(config = base_config, file_path = temp_yaml)
+
+  config <- load_config(temp_yaml)
+  testthat::expect_true(is.list(config))
+  testthat::expect_equal(
+    config,
+    list(a = "a", b = "c", d = format(Sys.Date(), "%Y-%m-%d"))
+  )
+  testthat::expect_equal(names(config), names(base_config))
+  testthat::expect_equal(
+    sapply(config, "[[", 1),
+    sapply(list(a = "a", b = "c", d = format(Sys.Date(), "%Y-%m-%d")), "[[", 1)
+  )
+  testthat::expect_identical(
+    config,
+    list(a = "a", b = "c", d = format(Sys.Date(), "%Y-%m-%d"))
+  )
+})
+
+testthat::test_that("save_config: Tests for wrong arguments", {
+  # create a temporary YAML file
+  temp_yaml <- tempfile(fileext = ".yaml")
+  on.exit(unlink(temp_yaml))
+  testthat::expect_error(
+    save_config(config = NULL, file_path = temp_yaml),
+    "'config' cannot be NULL",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    save_config(config = list(pizza = 1), file_path = NULL),
+    "'file_path' cannot be NULL",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    save_config(),
+    "'config' cannot be NULL",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    save_config(list(a = 1), "/we/want/pizza.yaml"),
+    "Directory not found at:",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    save_config(list(a = 1), tempfile(fileext = ".txt")),
+    "Config must be .yaml or .yml",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    save_config(c(a = 1), tempfile(fileext = ".yaml")),
+    "Config must be a YAML",
+    fixed = TRUE
+  )
+})
+
+test_that("save_config: Handles date fields correctly", {
+  temp_yaml <- tempfile(fileext = ".yaml")
+  base_config <- list(
+    date1 = as.Date("2024-03-01"),
+    date2 = as.Date("01-02-2024", format = "%d-%m-%Y")
+  )
+
+  save_config(base_config, temp_yaml)
+  config <- picard::load_config(temp_yaml)
+
+  expect_equal(config, list(date1 = "2024-03-01", date2 = "2024-02-01"))
+})
+
+test_that("save_config: works with bare filename and no directory", {
+  temp_yaml <- tempfile(fileext = ".yaml")
+  file <- basename(temp_yaml)
+  config <- list(a = 1)
+
+  withr::with_dir(tempdir(), {
+    expect_message(
+      save_config(config, file),
+      "YAML file successfully written to:"
+    )
+  })
+})
 
 ##############################
 # Test read_yaml
@@ -115,11 +227,116 @@ testthat::test_that("read_yaml rejects invalid YAML syntax", {
 })
 
 ##############################
+# Test write_yaml
+##############################
+
+test_that("writes valid inputs successfully, reads it back and matches original", {
+  tmp <- tempfile(fileext = ".yaml")
+  obj <- list(name = "project", value = 123)
+
+  testthat::expect_message(
+    write_yaml(obj, tmp),
+    "YAML file successfully written to:"
+  )
+  testthat::expect_true(file.exists(tmp))
+
+  result <- read_yaml(tmp)
+
+  testthat::expect_equal(result$name, obj$name)
+  testthat::expect_equal(result$value, obj$value)
+  testthat::expect_identical(result, obj)
+
+  tmp <- tempfile(fileext = ".yml")
+  testthat::expect_message(
+    write_yaml(list(a = 1), tmp),
+    "YAML file successfully written to:"
+  )
+
+  obj <- list(
+    level1 = list(
+      level2 = list(value = 42)
+    )
+  )
+
+  write_yaml(obj, tmp)
+  result <- read_yaml(tmp)
+
+  testthat::expect_equal(result$level1$level2$value, 42)
+
+  testthat::expect_message(
+    write_yaml(list(), tmp),
+    "YAML file successfully written to:"
+  )
+})
+
+test_that("date values are handled correctly", {
+  tmp <- tempfile(fileext = ".yaml")
+  obj <- list(date = as.Date("2024-01-15"))
+
+  write_yaml(obj, tmp)
+  result <- read_yaml(tmp)
+
+  testthat::expect_type(result$date, "character")
+  testthat::expect_equal(result$date, "2024-01-15")
+
+  obj <- list(
+    start_date = as.Date("2024-01-01"),
+    end_date = as.Date("2024-12-31")
+  )
+
+  write_yaml(obj, tmp)
+  result <- read_yaml(tmp)
+
+  testthat::expect_equal(result$start_date, "2024-01-01")
+  testthat::expect_equal(result$end_date, "2024-12-31")
+})
+
+test_that("invalid inputs throw expected errors", {
+  tmp <- tempfile(fileext = ".yaml")
+  testthat::expect_error(
+    write_yaml(list(a = 1), "file.txt"),
+    "Config must be .yaml or .yml",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    write_yaml(list(a = 1), "file.TXT"),
+    "Config must be .yaml or .yml",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    write_yaml("a string", tmp),
+    "Config must be a YAML mapping",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    write_yaml(123, tmp),
+    "Config must be a YAML mapping",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    write_yaml(TRUE, tmp),
+    "Config must be a YAML mapping",
+    fixed = TRUE
+  )
+
+  testthat::expect_error(
+    suppressWarnings(write_yaml(list(a = 1), "/wewant/more/pizza.yaml")),
+    "Invalid YAML: cannot open the connection"
+  )
+})
+
+##############################
 # Test get_tracked_files
 ##############################
 testthat::test_that("get_tracked_files finds file on all OS", {
   test_dir <- normalizePath(
-    withr::local_tempdir(), winslash = "/", mustWork = FALSE
+    withr::local_tempdir(),
+    winslash = "/",
+    mustWork = FALSE
   )
 
   tmp <- tempfile(tmpdir = test_dir, fileext = ".txt")
@@ -130,7 +347,9 @@ testthat::test_that("get_tracked_files finds file on all OS", {
   tracked_files <- get_tracked_files(path = test_dir)
 
   tracked_files_normalized <- normalizePath(
-    tracked_files, winslash = "/", mustWork = FALSE
+    tracked_files,
+    winslash = "/",
+    mustWork = FALSE
   )
   testthat::expect_true(tmp_normalized %in% tracked_files_normalized)
 })
@@ -151,7 +370,8 @@ testthat::test_that("", {
 
   output_file <- get_hash_output(output_file = NULL, log_dir = log_dir)
   testthat::expect_equal(
-    output_file, base::file.path(log_dir, "registry.csv")
+    output_file,
+    base::file.path(log_dir, "registry.csv")
   )
 })
 
@@ -195,9 +415,8 @@ testthat::test_that("track_file_changes creates registry correctly", {
   )
 
   testthat::expect_true(test_file %in% dt$file_path)
-  testthat::expect_equal(nrow(dt), 1)  # Should only have our test file
+  testthat::expect_equal(nrow(dt), 1) # Should only have our test file
 })
-
 
 
 ################################################
