@@ -1,6 +1,6 @@
 # File for ad-hoc functions that cannot be gathered in a single topic file.
 
-#' Loead configuration values used during the pipeline execution
+#' Load configuration values used during the pipeline execution
 #'
 #' @description
 #' This function reads configuration values from a fixed YAML file.
@@ -41,6 +41,34 @@ load_config <- function(file_path = NULL) {
   }
 }
 
+#' Save configuration values used during the pipeline execution
+#'
+#' @description
+#' This function reads configuration values from a fixed YAML file.
+#' It checks for the existence of the file and ensures
+#' that all required keys are present.
+#'
+#' @param file_path Path to the YAML configuration file.
+#' Default is "configuration/config_values.yaml".
+#' @param config Config file to save, essentially a list.
+#'
+#' @return A list of configuration values.
+#' @export
+save_config <- function(config = NULL, file_path = NULL) {
+  if (base::is.null(config)) {
+    stop("'config' cannot be NULL")
+  }
+  if (base::is.null(file_path)) {
+    stop("'file_path' cannot be NULL")
+  }
+
+  if (base::dir.exists(base::dirname(file_path))) {
+    write_yaml(config, file_path)
+  } else {
+    stop("Directory not found at: ", file_path)
+  }
+}
+
 #' Ensure that a YAML file is valid and strictly formatted
 #'
 #' @description
@@ -63,6 +91,40 @@ read_yaml <- function(file_path) {
     stop("Config must be a YAML mapping (top-level object).", call. = FALSE)
   }
   out
+}
+
+#' Write an object (strictly a list) as a YAML file
+#'
+#' @description
+#' This function writes a YAML file and ensures that it has a valid
+#' structure. It checks that the file has a .yaml or .yml extension
+#' and that it contains a mapping (list) at the top level.
+#' @param object Objected to be converted.
+#' @param file_path Path to the YAML file.
+#' @return A list representing the YAML content if valid.
+#' @keywords internal
+write_yaml <- function(object, file_path) {
+  ext <- tolower(tools::file_ext(file_path))
+  if (!ext %in% c("yaml", "yml")) {
+    stop("Config must be .yaml or .yml", call. = FALSE)
+  }
+  if (!is.list(object)) {
+    stop("Config must be a YAML mapping (top-level object).", call. = FALSE)
+  }
+
+  tryCatch(
+    {
+      yaml::write_yaml(
+        object,
+        file_path,
+        handlers = list(Date = function(x) {
+          if (inherits(x = x, what = "Date")) format(x, "%Y-%m-%d")
+        })
+      )
+      message("YAML file successfully written to: ", file_path)
+    },
+    error = function(e) stop("Invalid YAML: ", e$message, call. = FALSE)
+  )
 }
 
 #' Get all files of interest
@@ -132,7 +194,9 @@ compute_hash <- function(file_path = NULL, algo = "sha1") {
 #' @param output_file Output file Default NULL
 #' @export
 track_file_changes <- function(
-  log_dir = "logs", path = NULL, output_file = NULL
+  log_dir = "logs",
+  path = NULL,
+  output_file = NULL
 ) {
   # Validate inputs
   if (!is.null(path) && !dir.exists(path)) {
@@ -141,11 +205,14 @@ track_file_changes <- function(
 
   # Make log folder with error handling
   if (!base::dir.exists(log_dir)) {
-    tryCatch({
-      base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
-    }, error = function(e) {
-      stop("Failed to create log directory: ", e$message)
-    })
+    tryCatch(
+      {
+        base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+      },
+      error = function(e) {
+        stop("Failed to create log directory: ", e$message)
+      }
+    )
   }
 
   # get the files
@@ -158,7 +225,8 @@ track_file_changes <- function(
   # get the output file
 
   output_file <- get_hash_output(
-    output_file = output_file, log_dir = log_dir
+    output_file = output_file,
+    log_dir = log_dir
   )
   # get hashes from files
   hashes <- compute_hash(file_path = file_paths)
@@ -188,7 +256,11 @@ track_file_changes <- function(
 #' @import data.table
 #' @export
 set_dates <- function(
-    df, date_cols, date_format = NULL, reference_date = "1970-01-01") {
+  df,
+  date_cols,
+  date_format = NULL,
+  reference_date = "1970-01-01"
+) {
   # Validate inputs
   if (!data.table::is.data.table(df)) {
     stop("df must be a data.table")
@@ -232,16 +304,20 @@ set_dates <- function(
   # Process each date column using data.table idiom
   for (col in date_cols) {
     col_class <- class(df[[col]])
-    if (is.character(col_class) ||
+    if (
+      is.character(col_class) ||
         any(class(col_class) %in% c("numeric", "integer"))
     ) {
       # If character or numeric, convert via origin
       df <- data.table::setDT(df)
-      df[, (col) := get_date_value(
-        .SD[[1]],
-        origin = origin,
-        date_formats = date_formats
-      ), .SDcols = col] # nolint
+      df[,
+        (col) := get_date_value(
+          .SD[[1]],
+          origin = origin,
+          date_formats = date_formats
+        ),
+        .SDcols = col
+      ] # nolint
     }
   }
 
@@ -268,9 +344,10 @@ set_dates <- function(
 #' get_date_value(c("20251119", "20251118", "Ciao"))
 #' @export
 get_date_value <- function(
-    date_input,
-    origin = "1970-01-01",
-    date_formats = c("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d")) {
+  date_input,
+  origin = "1970-01-01",
+  date_formats = c("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d")
+) {
   # Already Date
   if (base::inherits(date_input, "Date")) {
     return(date_input)
