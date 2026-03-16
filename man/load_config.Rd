@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{load_config}
 \alias{load_config}
-\title{Loead configuration values used during the pipeline execution}
+\title{Load configuration values used during the pipeline execution}
 \usage{
 load_config(file_path = NULL)
 }
