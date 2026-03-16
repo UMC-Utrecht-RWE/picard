@@ -22,15 +22,18 @@
 #' @return Invisibly returns file_path
 #' @export
 save_data <- function(
-    data,
-    file_path,
-    file_name = NULL,
-    create_plot = FALSE,
-    plot_path = "data/intermediate_plots",
-    exclude_columns_from_plots = c(
-      "person_id", "pregnancy_id", "unique_id"
-    ),
-    ...) {
+  data,
+  file_path,
+  file_name = NULL,
+  create_plot = FALSE,
+  plot_path = "data/intermediate_plots",
+  exclude_columns_from_plots = c(
+    "person_id",
+    "pregnancy_id",
+    "unique_id"
+  ),
+  ...
+) {
   # Validate and prepare output path
   path_info <- prepare_output_path(file_path, file_name)
   file_path <- path_info$normalized_path
@@ -44,8 +47,12 @@ save_data <- function(
   writer_func <- get_writer(ext)
   if (is.null(writer_func)) {
     stop(
-      "No writer registered for extension: '", ext, "'\n",
-      "Supported extensions: ", paste(list_writers(), collapse = ", "), "\n",
+      "No writer registered for extension: '",
+      ext,
+      "'\n",
+      "Supported extensions: ",
+      paste(list_writers(), collapse = ", "),
+      "\n",
       "Use register_writer() to add a custom writer.",
       call. = FALSE
     )
@@ -57,8 +64,11 @@ save_data <- function(
     writer_func(data, file_path, ...),
     error = function(e) {
       stop(
-        "Failed to save file: ", file_path, "\n",
-        "Error: ", e$message,
+        "Failed to save file: ",
+        file_path,
+        "\n",
+        "Error: ",
+        e$message,
         call. = FALSE
       )
     }
@@ -69,7 +79,8 @@ save_data <- function(
     data_to_plot <- data.table::copy(data)
 
     # Remove excluded columns if present
-    if (!is.null(exclude_columns_from_plots) &&
+    if (
+      !is.null(exclude_columns_from_plots) &&
         length(exclude_columns_from_plots) > 0
     ) {
       cols_to_remove <- intersect(
@@ -108,7 +119,6 @@ prepare_output_path <- function(
   file_name = NULL,
   create_dir = TRUE
 ) {
-
   ## STEP 1. Check if everything is good with file_path
   # Validate file_path
   if (is.null(file_path)) {
@@ -159,7 +169,7 @@ prepare_output_path <- function(
   }
 
   # Step 3. Create a final file_path to be used
-  path_dir  <- base::dirname(file_path)
+  path_dir <- base::dirname(file_path)
   path_base <- base::basename(file_path)
   path_has_file <- nzchar(tools::file_ext(path_base))
 
@@ -173,7 +183,6 @@ prepare_output_path <- function(
       )
     }
     file_path <- fs::path(file_path, file_name)
-
   } else {
     # file_path already carries a filename
     if (!is.null(file_name)) {
@@ -202,15 +211,20 @@ prepare_output_path <- function(
         dir.create(out_dir, recursive = TRUE, showWarnings = FALSE),
         error = function(e) {
           stop(
-            "Failed to create directory: ", out_dir, "\n",
-            "Error: ", e$message,
+            "Failed to create directory: ",
+            out_dir,
+            "\n",
+            "Error: ",
+            e$message,
             call. = FALSE
           )
         }
       )
     } else {
       stop(
-        "Output directory does not exist: ", out_dir, "\n",
+        "Output directory does not exist: ",
+        out_dir,
+        "\n",
         "Set create_dir = TRUE to create it automatically.",
         call. = FALSE
       )
@@ -220,7 +234,8 @@ prepare_output_path <- function(
   # Check write permissions
   if (!file.access(out_dir, mode = 2) == 0) {
     logger::log_warn(paste0(
-      "May not have write permission for directory: ", out_dir
+      "May not have write permission for directory: ",
+      out_dir
     ))
   }
 
@@ -298,11 +313,7 @@ list_writers <- function() {
   # saves object with a fixed name "data" inside the .RData
   register_writer("rdata", function(data, path, ...) {
     data_to_save <- data
-    base::save(data_to_save,
-      file = path,
-      envir = base::environment(),
-      ...
-    )
+    base::save(data_to_save, file = path, envir = base::environment(), ...)
     base::invisible(path)
   })
 
@@ -335,5 +346,36 @@ list_writers <- function() {
   register_writer("xlsx", function(data, path, ...) {
     openxlsx::write.xlsx(data, path, ...)
     base::invisible(path)
+  })
+
+  # YAML WRITER
+  register_writer("yaml", function(data, path, ...) {
+    ext <- tolower(tools::file_ext(path))
+    if (base::is.null(path)) {
+      stop("'path' cannot be NULL")
+    }
+    if (!ext %in% c("yaml", "yml")) {
+      stop("'file' must be .yaml or .yml", call. = FALSE)
+    }
+    if (base::is.null(data)) {
+      stop("'data' cannot be NULL")
+    }
+    if (!is.list(data)) {
+      stop("'data' must be a YAML mapping (top-level object).", call. = FALSE)
+    }
+
+    tryCatch(
+      {
+        yaml::write_yaml(
+          data,
+          path,
+          handlers = list(Date = function(x) {
+            if (inherits(x = x, what = "Date")) format(x, "%Y-%m-%d")
+          })
+        )
+        message("YAML file successfully written to: ", path)
+      },
+      error = function(e) stop("Invalid YAML: ", e$message, call. = FALSE)
+    )
   })
 }
