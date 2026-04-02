@@ -4,7 +4,15 @@
 \alias{execute_sql_file}
 \title{Execute SQL file with parameter interpolation}
 \usage{
-execute_sql_file(sql, conn, execute = TRUE, ...)
+execute_sql_file(
+  sql,
+  conn,
+  execute = TRUE,
+  save_as_parquet = FALSE,
+  parquet_path = NULL,
+  partition_by = NULL,
+  ...
+)
 }
 \arguments{
 \item{sql}{A sql query string typically loaded via \code{load_sql_query()}}
@@ -13,6 +21,12 @@ execute_sql_file(sql, conn, execute = TRUE, ...)
 
 \item{execute}{logical; if TRUE (default), execute the query.
 If FALSE, return the interpolated SQL string.}
+
+\item{save_as_parquet}{logical; if TRUE, saves the result of a SELECT query}
+
+\item{parquet_path}{character; file path to save the Parquet file if \verb{save as_parquet} is TRUE. Required if \code{save_as_parquet} is TRUE.}
+
+\item{partition_by}{vector of column names to partition the Parquet file}
 
 \item{...}{additional arguments passed to DBI::dbExecute or DBI::dbGetQuery}
 }

@@ -324,14 +324,16 @@ testthat::test_that("SELECT query saves result to partitioned Parquet files", {
   testthat::expect_true(length(partition_files) > 0)
 
   # Read one of the partitioned Parquet files and verify its contents
-  partitioned_data <- arrow::read_parquet(file.path(parquet_dir, "y=a/part-0.parquet"))
+  partitioned_data <- arrow::read_parquet(
+    file.path(parquet_dir, "y=a/part-0.parquet")
+  )
   testthat::expect_s3_class(partitioned_data, "data.frame")
   testthat::expect_equal(partitioned_data$x, 1)
 
   DBI::dbDisconnect(conn)
 })
 
-testthat::test_that("Error is raised if parquet_path is not provided when save_as_parquet is TRUE", {
+testthat::test_that("If parquet_path provided and save_as_parquet is TRUE", {
   conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
 
   # Create a table and insert some data

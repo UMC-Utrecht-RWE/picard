@@ -144,6 +144,10 @@ interpolate_sql_params <- function(sql, params) {
 #' @param conn DBI connection object
 #' @param execute logical; if TRUE (default), execute the query.
 #'   If FALSE, return the interpolated SQL string.
+#' @param save_as_parquet logical; if TRUE, saves the result of a SELECT query
+#' @param parquet_path character; file path to save the Parquet file if `save
+#'  as_parquet` is TRUE. Required if `save_as_parquet` is TRUE.
+#' @param partition_by vector of column names to partition the Parquet file
 #' @param ... additional arguments passed to DBI::dbExecute or DBI::dbGetQuery
 #'
 #' @return If execute = TRUE, returns result from DBI.
@@ -186,7 +190,10 @@ execute_sql_file <- function(
     # If save_as_parquet is TRUE, save the result to a Parquet file
     if (save_as_parquet) {
       if (is.null(parquet_path)) {
-        stop("parquet_path must be provided when save_as_parquet is TRUE", call. = FALSE)
+        stop(
+          "parquet_path must be provided when save_as_parquet is TRUE",
+          call. = FALSE
+        )
       }
       arrow::write_dataset(
         result,
