@@ -174,8 +174,8 @@ execute_sql_file <- function(
 
   # Determine if this is a SELECT query or modification query
   sql_trimmed <- trimws(toupper(sql))
-  is_select <- grepl("^SELECT", sql_trimmed) ||
-    grepl("^WITH.*SELECT", sql_trimmed)
+  is_select <- grepl("^SELECT\\b", sql_trimmed) ||
+    grepl("^WITH\\b", sql_trimmed)
 
   if (is_select) {
     DBI::dbGetQuery(conn, sql, ...)
