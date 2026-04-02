@@ -45,7 +45,6 @@ jobs:
           extra-packages: |
             any::testthat
             any::devtools
-            any::dplyr
           needs: test
 
       - name: Run tests
