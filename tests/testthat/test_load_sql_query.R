@@ -256,3 +256,98 @@ testthat::test_that("INSERT executes and SELECT returns a data frame", {
   testthat::expect_equal(out$x, 1)
   DBI::dbDisconnect(conn)
 })
+
+testthat::test_that("SELECT query saves result to Parquet file", {
+  conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+
+  # Create a table and insert some data
+  DBI::dbExecute(conn, "CREATE TABLE t (x INTEGER, y TEXT)")
+  DBI::dbExecute(conn, "INSERT INTO t (x, y) VALUES (1, 'a'), (2, 'b')")
+
+  # Temporary file or directory for Parquet output
+  parquet_path <- tempfile()
+
+  # Execute the SELECT query and save the result to Parquet
+  execute_sql_file(
+    sql = "SELECT * FROM t",
+    conn = conn,
+    execute = TRUE,
+    save_as_parquet = TRUE,
+    parquet_path = parquet_path
+  )
+
+  # Check if the output is a directory (partitioned) or a single file
+  if (dir.exists(parquet_path)) {
+    # If it's a directory, find the first Parquet file
+    parquet_files <- list.files(
+      parquet_path, recursive = TRUE, full.names = TRUE, pattern = "\\.parquet$"
+    )
+    testthat::expect_true(length(parquet_files) > 0)
+    parquet_data <- arrow::read_parquet(parquet_files[1])
+  } else {
+    # If it's a single file, read it directly
+    testthat::expect_true(file.exists(parquet_path))
+    parquet_data <- arrow::read_parquet(parquet_path)
+  }
+
+  # Verify the contents of the Parquet file
+  testthat::expect_s3_class(parquet_data, "data.frame")
+  testthat::expect_equal(parquet_data$x, c(1, 2))
+  testthat::expect_equal(parquet_data$y, c("a", "b"))
+
+  DBI::dbDisconnect(conn)
+})
+
+testthat::test_that("SELECT query saves result to partitioned Parquet files", {
+  conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+
+  # Create a table and insert some data
+  DBI::dbExecute(conn, "CREATE TABLE t (x INTEGER, y TEXT)")
+  DBI::dbExecute(conn, "INSERT INTO t (x, y) VALUES (1, 'a'), (2, 'b')")
+
+  # Temporary directory for partitioned Parquet output
+  parquet_dir <- tempfile()
+
+  # Execute the SELECT query and save the result to partitioned Parquet files
+  execute_sql_file(
+    sql = "SELECT * FROM t",
+    conn = conn,
+    execute = TRUE,
+    save_as_parquet = TRUE,
+    parquet_path = parquet_dir,
+    partition_by = "y"
+  )
+
+  # Check that the partitioned Parquet files were created
+  testthat::expect_true(dir.exists(parquet_dir))
+  partition_files <- list.files(parquet_dir, recursive = TRUE)
+  testthat::expect_true(length(partition_files) > 0)
+
+  # Read one of the partitioned Parquet files and verify its contents
+  partitioned_data <- arrow::read_parquet(file.path(parquet_dir, "y=a/part-0.parquet"))
+  testthat::expect_s3_class(partitioned_data, "data.frame")
+  testthat::expect_equal(partitioned_data$x, 1)
+
+  DBI::dbDisconnect(conn)
+})
+
+testthat::test_that("Error is raised if parquet_path is not provided when save_as_parquet is TRUE", {
+  conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+
+  # Create a table and insert some data
+  DBI::dbExecute(conn, "CREATE TABLE t (x INTEGER)")
+  DBI::dbExecute(conn, "INSERT INTO t (x) VALUES (1)")
+
+  # Attempt to save to Parquet without providing parquet_path
+  testthat::expect_error(
+    execute_sql_file(
+      sql = "SELECT * FROM t",
+      conn = conn,
+      execute = TRUE,
+      save_as_parquet = TRUE
+    ),
+    regexp = "parquet_path must be provided when save_as_parquet is TRUE"
+  )
+
+  DBI::dbDisconnect(conn)
+})

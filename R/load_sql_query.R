@@ -167,6 +167,9 @@ execute_sql_file <- function(
     sql,
     conn,
     execute = TRUE,
+    save_as_parquet = FALSE,
+    parquet_path = NULL,
+    partition_by = NULL,
     ...) {
   if (!execute) {
     return(sql)
@@ -178,7 +181,22 @@ execute_sql_file <- function(
     grepl("^WITH\\b", sql_trimmed)
 
   if (is_select) {
-    DBI::dbGetQuery(conn, sql, ...)
+    result <- DBI::dbGetQuery(conn, sql, ...)
+
+    # If save_as_parquet is TRUE, save the result to a Parquet file
+    if (save_as_parquet) {
+      if (is.null(parquet_path)) {
+        stop("parquet_path must be provided when save_as_parquet is TRUE", call. = FALSE)
+      }
+      arrow::write_dataset(
+        result,
+        path = parquet_path,
+        format = "parquet",
+        partitioning = partition_by
+      )
+    }
+
+    result
   } else {
     DBI::dbExecute(conn, sql, ...)
   }
