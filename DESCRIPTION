@@ -30,6 +30,7 @@ Imports:
     scriptName (>= 1.0.1),
     stats (>= 3.6.2)
 Suggests:
+    dplyr (>= 1.2.0),
     lintr (>= 3.2.0),
     styler (>= 1.10.3),
     devtools (>= 2.4.6),
