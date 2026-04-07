@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use picard, please cite it using the metadata from this file."
+title: "picard"
+type: software
+authors:
+  - family-names: "Cinelli"
+    given-names: "Mattia"
+    email: "m.cinelli@umcutrecht.nl"
+    affiliation: "UMC Utrecht"
+    orcid: "https://orcid.org/0000-0001-9306-8079"
+license: "GPL-3.0-or-later"
+version: "1.2.1"
+date-released: "2026-02-25"
+repository-code: "https://github.com/UMC-Utrecht-RWE/picard"
+url: "https://github.com/UMC-Utrecht-RWE/picard"
+abstract: >
+  PICARD is an R package for orchestrating modular ETL pipelines used in
+  clinical research at UMC Utrecht. It provides configuration-driven
+  execution of project-specific transformation scripts with integrated
+  logging, auditing, and reproducibility support.
+keywords:
+  - "R"
+  - "ETL"
+  - "pipeline orchestration"
+  - "clinical research"
+  - "UMC Utrecht"
+  - "VAC4EU"
