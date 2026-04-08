@@ -3,7 +3,7 @@
 
 #' Save data to file based on extension
 #'
-#' This is the conceptual inverse of read_data().
+#' This is the conceptual inverse of load().
 #'
 #' @param data Object to save (data.table, list of tables, etc.)
 #' @param file_path Path to the output file. The extension decides

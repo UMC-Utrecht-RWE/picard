@@ -39,5 +39,5 @@ If NULL, no columns will be excluded.}
 Invisibly returns file_path
 }
 \description{
-This is the conceptual inverse of read_data().
+This is the conceptual inverse of load().
 }
