@@ -11,7 +11,7 @@ read_data <- function(file_path, file_name = NULL, col_types = NULL, ...) {
     msg = "'read_data()' is deprecated as version 1.2.1; use 'load()' instead."
   )
 
-  load(
+  picard::load(
     file_path = file_path,
     file_name = file_name,
     col_types = col_types,
@@ -51,7 +51,7 @@ save_data <- function(
     msg = "'save_data()' is deprecated as version 1.2.1; use 'save()' instead."
   )
 
-  save(
+  picard::save(
     data = data,
     file_path = file_path,
     file_name = file_name,
