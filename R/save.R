@@ -21,7 +21,7 @@
 #'
 #' @return Invisibly returns file_path
 #' @export
-save_data <- function(
+save <- function(
     data,
     file_path,
     file_name = NULL,

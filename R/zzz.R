@@ -2,14 +2,14 @@
 #'
 #' This file (named zzz.R by convention) contains the .onLoad hook
 #' that R calls when the package is loaded. It initializes all registries
-#' used by load(), save_data(), and plot_data_features().
+#' used by load(), save(), and plot_data_features().
 #'
 #' @keywords internal
 .onLoad <- function(libname, pkgname) {
   # Initialize reader registry (from load.R)
   .init_reader_registry()
 
-  # Initialize writer registry (from save_data.R)
+  # Initialize writer registry (from save.R)
   .init_writer_registry()
 
   # Initialize plotter registry (from plot_data.R)
