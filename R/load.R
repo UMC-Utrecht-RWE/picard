@@ -369,15 +369,21 @@ list_readers <- function() {
 #' @return A data frame
 #' @export
 load_rdata <- function(file_path) {
-  picard::load(file_path)
-  objects <- ls()[ls() != "file_path"]
+  env <- new.env(parent = emptyenv())
+  objects <- base::load(file_path, envir = env)
+
+  if (length(objects) == 0) {
+    stop("The RData file ", file_path, " does not contain any objects.")
+  }
+
   if (length(objects) > 1) {
     warning(
       "The RData file ", file_path,
       " contains more than one object. Only the first object will be returned."
     )
   }
-  get(objects[1])
+
+  get(objects[1], envir = env)
 }
 
 
