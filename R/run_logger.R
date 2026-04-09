@@ -115,7 +115,7 @@ LoggerManager <- R6::R6Class( # nolint
       }, namespace = namespaces)
 
       self$registry <- tryCatch({
-        picard::read_data(picard:::get_hash_output(log_dir = self$log_dir))
+        picard::load(picard:::get_hash_output(log_dir = self$log_dir))
       },
       error = function(e) {
         NULL
