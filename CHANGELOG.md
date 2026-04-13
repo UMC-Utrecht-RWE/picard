@@ -76,15 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # List of releases
 - unreleased: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
-<<<<<<< HEAD
 - V1.2.2: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.2
-=======
->>>>>>> main
 - V1.2.1: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.1
 - V1.2.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.0
 - V1.1.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.1
 - V1.0.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1
-<<<<<<< HEAD
-=======
-
->>>>>>> main
