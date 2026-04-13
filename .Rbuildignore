@@ -3,3 +3,4 @@
 ^.lintr$
 ^CITATION\.cff$
 ^\.zenodo\.json$
+^codemeta\.json$

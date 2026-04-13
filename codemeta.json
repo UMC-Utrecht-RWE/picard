@@ -1,0 +1,363 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "identifier": "picard",
+  "description": "It provides a unified interface to configure, trigger, and log multi-step ETL pipelines (T2–T5) used for clinical data harmonisation and analysis within the VAC4EU network and UMCU’s Digital Research Environment (DRE). The package enables:- Dynamic orchestration of project-specific transformation scripts, Configuration-driven control of pipeline substeps (T2–T5), Logging, auditing, plottinh and reproducibility tracking. PICARD is designed to “make it run”: ensuring consistent, transparent, and reproducible execution of UMCU’s data processing pipelines.",
+  "name": "picard: PICARD is an internal R package designed to manage and coordinate the execution of modular R scripts across the UMC Utrecht data transformation pipeline",
+  "license": "file LICENSE",
+  "version": "1.2.2",
+  "programmingLanguage": {
+    "@type": "ComputerLanguage",
+    "name": "R",
+    "url": "https://r-project.org"
+  },
+  "runtimePlatform": "R version 4.4.3 (2025-02-28)",
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Mattia",
+      "familyName": "Cinelli",
+      "email": "m.cinelli@umcutrecht.nl",
+      "@id": "https://orcid.org/0000-0001-9306-8079"
+    }
+  ],
+  "maintainer": [
+    {
+      "@type": "Person",
+      "givenName": "Mattia",
+      "familyName": "Cinelli",
+      "email": "m.cinelli@umcutrecht.nl",
+      "@id": "https://orcid.org/0000-0001-9306-8079"
+    }
+  ],
+  "softwareSuggestions": [
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "dplyr",
+      "name": "dplyr",
+      "version": ">= 1.2.0",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=dplyr"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "lintr",
+      "name": "lintr",
+      "version": ">= 3.2.0",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=lintr"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "styler",
+      "name": "styler",
+      "version": ">= 1.10.3",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=styler"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "devtools",
+      "name": "devtools",
+      "version": ">= 2.4.6",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=devtools"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "roxygen2",
+      "name": "roxygen2",
+      "version": ">= 7.3.2",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=roxygen2"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "testthat",
+      "name": "testthat",
+      "version": ">= 3.2.3",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=testthat"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "withr",
+      "name": "withr",
+      "version": ">= 3.0.2",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=withr"
+    }
+  ],
+  "softwareRequirements": {
+    "1": {
+      "@type": "SoftwareApplication",
+      "identifier": "DBI",
+      "name": "DBI",
+      "version": ">= 1.2.3",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=DBI"
+    },
+    "2": {
+      "@type": "SoftwareApplication",
+      "identifier": "duckdb",
+      "name": "duckdb",
+      "version": ">= 1.3.1",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=duckdb"
+    },
+    "3": {
+      "@type": "SoftwareApplication",
+      "identifier": "logger",
+      "name": "logger",
+      "version": ">= 0.4.0",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=logger"
+    },
+    "4": {
+      "@type": "SoftwareApplication",
+      "identifier": "purrr",
+      "name": "purrr",
+      "version": ">= 1.0.4",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=purrr"
+    },
+    "5": {
+      "@type": "SoftwareApplication",
+      "identifier": "R6",
+      "name": "R6",
+      "version": ">= 2.6.1",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=R6"
+    },
+    "6": {
+      "@type": "SoftwareApplication",
+      "identifier": "yaml",
+      "name": "yaml",
+      "version": ">= 2.3.10",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=yaml"
+    },
+    "7": {
+      "@type": "SoftwareApplication",
+      "identifier": "digest",
+      "name": "digest",
+      "version": ">= 0.6.37",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=digest"
+    },
+    "8": {
+      "@type": "SoftwareApplication",
+      "identifier": "data.table",
+      "name": "data.table",
+      "version": ">= 1.17.8",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=data.table"
+    },
+    "9": {
+      "@type": "SoftwareApplication",
+      "identifier": "ggplot2",
+      "name": "ggplot2",
+      "version": ">= 4.0.0",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=ggplot2"
+    },
+    "10": {
+      "@type": "SoftwareApplication",
+      "identifier": "patchwork",
+      "name": "patchwork",
+      "version": ">= 1.3.2",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=patchwork"
+    },
+    "11": {
+      "@type": "SoftwareApplication",
+      "identifier": "readxl",
+      "name": "readxl",
+      "version": ">= 1.4.5",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=readxl"
+    },
+    "12": {
+      "@type": "SoftwareApplication",
+      "identifier": "here",
+      "name": "here",
+      "version": ">= 1.0.2",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=here"
+    },
+    "13": {
+      "@type": "SoftwareApplication",
+      "identifier": "arrow",
+      "name": "arrow",
+      "version": ">= 22.0.0",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=arrow"
+    },
+    "14": {
+      "@type": "SoftwareApplication",
+      "identifier": "fst",
+      "name": "fst",
+      "version": ">= 0.9.8",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=fst"
+    },
+    "15": {
+      "@type": "SoftwareApplication",
+      "identifier": "fs",
+      "name": "fs",
+      "version": ">= 1.6.6",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=fs"
+    },
+    "16": {
+      "@type": "SoftwareApplication",
+      "identifier": "openxlsx",
+      "name": "openxlsx",
+      "version": ">= 4.2.7.1",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=openxlsx"
+    },
+    "17": {
+      "@type": "SoftwareApplication",
+      "identifier": "scriptName",
+      "name": "scriptName",
+      "version": ">= 1.0.1",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=scriptName"
+    },
+    "18": {
+      "@type": "SoftwareApplication",
+      "identifier": "stats",
+      "name": "stats",
+      "version": ">= 3.6.2"
+    },
+    "19": {
+      "@type": "SoftwareApplication",
+      "identifier": "R",
+      "name": "R",
+      "version": ">= 4.0.0"
+    },
+    "SystemRequirements": null
+  },
+  "fileSize": "11133.131KB"
+}
