@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [V1.2.2]
+## [V1.2.3]
 
+## [V1.2.2]
+### Changed
+- Minor changes in `README.md` and cheatsheet.
+### Added
+- Added codemeta.json
+
+## [V1.2.2]
 ### Added
 - Added `R/deprecated.R` for deprecated but still in use for now functions.
 
@@ -76,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # List of releases
 - unreleased: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
+- V1.2.3: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.3
 - V1.2.2: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.2
 - V1.2.1: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.1
 - V1.2.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.0
