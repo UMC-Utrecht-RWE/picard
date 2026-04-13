@@ -8,12 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [V1.2.3]
-
-## [V1.2.2]
 ### Changed
-- Minor changes in `README.md` and cheatsheet.
+- Minor changes in `README.md` and cheatsheet file.
 ### Added
-- Added codemeta.json
+- Added `codemeta.json`
 
 ## [V1.2.2]
 ### Added
