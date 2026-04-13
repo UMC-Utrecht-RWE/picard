@@ -41,8 +41,8 @@ Each `t*_pipeline` is identical except for `t2_pipeline` that implements the `sk
 ## Auxiliary functions
 Besides orchestrating the pipeline, the package also provides I/O helpers and auditing utilities.
 - I/O:
-  - `read_data.R:read_data`: Unique function to load any kind of file given a path, returns a `data.table`.
-  - `save_data.R:save_data`: Unique function to save any kind of file given a path and data.
+  - `load.R:load`: Unique function to load any kind of file given a path, returns a `data.table`.
+  - `save.R:save`: Unique function to save any kind of file given a path and data.
   - `load_sql_query.R:load_sql_query` and `execute_sql_file`: Loads and execute SQL code.
   - `utils.R:load_config`: Load the YAML files used to configure the pipeline.
 - Auditing:
