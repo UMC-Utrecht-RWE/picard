@@ -1,25 +1,25 @@
 ###############################
-# Tests for read_data function
+# Tests for load function
 ###############################
-testthat::test_that("read_data validates input incorrectly", {
+testthat::test_that("load validates input incorrectly", {
   testthat::expect_error(
-    read_data(NULL),
+    load(NULL),
     "file_path cannot be NULL"
   )
   testthat::expect_error(
-    read_data(123), "file_path must be a character string, not numeric"
+    load(123), "file_path must be a character string, not numeric"
   )
   testthat::expect_error(
-    read_data(c("a", "b")),
+    load(c("a", "b")),
     "file_path must be a single string, not a vector of length 2"
   )
-  testthat::expect_error(read_data(""), "file_path cannot be an empty string")
+  testthat::expect_error(load(""), "file_path cannot be an empty string")
 
   testthat::expect_error(
-    read_data("   "), "file_path cannot be an empty string"
+    load("   "), "file_path cannot be an empty string"
   )
   testthat::expect_error(
-    read_data("nonexistent_file.csv"), "File not found: nonexistent_file.csv"
+    load("nonexistent_file.csv"), "File not found: nonexistent_file.csv"
   )
 })
 
@@ -28,7 +28,7 @@ testthat::test_that("warns on case-insensitive file match and reads CSV", {
   temp_file <- base::file.path(temp_dir, "TestFile.CSV")
   base::writeLines("a,b,c\n1,2,3", temp_file)
 
-  result <- read_data(base::file.path(temp_dir, "testfile.csv"))
+  result <- load(base::file.path(temp_dir, "testfile.csv"))
 
   testthat::expect_true(data.table::is.data.table(result))
   testthat::expect_equal(base::names(result), c("a", "b", "c"))
@@ -36,7 +36,7 @@ testthat::test_that("warns on case-insensitive file match and reads CSV", {
   base::unlink(temp_file)
 })
 
-testthat::test_that("read_data calls the correct reader", {
+testthat::test_that("load calls the correct reader", {
   # Mock readers for testing
   picard:::register_reader("csv", function(path, ...) {
     data.table::data.table(a = 1)
@@ -48,19 +48,19 @@ testthat::test_that("read_data calls the correct reader", {
   # Test: csv reader
   tf_csv <- tempfile(fileext = ".csv")
   writeLines("a", tf_csv)
-  result <- read_data(tf_csv)
+  result <- load(tf_csv)
   testthat::expect_is(result, "data.table")
   testthat::expect_equal(names(result), "a")
 
   # Test: rds reader
   tf_rds <- tempfile(fileext = ".rds")
   saveRDS(data.table::data.table(b = 2), tf_rds)
-  result <- read_data(tf_rds)
+  result <- load(tf_rds)
   testthat::expect_is(result, "data.table")
   testthat::expect_equal(names(result), "b")
 })
 
-testthat::test_that("read_data passes ... to reader", {
+testthat::test_that("load passes ... to reader", {
   withr::defer(.init_reader_registry())
   withr::defer(picard:::register_reader("csv", function(path, skip = 0, ...) {
     testthat::expect_equal(skip, 2)
@@ -68,33 +68,33 @@ testthat::test_that("read_data passes ... to reader", {
   }))
   tf <- tempfile(fileext = ".csv")
   writeLines("a", tf)
-  result <- read_data(tf, skip = 2)
+  result <- load(tf, skip = 2)
   testthat::expect_is(result, "data.table")
 })
 
-testthat::test_that("read_data errors when file has no extension", {
+testthat::test_that("load errors when file has no extension", {
   tmp <- tempfile() # no extension
   on.exit(unlink(tmp), add = TRUE)
   file.create(tmp)
 
   testthat::expect_error(
-    read_data(tmp)
+    load(tmp)
   )
 })
 
-testthat::test_that("read_data no method for the extension", {
+testthat::test_that("load no method for the extension", {
   tmp <- tempfile(fileext = ".weird")
   on.exit(unlink(tmp), add = TRUE)
   file.create(tmp)
   # ext should be lowered; expect message to include the ext
   testthat::expect_error(
-    read_data(tmp),
+    load(tmp),
     regexp = "No reader registered for extension: 'weird'",
     fixed  = TRUE
   )
 })
 
-testthat::test_that("read_data wraps reader errors with clear message", {
+testthat::test_that("load wraps reader errors with clear message", {
   withr::defer(picard:::.init_reader_registry())
 
   picard:::register_reader("csv", function(path, ...) {
@@ -105,7 +105,7 @@ testthat::test_that("read_data wraps reader errors with clear message", {
   base::writeLines("a\n1", tf)
 
   err <- base::tryCatch(
-    picard::read_data(tf),
+    picard::load(tf),
     error = function(e) e
   )
 
@@ -280,16 +280,15 @@ testthat::test_that("Resets registry and loads defaults", {
 })
 
 testthat::test_that(".init_reader_registry for load_rdata reader", {
-  picard:::.init_reader_registry()
   withr::defer(picard:::.init_reader_registry())
-  withr::defer(picard:::register_reader("rdata", function(path, ...) {
+  picard:::register_reader("rdata", function(path, ...) {
     data.table::data.table(a = 1)
-  }))
+  })
   tf <- base::tempfile(fileext = ".RData")
   obj <- data.frame(a = 1:3, b = c("x", "y", "z"))
   base::save(obj, file = tf)
 
-  result <- read_data(tf, skip = 2)
+  result <- load(tf, skip = 2)
   testthat::expect_is(result, "data.table")
 })
 
@@ -301,7 +300,7 @@ testthat::test_that(".init_reader_registry for readRDS reader", {
   }))
   tf_rds <- tempfile(fileext = ".rds")
   saveRDS(data.table::data.table(b = 2), tf_rds)
-  result <- read_data(tf_rds)
+  result <- load(tf_rds)
   testthat::expect_is(result, "data.table")
 })
 
@@ -313,7 +312,7 @@ testthat::test_that(".init_reader_registry for read_xlsx reader", {
   }))
   tf_xlsx <- tempfile(fileext = ".xlsx")
   openxlsx::write.xlsx(data.table::data.table(c = 3), tf_xlsx)
-  result <- read_data(tf_xlsx)
+  result <- load(tf_xlsx)
   testthat::expect_is(result, "data.table")
 })
 
@@ -325,7 +324,7 @@ testthat::test_that(".init_reader_registry for read_fst reader", {
   }))
   tf_fst <- tempfile(fileext = ".fst")
   fst::write_fst(data.table::data.table(d = 4), tf_fst)
-  result <- read_data(tf_fst)
+  result <- load(tf_fst)
   testthat::expect_is(result, "data.table")
 })
 
@@ -339,7 +338,7 @@ testthat::test_that(".init_reader_registry for duckdb reader", {
   con <- DBI::dbConnect(duckdb::duckdb(), tf_duckdb)
   DBI::dbWriteTable(con, "test_table", data.table::data.table(e = 5))
   DBI::dbDisconnect(con, shutdown = TRUE)
-  result <- read_data(tf_duckdb)
+  result <- load(tf_duckdb)
   testthat::expect_is(result, "data.table")
 })
 
@@ -353,11 +352,11 @@ testthat::test_that("duckdb reader with load_only_table not null", {
   con <- DBI::dbConnect(duckdb::duckdb(), tf_duckdb)
   DBI::dbWriteTable(con, "test_table", data.table::data.table(e = 5))
   DBI::dbDisconnect(con, shutdown = TRUE)
-  result <- read_data(tf_duckdb, load_only_table = "test_table")
+  result <- load(tf_duckdb, load_only_table = "test_table")
   testthat::expect_is(result, "data.table")
 
   testthat::expect_error(
-    read_data(tf_duckdb, load_only_table = "nonexistent_table"),
+    load(tf_duckdb, load_only_table = "nonexistent_table"),
     regexp = "Input known_table does not match any table in the DuckDB file."
   )
 })
@@ -373,7 +372,7 @@ testthat::test_that("duckdb reader with length(tables) != 1", {
   DBI::dbWriteTable(con, "table1", data.table::data.table(e = 5))
   DBI::dbWriteTable(con, "table2", data.table::data.table(e = 6))
   DBI::dbDisconnect(con, shutdown = TRUE)
-  result <- read_data(tf_duckdb)
+  result <- load(tf_duckdb)
   testthat::expect_is(result, "data.table")
 })
 
@@ -422,16 +421,16 @@ testthat::test_that("load_rdata more the one object", {
   )
 })
 ###############################
-# Tests for read_data_batch
+# Tests for load_batch
 ###############################
-testthat::test_that("read_data_batch errors on empty file_paths", {
+testthat::test_that("load_batch errors on empty file_paths", {
   testthat::expect_error(
-    read_data_batch(character(0)),
+    load_batch(character(0)),
     "file_paths cannot be empty"
   )
 })
 
-testthat::test_that("read_data_batch combines using rbind", {
+testthat::test_that("load_batch combines using rbind", {
   picard:::.init_reader_registry()
   withr::defer(picard:::.init_reader_registry())
 
@@ -442,7 +441,7 @@ testthat::test_that("read_data_batch combines using rbind", {
   base::writeLines(c("id,val", "1,x"), f1)
   base::writeLines(c("id,val", "2,y"), f2)
 
-  res <- picard::read_data_batch(c(f1, f2), combine_method = "rbind")
+  res <- picard::load_batch(c(f1, f2), combine_method = "rbind")
 
   testthat::expect_s3_class(res, "data.table")
   testthat::expect_equal(base::nrow(res), 2L)
@@ -459,7 +458,7 @@ testthat::test_that("Returns named list when combine_method=list", {
   base::writeLines(c("id,val", "1,x"), f1)
   base::writeLines(c("id,val", "2,y"), f2)
 
-  res <- picard::read_data_batch(c(f1, f2), combine_method = "list")
+  res <- picard::load_batch(c(f1, f2), combine_method = "list")
 
   testthat::expect_type(res, "list")
   testthat::expect_named(res, base::basename(c(f1, f2)))
@@ -467,14 +466,14 @@ testthat::test_that("Returns named list when combine_method=list", {
   testthat::expect_s3_class(res[[2]], "data.table")
 })
 
-testthat::test_that("read_data_batch errors on invalid combine_method", {
+testthat::test_that("load_batch errors on invalid combine_method", {
   picard:::.init_reader_registry()
   withr::local_tempdir()
   f1 <- withr::local_tempfile(pattern = "a", fileext = ".csv")
   base::writeLines(c("id,val", "1,x"), f1)
 
   testthat::expect_error(
-    picard::read_data_batch(c(f1), combine_method = "nope"),
+    picard::load_batch(c(f1), combine_method = "nope"),
     "combine_method must be 'rbind' or 'list'"
   )
 })

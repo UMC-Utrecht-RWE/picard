@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [V1.2.2]
+
+### Added
+- Added `R/deprecated.R` for deprecated but still in use for now functions.
+
+### Changed
+- Simplyfied tag originations for `R/audit.R`.
+- `R/read_data.R::read_data()` is now `R/load.R::load()` all other aspects of the function are unchanged.
+- `R/save_data.R::save_data()` is now `R/save.R::save()` all other aspects of the function are unchanged.
+- `R/load_sql_query.R::execute_sql_file()` can now save results in parquet.
+
+### Future Work
+- `R/load_sql_query.R::load_sql_query()` should be handle by `R/load.R::load()`.
+- Fix warning in `R/audit.R` when `DESCRIPTION` not present.
+
 ## [V1.2.1]
 ### Fixed
 - `R/audit.R:.get_release_version` kept giving us problems with the DEAPs, we decided to remove any call to git as not prosent in DEAPs'enviroment.
@@ -61,8 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # List of releases
 - unreleased: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
+- V1.2.2: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.2
 - V1.2.1: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.1
 - V1.2.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.0
 - V1.1.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.1
 - V1.0.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1
-

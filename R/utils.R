@@ -165,7 +165,7 @@ track_file_changes <- function(
 
   # export the result
   dt <- data.table::data.table(file_path = file_paths, hash = hashes)
-  picard::save_data(
+  picard::save(
     data = dt,
     file_path = output_file,
     create_plot = FALSE

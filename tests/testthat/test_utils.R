@@ -189,7 +189,7 @@ testthat::test_that("track_file_changes creates registry correctly", {
   track_file_changes(log_dir = log_dir, path = temp_dir)
 
   # Read the registry
-  dt <- picard::read_data(
+  dt <- picard::load(
     file_path = log_dir,
     file_name = "registry.csv"
   )

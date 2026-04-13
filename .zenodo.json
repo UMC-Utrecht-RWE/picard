@@ -1,0 +1,29 @@
+{
+  "title": "picard",
+  "description": "PICARD is an R package for orchestrating modular ETL pipelines used in clinical research at UMC Utrecht. It coordinates configuration-driven execution of project-specific transformation scripts, with integrated logging, auditing, and reproducibility support.",
+  "creators": [
+    {
+      "name": "Cinelli, Mattia",
+      "orcid": "0000-0001-9306-8079",
+      "affiliation": "UMC Utrecht"
+    }
+  ],
+  "license": "GPL-3.0-or-later",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "R",
+    "ETL",
+    "pipeline orchestration",
+    "clinical research",
+    "UMC Utrecht",
+    "VAC4EU"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/UMC-Utrecht-RWE/picard",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
