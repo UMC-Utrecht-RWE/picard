@@ -9,13 +9,14 @@
 #'
 #' @param file_path Path to the YAML configuration file.
 #' Default is "configuration/config_values.yaml".
-#'
+#' @param config_dir Directory to look for YAML configuration files
+#' if file_path is NULL.
 #' @return A list of configuration values.
 #' @export
 load_config <- function(
-  file_path = NULL, 
+  file_path = NULL,
   config_dir = "configuration"
-  ) {
+) {
   if (!is.null(file_path)) {
     # Normalise so both relative and absolute paths work
     file_path <- normalizePath(file_path, mustWork = FALSE)
@@ -30,9 +31,9 @@ load_config <- function(
     mustWork = FALSE
   )
 
-    if (!dir.exists(config_path)) {
+  if (!dir.exists(config_path)) {
     stop(
-      "No YAML configuration files found in 'configuration' folder.", 
+      "No YAML configuration files found in 'configuration' folder.",
       call. = FALSE
     )
   }
