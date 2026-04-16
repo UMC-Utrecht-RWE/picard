@@ -4,11 +4,14 @@
 \alias{load_config}
 \title{Loead configuration values used during the pipeline execution}
 \usage{
-load_config(file_path = NULL)
+load_config(file_path = NULL, config_dir = "configuration")
 }
 \arguments{
 \item{file_path}{Path to the YAML configuration file.
 Default is "configuration/config_values.yaml".}
+
+\item{config_dir}{Directory to look for YAML configuration files
+if file_path is NULL.}
 }
 \value{
 A list of configuration values.

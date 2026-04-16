@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/1095759057.svg)](https://doi.org/10.5281/zenodo.19554744)
 # Pipeline Integration and Coordination for Automated R Dataflows <a href="https://github.com/UMC-Utrecht-RWE"><img src="man/figures/logo.png" align="right" height="188"/></a>
 
 Pipeline Integration and Coordination for Automated R Dataflows (PICARD) is the internal orchestration engine developed by Real World Evidence (RWE) UMC Utrecht to manage and automate our multi-step data transformation pipelines used in clinical research.
