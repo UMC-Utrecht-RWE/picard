@@ -335,7 +335,7 @@ LoggerManager <- R6::R6Class( # nolint
         )
       } else if (self$verbose == "High") {
         base::sprintf(
-          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s",
+          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", #nolint
           base::format(now, "%Y-%m-%d %H:%M:%S"),
           lvl_txt,
           run_s,
