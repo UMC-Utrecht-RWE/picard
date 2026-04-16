@@ -20,7 +20,7 @@ testthat::test_that("Test for file_path not null but it does not exists", {
   # Test loading the configuration values absent
   testthat::expect_error(
     load_config(file_path = ""),
-    "Configuration file not found at: "
+    "Config must be .yaml or .yml"
   )
 })
 

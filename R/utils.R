@@ -12,33 +12,47 @@
 #'
 #' @return A list of configuration values.
 #' @export
-load_config <- function(file_path = NULL) {
-  if (!base::is.null(file_path)) {
-    if (base::file.exists(file_path)) {
-      read_yaml(file_path)
-    } else {
-      stop("Configuration file not found at: ", file_path)
+load_config <- function(
+  file_path = NULL, 
+  config_dir = "configuration"
+  ) {
+  if (!is.null(file_path)) {
+    # Normalise so both relative and absolute paths work
+    file_path <- normalizePath(file_path, mustWork = FALSE)
+    if (!file.exists(file_path)) {
+      logger::log_error("Configuration file not found at: ", file_path, call. = FALSE)
     }
-  } else {
-    # list all .yamls in the configuration folder
-    yamls <- list.files(
-      here::here("configuration"),
-      pattern = "\\.yaml$",
-      full.names = TRUE
-    )
-    if (length(yamls) == 0) {
-      stop("No YAML configuration files found in 'configuration' folder.")
-    }
-    # load all files and add a new variable in the environment
-    # for each file with the name of the file
-    for (yaml in yamls) {
-      base::assign(
-        tolower(tools::file_path_sans_ext(basename(yaml))),
-        read_yaml(yaml),
-        envir = .GlobalEnv
-      )
-    }
+    return(read_yaml(file_path))
   }
+
+  config_path <- base::normalizePath(
+    base::file.path(getwd(), config_dir),
+    mustWork = FALSE
+  )
+
+    if (!dir.exists(config_path)) {
+    logger::log_error(
+      "Configuration directory not found: ", config_path,
+      "\n  (working directory: ", getwd(), ")",
+      call. = FALSE
+    )
+  }
+
+  yamls <- list.files(config_path, pattern = "\\.yaml$", full.names = TRUE)
+
+  if (length(yamls) == 0) {
+    logger::log_error(
+      "No YAML files found in: ", config_path,
+      call. = FALSE
+    )
+  }
+
+  for (yaml in yamls) {
+    var_name <- tolower(tools::file_path_sans_ext(basename(yaml)))
+    base::assign(var_name, read_yaml(yaml), envir = .GlobalEnv)
+    logger::log_info(paste0("Loaded config '", var_name, "' from: ", yaml))
+  }
+  invisible(yamls)
 }
 
 #' Ensure that a YAML file is valid and strictly formatted
