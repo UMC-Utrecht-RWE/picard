@@ -304,7 +304,19 @@ LoggerManager <- R6::R6Class( # nolint
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
       # Be sure current_script is an existing file (not a directory)
-      # Not all log message are connected with a file
+      # Not all log messages are connected with a file.
+      hash <- ""
+      if (self$verbose == "High" && !is.null(self$current_script) &&
+          file_test("-f", self$current_script)) {
+        hash <- picard:::compute_hash(self$current_script)
+
+        if (!is.null(self$registry) &&
+            nrow(self$registry[file_path == self$current_script]) == 1 &&
+            hash != self$registry[file_path == self$current_script]$hash) {
+          hash <- paste0(hash, "\nScript modified by user\n")
+        }
+      }
+
       # Change the color of the message based on message level,
       # using crayon package. The mapping is as follows:
       # Level	 Colour
@@ -334,8 +346,8 @@ LoggerManager <- R6::R6Class( # nolint
           message
         )
       } else if (self$verbose == "High") {
-        base::sprintf(
-          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", #nolint
+        base::sprintf(# Original with step and script times
+          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", # nolint
           base::format(now, "%Y-%m-%d %H:%M:%S"),
           lvl_txt,
           run_s,
@@ -347,6 +359,8 @@ LoggerManager <- R6::R6Class( # nolint
           message,
           hash
         )
+      } else {
+        ""
       }
 
       if (requireNamespace("crayon", quietly = TRUE)) {
