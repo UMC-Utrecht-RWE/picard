@@ -305,22 +305,17 @@ LoggerManager <- R6::R6Class( # nolint
 
       # Be sure current_script is an existing file (not a directory)
       # Not all log message are connected with a file
-      if (self$verbose == "High") {
-        if (is.null(self$current_script)) {
-          hash <- ""
-        } else if (file_test("-f", self$current_script)) {
-          hash <- picard:::compute_hash(self$current_script)
-          if (nrow(self$registry[file_path == self$current_script] == 1)) {
-            if (hash != self$registry[file_path == self$current_script]$hash) {
-              hash <- paste0(hash, "\nScript modified by user\n")
-            }
-          }
-        } else {
-          hash <- ""
-        }
-      }
-
-      if (self$verbose == "Low") {
+      # Change the color of the message based on message level,
+      # using crayon package. The mapping is as follows:
+      # Level	 Colour
+      # Trace	Purple
+      # Debug	Blue
+      # Info	No change
+      # Success	Green
+      # Warning	Yellow
+      # Error	Red
+      # Fatal	Dark Red (bold)
+      line <- if (self$verbose == "Low") {
         base::sprintf(
           "%s | %-5s | %s",
           base::format(now, "%Y-%m-%d %H:%M:%S"),
@@ -339,9 +334,9 @@ LoggerManager <- R6::R6Class( # nolint
           message
         )
       } else if (self$verbose == "High") {
-        base::sprintf( # Original with step and script times
-          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", # nolint
-          base::format(now, "%Y-%m-%d %H:%M:%S"), # nolint
+        base::sprintf(
+          "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s",
+          base::format(now, "%Y-%m-%d %H:%M:%S"),
           lvl_txt,
           run_s,
           step_txt,
@@ -353,6 +348,24 @@ LoggerManager <- R6::R6Class( # nolint
           hash
         )
       }
+
+      if (requireNamespace("crayon", quietly = TRUE)) {
+        color_fun <- switch(
+          lvl_txt,
+          "TRACE" = crayon::magenta,
+          "DEBUG" = crayon::blue,
+          "INFO" = identity,
+          "SUCCESS" = crayon::green,
+          "WARN" = crayon::yellow,
+          "ERROR" = crayon::red,
+          "FATAL" = crayon::red$bold,
+          identity
+        )
+        line <- color_fun(line)
+      }
+
+      line
+
     },
 
     #' Start Capturing Print Statements
