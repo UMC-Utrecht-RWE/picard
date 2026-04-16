@@ -62,10 +62,8 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
     #' @param verbose Verbosity level.
-    configure = function(
-      log_dir = "logs",
-      verbose = c("Normal", "High", "Low")
-    ) {
+    configure = function(log_dir = "logs",
+                         verbose = c("Normal", "High", "Low")) {
       self$log_dir <- log_dir
       if (!base::dir.exists(self$log_dir)) {
         base::dir.create(self$log_dir, recursive = TRUE)
@@ -102,24 +100,26 @@ LoggerManager <- R6::R6Class( # nolint
         app_console(line)
 
         if (!(isTRUE(self$capture_active) &&
-                base::identical(self$capture_target, "global"))) {
+          base::identical(self$capture_target, "global"))) {
           app_main(line)
         }
 
         if (!base::is.null(self$step_appender)) {
           if (!(isTRUE(self$capture_active) &&
-                  base::identical(self$capture_target, "step"))) {
+            base::identical(self$capture_target, "step"))) {
             self$step_appender(line)
           }
         }
       }, namespace = namespaces)
 
-      self$registry <- tryCatch({
-        picard::load(picard:::get_hash_output(log_dir = self$log_dir))
-      },
-      error = function(e) {
-        NULL
-      })
+      self$registry <- tryCatch(
+        {
+          picard::load(picard:::get_hash_output(log_dir = self$log_dir))
+        },
+        error = function(e) {
+          NULL
+        }
+      )
       if (is.null(self$registry) & self$verbose == "High") {
         logger::log_error("Registry file necessary!")
         stop("Registry file necessary!")
@@ -236,15 +236,13 @@ LoggerManager <- R6::R6Class( # nolint
     #' @param .topenv Top-level environment.
     #' @param ... Additional arguments.
     #' @return Formatted log message string.
-    .layout_with_timers = function(
-      level,
-      msg = NULL,
-      namespace = NULL,
-      .logcall = NULL,
-      .topcall = NULL,
-      .topenv = NULL,
-      ...
-    ) {
+    .layout_with_timers = function(level,
+                                   msg = NULL,
+                                   namespace = NULL,
+                                   .logcall = NULL,
+                                   .topcall = NULL,
+                                   .topenv = NULL,
+                                   ...) {
       if (base::is.list(level) && !base::is.null(level$msg)) {
         record <- level
         lvl <- record$level
@@ -307,12 +305,12 @@ LoggerManager <- R6::R6Class( # nolint
       # Not all log messages are connected with a file.
       hash <- ""
       if (self$verbose == "High" && !is.null(self$current_script) &&
-          file_test("-f", self$current_script)) {
+        file_test("-f", self$current_script)) {
         hash <- picard:::compute_hash(self$current_script)
 
         if (!is.null(self$registry) &&
-            nrow(self$registry[file_path == self$current_script]) == 1 &&
-            hash != self$registry[file_path == self$current_script]$hash) {
+          nrow(self$registry[file_path == self$current_script]) == 1 &&
+          hash != self$registry[file_path == self$current_script]$hash) {
           hash <- paste0(hash, "\nScript modified by user\n")
         }
       }
@@ -346,7 +344,7 @@ LoggerManager <- R6::R6Class( # nolint
           message
         )
       } else if (self$verbose == "High") {
-        base::sprintf(# Original with step and script times
+        base::sprintf( # Original with step and script times
           "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", # nolint
           base::format(now, "%Y-%m-%d %H:%M:%S"),
           lvl_txt,
@@ -364,8 +362,7 @@ LoggerManager <- R6::R6Class( # nolint
       }
 
       if (requireNamespace("crayon", quietly = TRUE)) {
-        color_fun <- switch(
-          lvl_txt,
+        color_fun <- switch(lvl_txt,
           "TRACE" = crayon::magenta,
           "DEBUG" = crayon::blue,
           "INFO" = identity,
@@ -379,7 +376,6 @@ LoggerManager <- R6::R6Class( # nolint
       }
 
       line
-
     },
 
     #' Start Capturing Print Statements
@@ -394,8 +390,11 @@ LoggerManager <- R6::R6Class( # nolint
                                       capture_messages = TRUE) {
       target <- base::match.arg(target)
 
-      sink_file <- if (target == "global") self$global_log_file
-      else self$step_log_file
+      sink_file <- if (target == "global") {
+        self$global_log_file
+      } else {
+        self$step_log_file
+      }
 
       self$stop_capturing_prints()
 
