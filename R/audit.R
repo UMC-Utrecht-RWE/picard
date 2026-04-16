@@ -131,7 +131,7 @@ audit_add <- function(...) {
 .get_release_version <- function() {
 
   desc <- tryCatch(
-    base::read.dcf("DESCRIPTION"),
+    base::suppressWarnings(base::read.dcf("DESCRIPTION")),
     error = function(e) NULL
   )
 
