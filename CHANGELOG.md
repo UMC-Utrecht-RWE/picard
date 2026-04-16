@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [V1.2.4]
+### Changed 
+- Packaged pubblished in zenodo.org
 
 ## [V1.2.3]
 ### Changed
@@ -81,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # List of releases
 - unreleased: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
+- V1.2.4: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.4
 - V1.2.3: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.3
 - V1.2.2: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.2
 - V1.2.1: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.1
