@@ -20,7 +20,7 @@ load_config <- function(
     # Normalise so both relative and absolute paths work
     file_path <- normalizePath(file_path, mustWork = FALSE)
     if (!file.exists(file_path)) {
-      logger::log_error("Configuration file not found at: ", file_path, call. = FALSE)
+      stop("Configuration file not found at: ", file_path, call. = FALSE)
     }
     return(read_yaml(file_path))
   }
@@ -31,9 +31,8 @@ load_config <- function(
   )
 
     if (!dir.exists(config_path)) {
-    logger::log_error(
-      "Configuration directory not found: ", config_path,
-      "\n  (working directory: ", getwd(), ")",
+    stop(
+      "No YAML configuration files found in 'configuration' folder.", 
       call. = FALSE
     )
   }
@@ -41,7 +40,7 @@ load_config <- function(
   yamls <- list.files(config_path, pattern = "\\.yaml$", full.names = TRUE)
 
   if (length(yamls) == 0) {
-    logger::log_error(
+    stop(
       "No YAML files found in: ", config_path,
       call. = FALSE
     )
