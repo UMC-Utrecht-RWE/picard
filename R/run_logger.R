@@ -99,20 +99,20 @@ LoggerManager <- R6::R6Class( # nolint
       logger::log_appender(function(line) {
         app_console(line)
 
-        if (!(isTRUE(self$capture_active) &&
+        if (!(base::isTRUE(self$capture_active) &&
           base::identical(self$capture_target, "global"))) {
           app_main(line)
         }
 
         if (!base::is.null(self$step_appender)) {
-          if (!(isTRUE(self$capture_active) &&
+          if (!(base::isTRUE(self$capture_active) &&
             base::identical(self$capture_target, "step"))) {
             self$step_appender(line)
           }
         }
       }, namespace = namespaces)
 
-      self$registry <- tryCatch(
+      self$registry <- base::tryCatch(
         {
           picard::load(picard:::get_hash_output(log_dir = self$log_dir))
         },
@@ -120,13 +120,13 @@ LoggerManager <- R6::R6Class( # nolint
           NULL
         }
       )
-      if (is.null(self$registry) & self$verbose == "High") {
+      if (base::is.null(self$registry) & self$verbose == "High") {
         logger::log_error("Registry file necessary!")
         stop("Registry file necessary!")
       }
 
       logger::log_info("Pipeline configured. run_id={self$run_id}")
-      invisible(self)
+      base::invisible(self)
     },
 
     #' Cleanup Old Logs
@@ -141,8 +141,8 @@ LoggerManager <- R6::R6Class( # nolint
         recursive = TRUE
       )
 
-      if (length(old_logs) == 0) {
-        return(invisible(NULL))
+      if (base::length(old_logs) == 0) {
+        return(base::invisible(NULL))
       }
 
       old_logs_dates <- base::file.mtime(old_logs)
@@ -150,7 +150,7 @@ LoggerManager <- R6::R6Class( # nolint
 
       base::file.remove(old_logs[old_logs_dates < cutoff_date])
 
-      invisible(NULL)
+      base::invisible(NULL)
     },
 
     #' Initialize Step Logger
@@ -221,7 +221,7 @@ LoggerManager <- R6::R6Class( # nolint
       }
       self$current_script <- NULL
       self$script_start_time <- NULL
-      invisible(self)
+      base::invisible(self)
     },
 
     #' Layout with Timers
