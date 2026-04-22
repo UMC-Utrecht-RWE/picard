@@ -43,8 +43,6 @@ This file defines the top-level steps and the script to execute for each step.
 Now create `configuration/run_t2.R`:
 
 ```r
-library(picard)
-
 t2 <- picard::t2_pipeline$new(
   config_t2 = "configuration/config_T2.yaml",
   config_project = "configuration/config_project.yaml",
@@ -100,18 +98,13 @@ partition_col: "concept_id"
 Create `transformations/T2/import_source.R`:
 
 ```r
-library(picard)
-library(data.table)
-
-dt <- data.table(person_id = 1:5, code = c("A", "B", "A", "C", "B"))
+dt <- data.table::data.table(person_id = 1:5, code = c("A", "B", "A", "C", "B"))
 picard::save(dt, "data/intermediate_data_file/import_source.parquet")
 ```
 
 Create `transformations/T2/map_codes.R`:
 
 ```r
-library(picard)
-
 dt <- picard::load("data/intermediate_data_file/import_source.parquet")
 dt[, mapped_code := paste0("MAP_", code)]
 picard::save(dt, "data/intermediate_data_file/map_codes.parquet")
@@ -120,8 +113,6 @@ picard::save(dt, "data/intermediate_data_file/map_codes.parquet")
 Create `transformations/T2/derive_outcomes.R`:
 
 ```r
-library(picard)
-
 dt <- picard::load("data/intermediate_data_file/map_codes.parquet")
 dt[, outcome := mapped_code %in% c("MAP_A", "MAP_B")]
 picard::save(dt, "data/intermediate_data_file/derive_outcomes.parquet")
@@ -134,8 +125,6 @@ Because `derive_outcomes` is set to `false`, this script will be skipped.
 In R:
 
 ```r
-library(picard)
-
 pl <- picard::pipeline$new("configuration/config_pipeline.yaml")
 pl$run()
 ```
@@ -156,8 +145,6 @@ pl$run(step_subset = c("T2"))
 ## 7. Use Built-In I/O Utilities
 
 ```r
-library(picard)
-
 # Read input
 x <- picard::load("data/intermediate_data_file/map_codes.parquet")
 
@@ -172,8 +159,6 @@ picard::list_writers()
 ## 8. Add Simple Auditing
 
 ```r
-library(picard)
-
 dt <- picard::load("data/intermediate_data_file/map_codes.parquet")
 
 picard::audit_start(dir_output = "data/audits", file_name = "map_codes")
@@ -185,10 +170,6 @@ picard::audit_end()
 ## 9. SQL Workflow Example
 
 ```r
-library(picard)
-library(DBI)
-library(duckdb)
-
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = ":memory:")
 on.exit(DBI::dbDisconnect(con), add = TRUE)
 
@@ -200,7 +181,55 @@ sql <- picard::load_sql_query(
 result <- picard::execute_sql_file(sql = sql, conn = con)
 ```
 
-## 10. Troubleshooting Checklist
+## 10. Clean Outputs and Logs
+
+PICARD provides cleanup methods at different levels.
+
+### 10.1 Use Pipeline Clean for Any Folder
+
+`pipeline$clean()` deletes all files inside the folder you pass in `content_to_delete`.
+
+```r
+pl <- picard::pipeline$new("configuration/config_pipeline.yaml")
+pl$clean(content_to_delete = "data/intermediate_data_file")
+```
+
+Use this with care: this is a generic folder cleanup.
+
+### 10.2 Use T2Pipeline Clean for Intermediates
+
+`t2_pipeline$clean()` deletes the T2 intermediate folder defined in `config_T2.yaml`, but only when cleanup is enabled.
+
+In `configuration/config_T2.yaml`:
+
+```yaml
+cleanup:
+  intermediate_data_file: true
+```
+
+Then run:
+
+```r
+t2 <- picard::t2_pipeline$new(
+  config_t2 = "configuration/config_T2.yaml",
+  config_project = "configuration/config_project.yaml"
+)
+t2$clean()
+```
+
+### 10.3 Customize Logger Cleanup Retention
+
+`LoggerManager` already removes old logs using `cleanup_old_logs(days_to_keep = 30)`.
+To keep logs for a different period, configure and call cleanup explicitly:
+
+```r
+picard::logger_manager$configure(log_dir = "logs", verbose = "Normal")
+picard::logger_manager$cleanup_old_logs(days_to_keep = 7)
+```
+
+This keeps only the last 7 days of logs.
+
+## 11. Troubleshooting Checklist
 
 - `Missing configuration file`:
   - Check relative paths and current working directory.
