@@ -33,7 +33,7 @@ entire partition directories and all files within them.
 }
 \details{
 Each partition is assumed to be stored as a directory of the form
-\verb{partition_col=<partition_id>} directly under each hive path.
+\code{partition_col=partition_id} directly under each hive path.
 
 This function operates at the filesystem level and is intended for use with
 external or unmanaged Hive tables. For managed Hive tables, partitions should

@@ -9,7 +9,8 @@ register_writer(extension, writer_func)
 \arguments{
 \item{extension}{File extension (e.g. "csv", "parquet")}
 
-\item{writer_func}{Function(data, path, ...) that writes data to path}
+\item{writer_func}{Function that accepts data, an output path, and optional
+extra arguments, then writes the data to that path.}
 }
 \description{
 Register a writer for a file extension

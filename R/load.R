@@ -331,7 +331,8 @@ define_column_types <- function(df, col_types) {
 #' Register a reader for a file extension
 #'
 #' @param extension File extension (e.g., "csv", "parquet")
-#' @param reader_func Function that takes `path, ...` and returns data
+#' @param reader_func Function that accepts a file path and optional extra
+#'   arguments, and returns data.
 #' @export
 register_reader <- function(extension, reader_func) {
   if (!is.function(reader_func)) {

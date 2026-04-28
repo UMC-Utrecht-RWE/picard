@@ -4,6 +4,36 @@
 \alias{Pipeline}
 \alias{pipeline}
 \title{Pipeline Class for RSV-1026 Project}
+\arguments{
+\item{config_pipeline}{Path to the YAML configuration file}
+
+\item{path}{Path to the YAML file}
+
+\item{content_to_delete}{Path to be deleted}
+
+\item{config_file}{The content of YAML file as a list.}
+
+\item{project}{loaded from YAML}
+
+\item{step_subset}{Optional vector of step names to run}
+
+\item{cfg}{Configuration list containing substeps}
+
+\item{step_key}{Key for the step in the configuration, for example "T2"}
+
+\item{spec}{Specification of what to delete}
+
+\item{dry_run}{Logical. If TRUE (default), do not delete anything;
+only compute and report which partition paths would be removed.
+If FALSE, the matching partition directories are actually deleted.}
+}
+\value{
+An instance of the class
+
+Parsed YAML content as a list
+
+Parsed YAML content as a list
+}
 \description{
 Provides the common orchestration utilities:
 \itemize{
@@ -14,197 +44,29 @@ Provides the common orchestration utilities:
 
 Subclasses (e.g., T2Pipeline) delegate their substep execution to
 run_substeps().
-}
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{config}}{Configuration loaded from YAML}
 
-\item{\code{steps}}{List of steps to execute, loaded from the config}
-}
-\if{html}{\out{</div>}}
-}
-\section{Methods}{
-\subsection{Public methods}{
-\itemize{
-\item \href{#method-Pipeline-new}{\code{pipeline$new()}}
-\item \href{#method-Pipeline-load_yaml}{\code{pipeline$load_yaml()}}
-\item \href{#method-Pipeline-clean}{\code{pipeline$clean()}}
-\item \href{#method-Pipeline-skip_step}{\code{pipeline$skip_step()}}
-\item \href{#method-Pipeline-run}{\code{pipeline$run()}}
-\item \href{#method-Pipeline-run_substeps}{\code{pipeline$run_substeps()}}
-\item \href{#method-Pipeline-delete_data}{\code{pipeline$delete_data()}}
-\item \href{#method-Pipeline-clone}{\code{pipeline$clone()}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Pipeline-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Pipeline-new}{}}}
-\subsection{Method \code{new()}}{
 Initialize the pipeline with a YAML configuration file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{pipeline$new(
-  config_pipeline = file.path("configuration", "config_pipeline.yaml")
-)}\if{html}{\out{</div>}}
-}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{config_pipeline}}{Path to the YAML configuration file}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-An instance of the class
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Pipeline-load_yaml"></a>}}
-\if{latex}{\out{\hypertarget{method-Pipeline-load_yaml}{}}}
-\subsection{Method \code{load_yaml()}}{
 Load a YAML configuration file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{pipeline$load_yaml(path)}\if{html}{\out{</div>}}
-}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{path}}{Path to the YAML file}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Parsed YAML content as a list
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Pipeline-clean"></a>}}
-\if{latex}{\out{\hypertarget{method-Pipeline-clean}{}}}
-\subsection{Method \code{clean()}}{
 Delete all files within a folder.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{pipeline$clean(content_to_delete)}\if{html}{\out{</div>}}
-}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{content_to_delete}}{Path to be deleted}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-NULL
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Pipeline-skip_step"></a>}}
-\if{latex}{\out{\hypertarget{method-Pipeline-skip_step}{}}}
-\subsection{Method \code{skip_step()}}{
 Update substep flags when outputs already exist.
 
 Take the configuration for a pipeline component, inspect its substeps,
 and disable any substep whose expected outputs are already present.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{pipeline$skip_step(config_file, project)}\if{html}{\out{</div>}}
-}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{config_file}}{The content of YAML file as a list.}
-
-\item{\code{project}}{loaded from YAML}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Parsed YAML content as a list
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Pipeline-run"></a>}}
-\if{latex}{\out{\hypertarget{method-Pipeline-run}{}}}
-\subsection{Method \code{run()}}{
 Run the full pipeline.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{pipeline$run(step_subset = NULL)}\if{html}{\out{</div>}}
-}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{step_subset}}{Optional vector of step names to run}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-NULL
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Pipeline-run_substeps"></a>}}
-\if{latex}{\out{\hypertarget{method-Pipeline-run_substeps}{}}}
-\subsection{Method \code{run_substeps()}}{
 Run substeps defined in a configuration file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{pipeline$run_substeps(cfg, step_key)}\if{html}{\out{</div>}}
-}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{cfg}}{Configuration list containing substeps}
-
-\item{\code{step_key}}{Key for the step in the configuration, for example "T2"}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-NULL
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Pipeline-delete_data"></a>}}
-\if{latex}{\out{\hypertarget{method-Pipeline-delete_data}{}}}
-\subsection{Method \code{delete_data()}}{
 Delete data for a supported specification.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{pipeline$delete_data(spec, dry_run = TRUE)}\if{html}{\out{</div>}}
 }
+\section{Fields}{
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{spec}}{Specification of what to delete}
+\item{\code{config}}{Configuration loaded from YAML}
 
-\item{\code{dry_run}}{Logical. If TRUE (default), do not delete anything;
-only compute and report which partition paths would be removed.
-If FALSE, the matching partition directories are actually deleted.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-NULL
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Pipeline-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Pipeline-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{pipeline$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
+\item{\code{steps}}{List of steps to execute, loaded from the config}
+}}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
-}

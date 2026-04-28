@@ -3,18 +3,66 @@
 \name{LoggerManager}
 \alias{LoggerManager}
 \title{LoggerManager Class}
-\description{
-LoggerManager Class
+\arguments{
+\item{log_dir}{Directory where logs will be stored. Defaults to "logs".}
 
-LoggerManager Class
+\item{verbose}{Verbosity level.}
+
+\item{days_to_keep}{Number of days to retain logs. Defaults to 30 days.}
+
+\item{step_name}{Name of the step for which the log is being initialized.}
+
+\item{script_name}{Name of the script being started.}
+
+\item{target}{Target log file to capture prints.
+Options are "global" or "step".}
+
+\item{capture_messages}{Whether to also capture messages/warnings.}
+}
+\value{
+None
+
+None
+
+None
+
+None
+}
+\description{
+Initialize the LoggerManager instance.
+
+Configure the LoggerManager instance.
+
+Sets up the logging directory, global log file, and log appenders.
+Cleans up old logs and configures the global logger.
+
+Delete log files older than a specified number of days.
+
+Initialize a step-specific logger.
+
+Sets up a step-specific logger that logs only to the log file.
+
+Reset the step-specific logger.
+
+Start the timer for a script within the current step.
+
+Reset the current script timer.
+
+Start capturing print statements.
+
+Redirect \code{stdout} output, such as print statements, to a log file.
+
+Stop capturing print statements.
+
+Stop redirecting \code{stdout} output to the active log file.
 }
 \details{
 A class for managing logging functionality in a pipeline.
 It supports logging to both console and files,
 cleaning up old logs, and creating step-specific loggers.
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
+\section{Fields}{
+
 \describe{
 \item{\code{log_dir}}{Directory where logs are stored.}
 
@@ -50,240 +98,5 @@ Options are "Normal", "Low", or "High".}
 \item{\code{capture_active}}{Whether capturing of print statements is active.}
 
 \item{\code{capture_target}}{Target log file for captured prints.}
-}
-\if{html}{\out{</div>}}
-}
-\section{Methods}{
-\subsection{Public methods}{
-\itemize{
-\item \href{#method-LoggerManager-new}{\code{LoggerManager$new()}}
-\item \href{#method-LoggerManager-configure}{\code{LoggerManager$configure()}}
-\item \href{#method-LoggerManager-cleanup_old_logs}{\code{LoggerManager$cleanup_old_logs()}}
-\item \href{#method-LoggerManager-start_step_logger}{\code{LoggerManager$start_step_logger()}}
-\item \href{#method-LoggerManager-end_step_logger}{\code{LoggerManager$end_step_logger()}}
-\item \href{#method-LoggerManager-start_script}{\code{LoggerManager$start_script()}}
-\item \href{#method-LoggerManager-end_script}{\code{LoggerManager$end_script()}}
-\item \href{#method-LoggerManager-.layout_with_timers}{\code{LoggerManager$.layout_with_timers()}}
-\item \href{#method-LoggerManager-start_capturing_prints}{\code{LoggerManager$start_capturing_prints()}}
-\item \href{#method-LoggerManager-stop_capturing_prints}{\code{LoggerManager$stop_capturing_prints()}}
-\item \href{#method-LoggerManager-clone}{\code{LoggerManager$clone()}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-new"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize the LoggerManager instance.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$new()}\if{html}{\out{</div>}}
-}
+}}
 
-\subsection{Returns}{
-NULL
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-configure"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-configure}{}}}
-\subsection{Method \code{configure()}}{
-Configure the LoggerManager instance.
-
-Sets up the logging directory, global log file, and log appenders.
-Cleans up old logs and configures the global logger.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(log_dir = "logs", verbose = c("Normal", "High", "Low"))}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{log_dir}}{Directory where logs will be stored. Defaults to "logs".}
-
-\item{\code{verbose}}{Verbosity level.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-cleanup_old_logs"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-cleanup_old_logs}{}}}
-\subsection{Method \code{cleanup_old_logs()}}{
-Delete log files older than a specified number of days.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$cleanup_old_logs(days_to_keep = 30)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{days_to_keep}}{Number of days to retain logs. Defaults to 30 days.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-start_step_logger"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-start_step_logger}{}}}
-\subsection{Method \code{start_step_logger()}}{
-Initialize a step-specific logger.
-
-Sets up a step-specific logger that logs only to the log file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_step_logger(step_name)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{step_name}}{Name of the step for which the log is being initialized.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-end_step_logger"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-end_step_logger}{}}}
-\subsection{Method \code{end_step_logger()}}{
-Reset the step-specific logger.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$end_step_logger()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-None
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-start_script"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-start_script}{}}}
-\subsection{Method \code{start_script()}}{
-Start the timer for a script within the current step.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_script(script_name)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{script_name}}{Name of the script being started.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-end_script"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-end_script}{}}}
-\subsection{Method \code{end_script()}}{
-Reset the current script timer.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$end_script()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-None
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-.layout_with_timers"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-.layout_with_timers}{}}}
-\subsection{Method \code{.layout_with_timers()}}{
-Format log messages with run, step, and script timing.
-
-This layout method also handles log-record objects passed through the
-logger callback interface.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$.layout_with_timers(
-  level,
-  msg = NULL,
-  namespace = NULL,
-  .logcall = NULL,
-  .topcall = NULL,
-  .topenv = NULL,
-  ...
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{level}}{Log level.}
-
-\item{\code{msg}}{Log message.}
-
-\item{\code{namespace}}{Namespace of the log message.}
-
-\item{\code{.logcall}}{Call information.}
-
-\item{\code{.topcall}}{Top-level call information.}
-
-\item{\code{.topenv}}{Top-level environment.}
-
-\item{\code{...}}{Additional arguments.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Formatted log message string.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-start_capturing_prints"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-start_capturing_prints}{}}}
-\subsection{Method \code{start_capturing_prints()}}{
-Start capturing print statements.
-
-Redirect \code{stdout} output, such as print statements, to a log file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_capturing_prints(
-  target = c("step", "global"),
-  capture_messages = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{target}}{Target log file to capture prints.
-Options are "global" or "step".}
-
-\item{\code{capture_messages}}{Whether to also capture messages/warnings.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-stop_capturing_prints"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-stop_capturing_prints}{}}}
-\subsection{Method \code{stop_capturing_prints()}}{
-Stop capturing print statements.
-
-Stop redirecting \code{stdout} output to the active log file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$stop_capturing_prints()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-None
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-LoggerManager-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-LoggerManager-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
-}

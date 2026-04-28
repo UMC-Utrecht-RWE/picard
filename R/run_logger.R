@@ -92,7 +92,7 @@ LoggerManager <- R6::R6Class( # nolint
 
       # Configure logger for global and package namespaces.
       namespaces <- c("global", "picard")
-      logger::log_layout(self$.layout_with_timers, namespace = namespaces)
+      logger::log_layout(private$.layout_with_timers, namespace = namespaces)
       logger::log_threshold(logger::TRACE, namespace = namespaces)
 
       logger::log_appender(function(line) {
@@ -215,18 +215,82 @@ LoggerManager <- R6::R6Class( # nolint
       base::invisible(self)
     },
 
-    #' @description Format log messages with run, step, and script timing.
+    #' @description Start capturing print statements.
     #'
-    #' This layout method also handles log-record objects passed through the
-    #' logger callback interface.
-    #' @param level Log level.
-    #' @param msg Log message.
-    #' @param namespace Namespace of the log message.
-    #' @param .logcall Call information.
-    #' @param .topcall Top-level call information.
-    #' @param .topenv Top-level environment.
-    #' @param ... Additional arguments.
-    #' @return Formatted log message string.
+    #' Redirect `stdout` output, such as print statements, to a log file.
+    #' @param target Target log file to capture prints.
+    #'  Options are "global" or "step".
+    #' @param capture_messages Whether to also capture messages/warnings.
+    #' @return None
+    start_capturing_prints = function(target = c("step", "global"),
+                                      capture_messages = TRUE) {
+      target <- base::match.arg(target)
+
+      sink_file <- if (target == "global") {
+        self$global_log_file
+      } else {
+        self$step_log_file
+      }
+
+      self$stop_capturing_prints()
+
+      self$capture_active <- TRUE
+      self$capture_target <- target
+
+      sink_path <- base::as.character(sink_file)
+
+      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
+      base::sink(self$output_con, type = "output", split = TRUE)
+
+      if (isTRUE(capture_messages)) {
+        self$message_con <- file(sink_path, open = "at", encoding = "UTF-8")
+
+        ok <- TRUE
+        tryCatch(
+          base::sink(self$message_con, type = "message", split = TRUE),
+          error = function(e) ok <<- FALSE
+        )
+
+        if (!ok) {
+          # fallback: capture messages to file only
+          base::sink(self$message_con, type = "message")
+        }
+      }
+      invisible(TRUE)
+    },
+
+    #' @description Stop capturing print statements.
+    #'
+    #' Stop redirecting `stdout` output to the active log file.
+    #'
+    #' @return None
+    stop_capturing_prints = function() {
+      if (!isTRUE(self$capture_active)) {
+        return(invisible(TRUE))
+      }
+
+      self$capture_active <- FALSE
+      self$capture_target <- NULL
+
+      if (sink.number(type = "message") > 0 && !is.null(self$message_con)) {
+        base::sink(type = "message")
+      }
+      if (sink.number(type = "output") > 0 && !is.null(self$output_con)) {
+        base::sink(type = "output")
+      }
+
+      if (!base::is.null(self$message_con)) {
+        base::close(self$message_con)
+        self$message_con <- NULL
+      }
+      if (!base::is.null(self$output_con)) {
+        base::close(self$output_con)
+        self$output_con <- NULL
+      }
+      invisible(TRUE)
+    }
+  ),
+  private = list(
     .layout_with_timers = function(level,
                                    msg = NULL,
                                    namespace = NULL,
@@ -308,14 +372,14 @@ LoggerManager <- R6::R6Class( # nolint
 
       # Change the color of the message based on message level,
       # using crayon package. The mapping is as follows:
-      # Level	 Colour
-      # Trace	Purple
-      # Debug	Blue
-      # Info	No change
-      # Success	Green
-      # Warning	Yellow
-      # Error	Red
-      # Fatal	Dark Red (bold)
+      # Level  Colour
+      # Trace  Purple
+      # Debug  Blue
+      # Info   No change
+      # Success Green
+      # Warning Yellow
+      # Error  Red
+      # Fatal  Dark Red (bold)
       line <- if (self$verbose == "Low") {
         base::sprintf(
           "%s | %-5s | %s",
@@ -367,81 +431,6 @@ LoggerManager <- R6::R6Class( # nolint
       }
 
       line
-    },
-
-    #' @description Start capturing print statements.
-    #'
-    #' Redirect `stdout` output, such as print statements, to a log file.
-    #' @param target Target log file to capture prints.
-    #'  Options are "global" or "step".
-    #' @param capture_messages Whether to also capture messages/warnings.
-    #' @return None
-    start_capturing_prints = function(target = c("step", "global"),
-                                      capture_messages = TRUE) {
-      target <- base::match.arg(target)
-
-      sink_file <- if (target == "global") {
-        self$global_log_file
-      } else {
-        self$step_log_file
-      }
-
-      self$stop_capturing_prints()
-
-      self$capture_active <- TRUE
-      self$capture_target <- target
-
-      sink_path <- base::as.character(sink_file)
-
-      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-      base::sink(self$output_con, type = "output", split = TRUE)
-
-      if (isTRUE(capture_messages)) {
-        self$message_con <- file(sink_path, open = "at", encoding = "UTF-8")
-
-        ok <- TRUE
-        tryCatch(
-          base::sink(self$message_con, type = "message", split = TRUE),
-          error = function(e) ok <<- FALSE
-        )
-
-        if (!ok) {
-          # fallback: capture messages to file only
-          base::sink(self$message_con, type = "message")
-        }
-      }
-      invisible(TRUE)
-    },
-
-    #' @description Stop capturing print statements.
-    #'
-    #' Stop redirecting `stdout` output to the active log file.
-    #'
-    #' @return None
-    stop_capturing_prints = function() {
-      if (!isTRUE(self$capture_active)) {
-        return(invisible(TRUE))
-      }
-
-      self$capture_active <- FALSE
-      self$capture_target <- NULL
-
-      if (sink.number(type = "message") > 0 && !is.null(self$message_con)) {
-        base::sink(type = "message")
-      }
-      if (sink.number(type = "output") > 0 && !is.null(self$output_con)) {
-        base::sink(type = "output")
-      }
-
-      if (!base::is.null(self$message_con)) {
-        base::close(self$message_con)
-        self$message_con <- NULL
-      }
-      if (!base::is.null(self$output_con)) {
-        base::close(self$output_con)
-        self$output_con <- NULL
-      }
-      invisible(TRUE)
     }
   )
 )
