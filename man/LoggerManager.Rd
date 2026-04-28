@@ -4,6 +4,11 @@
 \alias{LoggerManager}
 \title{LoggerManager Class}
 \description{
+LoggerManager Class
+
+LoggerManager Class
+}
+\details{
 A class for managing logging functionality in a pipeline.
 It supports logging to both console and files,
 cleaning up old logs, and creating step-specific loggers.
@@ -44,9 +49,7 @@ Options are "Normal", "Low", or "High".}
 
 \item{\code{capture_active}}{Whether capturing of print statements is active.}
 
-\item{\code{capture_target}}{Target log file for captured prints.
-Initialize LoggerManager
-Constructor for the LoggerManager class.}
+\item{\code{capture_target}}{Target log file for captured prints.}
 }
 \if{html}{\out{</div>}}
 }
@@ -70,22 +73,23 @@ Constructor for the LoggerManager class.}
 \if{html}{\out{<a id="method-LoggerManager-new"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-new}{}}}
 \subsection{Method \code{new()}}{
+Initialize the LoggerManager instance.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$new()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
 NULL
-configure the LoggerManager
-
-Sets up the logging directory, global log file, and log appenders.
-Cleans up old logs and configures the global logger.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-LoggerManager-configure"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-configure}{}}}
 \subsection{Method \code{configure()}}{
+Configure the LoggerManager instance.
+
+Sets up the logging directory, global log file, and log appenders.
+Cleans up old logs and configures the global logger.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$configure(log_dir = "logs", verbose = c("Normal", "High", "Low"))}\if{html}{\out{</div>}}
 }
@@ -95,10 +99,7 @@ Cleans up old logs and configures the global logger.
 \describe{
 \item{\code{log_dir}}{Directory where logs will be stored. Defaults to "logs".}
 
-\item{\code{verbose}}{Verbosity level.
-Cleanup Old Logs
-
-Deletes log files older than a specified number of days.}
+\item{\code{verbose}}{Verbosity level.}
 }
 \if{html}{\out{</div>}}
 }
@@ -107,6 +108,7 @@ Deletes log files older than a specified number of days.}
 \if{html}{\out{<a id="method-LoggerManager-cleanup_old_logs"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-cleanup_old_logs}{}}}
 \subsection{Method \code{cleanup_old_logs()}}{
+Delete log files older than a specified number of days.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$cleanup_old_logs(days_to_keep = 30)}\if{html}{\out{</div>}}
 }
@@ -114,10 +116,7 @@ Deletes log files older than a specified number of days.}
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{days_to_keep}}{Number of days to retain logs. Defaults to 30 days.
-Initialize Step Logger
-
-Sets up a step-specific logger that logs only to the log file.}
+\item{\code{days_to_keep}}{Number of days to retain logs. Defaults to 30 days.}
 }
 \if{html}{\out{</div>}}
 }
@@ -126,6 +125,9 @@ Sets up a step-specific logger that logs only to the log file.}
 \if{html}{\out{<a id="method-LoggerManager-start_step_logger"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-start_step_logger}{}}}
 \subsection{Method \code{start_step_logger()}}{
+Initialize a step-specific logger.
+
+Sets up a step-specific logger that logs only to the log file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_step_logger(step_name)}\if{html}{\out{</div>}}
 }
@@ -133,10 +135,7 @@ Sets up a step-specific logger that logs only to the log file.}
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{step_name}}{Name of the step for which the log is being initialized.
-End Step Logger
-
-Reset the step-specific logger.}
+\item{\code{step_name}}{Name of the step for which the log is being initialized.}
 }
 \if{html}{\out{</div>}}
 }
@@ -145,21 +144,20 @@ Reset the step-specific logger.}
 \if{html}{\out{<a id="method-LoggerManager-end_step_logger"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-end_step_logger}{}}}
 \subsection{Method \code{end_step_logger()}}{
+Reset the step-specific logger.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$end_step_logger()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
 None
-Start Script Timer
-
-As for start_step_logger, but for scripts within steps.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-LoggerManager-start_script"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-start_script}{}}}
 \subsection{Method \code{start_script()}}{
+Start the timer for a script within the current step.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_script(script_name)}\if{html}{\out{</div>}}
 }
@@ -167,10 +165,7 @@ As for start_step_logger, but for scripts within steps.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{script_name}}{Name of the script being started.
-End Script Timer
-
-Resets the script timer.}
+\item{\code{script_name}}{Name of the script being started.}
 }
 \if{html}{\out{</div>}}
 }
@@ -179,21 +174,23 @@ Resets the script timer.}
 \if{html}{\out{<a id="method-LoggerManager-end_script"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-end_script}{}}}
 \subsection{Method \code{end_script()}}{
+Reset the current script timer.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$end_script()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
 None
-Layout with Timers
-
-Custom log layout function that includes timing information.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-LoggerManager-.layout_with_timers"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-.layout_with_timers}{}}}
 \subsection{Method \code{.layout_with_timers()}}{
+Format log messages with run, step, and script timing.
+
+This layout method also handles log-record objects passed through the
+logger callback interface.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$.layout_with_timers(
   level,
@@ -222,23 +219,20 @@ Custom log layout function that includes timing information.
 \item{\code{.topenv}}{Top-level environment.}
 
 \item{\code{...}}{Additional arguments.}
-
-\item{\code{record}}{Log record.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 Formatted log message string.
-Start Capturing Print Statements
-
-Redirects all \code{stdout} output (e.g., print statements)
-to the global log file.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-LoggerManager-start_capturing_prints"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-start_capturing_prints}{}}}
 \subsection{Method \code{start_capturing_prints()}}{
+Start capturing print statements.
+
+Redirect \code{stdout} output, such as print statements, to a log file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$start_capturing_prints(
   target = c("step", "global"),
@@ -258,15 +252,15 @@ Options are "global" or "step".}
 }
 \subsection{Returns}{
 None
-Stop Capturing Print Statements
-
-Stops redirecting \code{stdout} output to the global log file.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-LoggerManager-stop_capturing_prints"></a>}}
 \if{latex}{\out{\hypertarget{method-LoggerManager-stop_capturing_prints}{}}}
 \subsection{Method \code{stop_capturing_prints()}}{
+Stop capturing print statements.
+
+Stop redirecting \code{stdout} output to the active log file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LoggerManager$stop_capturing_prints()}\if{html}{\out{</div>}}
 }

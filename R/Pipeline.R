@@ -19,7 +19,7 @@ pipeline <- R6::R6Class(
     #' @field steps List of steps to execute, loaded from the config
     steps = NULL,
 
-    #' Initialize the pipeline with a YAML configuration file
+    #' @description Initialize the pipeline with a YAML configuration file.
     #' @param config_pipeline Path to the YAML configuration file
     #' @return An instance of the class
     initialize = function(
@@ -30,7 +30,7 @@ pipeline <- R6::R6Class(
       self$steps <- self$config$steps
     },
 
-    #' Load a YAML configuration file
+    #' @description Load a YAML configuration file.
     #' @param path Path to the YAML file
     #' @return Parsed YAML content as a list
     load_yaml = function(path) {
@@ -42,7 +42,7 @@ pipeline <- R6::R6Class(
       yaml::yaml.load_file(path)
     },
 
-    #' Clean method, delete all files within a folder.
+    #' @description Delete all files within a folder.
     #' @param content_to_delete Path to be deleted
     #' @return NULL
     clean = function(content_to_delete) {
@@ -50,9 +50,10 @@ pipeline <- R6::R6Class(
       fs::file_delete(fs::dir_ls(content_to_delete))
     },
 
-    #' Take the config YAML file for the substep, looks a the list of substeps.
-    #' If the substep is assigned as TRUE but its output is present, it skips
-    #' that step.
+    #' @description Update substep flags when outputs already exist.
+    #'
+    #' Take the configuration for a pipeline component, inspect its substeps,
+    #' and disable any substep whose expected outputs are already present.
     #' @param config_file The content of YAML file as a list.
     #' @param project loaded from YAML
     #' @return Parsed YAML content as a list
@@ -76,7 +77,7 @@ pipeline <- R6::R6Class(
       config_file
     },
 
-    #' Run the full pipeline
+    #' @description Run the full pipeline.
     #' @param step_subset Optional vector of step names to run
     #' @return NULL
     run = function(step_subset = NULL) {
@@ -110,9 +111,9 @@ pipeline <- R6::R6Class(
       base::invisible(NULL)
     },
 
-    #' Run substeps defined in a configuration file
+    #' @description Run substeps defined in a configuration file.
     #' @param cfg Configuration list containing substeps
-    #' @param step_key Key for the step in the configuration (e.g., "T
+    #' @param step_key Key for the step in the configuration, for example "T2"
     #' @return NULL
     run_substeps = function(cfg, step_key) {
       # Shared engine for all subclasses (T2/T3/T4) that follow the same
@@ -161,7 +162,7 @@ pipeline <- R6::R6Class(
       base::invisible(NULL)
     },
 
-    #' Delete data when needed
+    #' @description Delete data for a supported specification.
     #'
     #' @param spec Specification of what to delete
     #' @param dry_run Logical. If TRUE (default), do not delete anything;

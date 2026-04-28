@@ -20,8 +20,7 @@ run_substeps().
 \describe{
 \item{\code{config}}{Configuration loaded from YAML}
 
-\item{\code{steps}}{List of steps to execute, loaded from the config
-Initialize the pipeline with a YAML configuration file}
+\item{\code{steps}}{List of steps to execute, loaded from the config}
 }
 \if{html}{\out{</div>}}
 }
@@ -42,6 +41,7 @@ Initialize the pipeline with a YAML configuration file}
 \if{html}{\out{<a id="method-Pipeline-new"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-new}{}}}
 \subsection{Method \code{new()}}{
+Initialize the pipeline with a YAML configuration file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{pipeline$new(
   config_pipeline = file.path("configuration", "config_pipeline.yaml")
@@ -57,13 +57,13 @@ Initialize the pipeline with a YAML configuration file}
 }
 \subsection{Returns}{
 An instance of the class
-Load a YAML configuration file
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Pipeline-load_yaml"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-load_yaml}{}}}
 \subsection{Method \code{load_yaml()}}{
+Load a YAML configuration file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{pipeline$load_yaml(path)}\if{html}{\out{</div>}}
 }
@@ -77,13 +77,13 @@ Load a YAML configuration file
 }
 \subsection{Returns}{
 Parsed YAML content as a list
-Clean method, delete all files within a folder.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Pipeline-clean"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-clean}{}}}
 \subsection{Method \code{clean()}}{
+Delete all files within a folder.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{pipeline$clean(content_to_delete)}\if{html}{\out{</div>}}
 }
@@ -97,15 +97,16 @@ Clean method, delete all files within a folder.
 }
 \subsection{Returns}{
 NULL
-Take the config YAML file for the substep, looks a the list of substeps.
-If the substep is assigned as TRUE but its output is present, it skips
-that step.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Pipeline-skip_step"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-skip_step}{}}}
 \subsection{Method \code{skip_step()}}{
+Update substep flags when outputs already exist.
+
+Take the configuration for a pipeline component, inspect its substeps,
+and disable any substep whose expected outputs are already present.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{pipeline$skip_step(config_file, project)}\if{html}{\out{</div>}}
 }
@@ -121,13 +122,13 @@ that step.
 }
 \subsection{Returns}{
 Parsed YAML content as a list
-Run the full pipeline
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Pipeline-run"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-run}{}}}
 \subsection{Method \code{run()}}{
+Run the full pipeline.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{pipeline$run(step_subset = NULL)}\if{html}{\out{</div>}}
 }
@@ -141,13 +142,13 @@ Run the full pipeline
 }
 \subsection{Returns}{
 NULL
-Run substeps defined in a configuration file
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Pipeline-run_substeps"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-run_substeps}{}}}
 \subsection{Method \code{run_substeps()}}{
+Run substeps defined in a configuration file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{pipeline$run_substeps(cfg, step_key)}\if{html}{\out{</div>}}
 }
@@ -157,19 +158,19 @@ Run substeps defined in a configuration file
 \describe{
 \item{\code{cfg}}{Configuration list containing substeps}
 
-\item{\code{step_key}}{Key for the step in the configuration (e.g., "T}
+\item{\code{step_key}}{Key for the step in the configuration, for example "T2"}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 NULL
-Delete data when needed
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Pipeline-delete_data"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-delete_data}{}}}
 \subsection{Method \code{delete_data()}}{
+Delete data for a supported specification.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{pipeline$delete_data(spec, dry_run = TRUE)}\if{html}{\out{</div>}}
 }

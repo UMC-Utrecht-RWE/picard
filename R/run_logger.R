@@ -48,14 +48,13 @@ LoggerManager <- R6::R6Class( # nolint
     #' @field capture_target Target log file for captured prints.
     capture_target = NULL,
 
-    #' Initialize LoggerManager
-    #' Constructor for the LoggerManager class.
+    #' @description Initialize the LoggerManager instance.
     #' @return NULL
     initialize = function() {
       invisible(self)
     },
 
-    #' configure the LoggerManager
+    #' @description Configure the LoggerManager instance.
     #'
     #' Sets up the logging directory, global log file, and log appenders.
     #' Cleans up old logs and configures the global logger.
@@ -129,9 +128,7 @@ LoggerManager <- R6::R6Class( # nolint
       base::invisible(self)
     },
 
-    #' Cleanup Old Logs
-    #'
-    #' Deletes log files older than a specified number of days.
+    #' @description Delete log files older than a specified number of days.
     #'
     #' @param days_to_keep Number of days to retain logs. Defaults to 30 days.
     cleanup_old_logs = function(days_to_keep = 30) {
@@ -153,7 +150,7 @@ LoggerManager <- R6::R6Class( # nolint
       base::invisible(NULL)
     },
 
-    #' Initialize Step Logger
+    #' @description Initialize a step-specific logger.
     #'
     #' Sets up a step-specific logger that logs only to the log file.
     #'
@@ -181,9 +178,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' End Step Logger
-    #'
-    #' Reset the step-specific logger.
+    #' @description Reset the step-specific logger.
     #' @return None
     end_step_logger = function() {
       if (!base::is.null(self$current_step)) {
@@ -200,9 +195,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' Start Script Timer
-    #'
-    #' As for start_step_logger, but for scripts within steps.
+    #' @description Start the timer for a script within the current step.
     #' @param script_name Name of the script being started.
     start_script = function(script_name) {
       self$current_script <- script_name
@@ -211,9 +204,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' End Script Timer
-    #'
-    #' Resets the script timer.
+    #' @description Reset the current script timer.
     #' @return None
     end_script = function() {
       if (!base::is.null(self$current_script)) {
@@ -224,10 +215,10 @@ LoggerManager <- R6::R6Class( # nolint
       base::invisible(self)
     },
 
-    #' Layout with Timers
+    #' @description Format log messages with run, step, and script timing.
     #'
-    #' Custom log layout function that includes timing information.
-    #' @param record Log record.
+    #' This layout method also handles log-record objects passed through the
+    #' logger callback interface.
     #' @param level Log level.
     #' @param msg Log message.
     #' @param namespace Namespace of the log message.
@@ -378,10 +369,9 @@ LoggerManager <- R6::R6Class( # nolint
       line
     },
 
-    #' Start Capturing Print Statements
+    #' @description Start capturing print statements.
     #'
-    #' Redirects all `stdout` output (e.g., print statements)
-    #' to the global log file.
+    #' Redirect `stdout` output, such as print statements, to a log file.
     #' @param target Target log file to capture prints.
     #'  Options are "global" or "step".
     #' @param capture_messages Whether to also capture messages/warnings.
@@ -423,9 +413,9 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(TRUE)
     },
 
-    #' Stop Capturing Print Statements
+    #' @description Stop capturing print statements.
     #'
-    #' Stops redirecting `stdout` output to the global log file.
+    #' Stop redirecting `stdout` output to the active log file.
     #'
     #' @return None
     stop_capturing_prints = function() {
