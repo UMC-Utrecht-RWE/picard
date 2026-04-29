@@ -99,6 +99,25 @@ PICARD uses three layers of configuration in a typical project:
    This holds project-specific inputs, outputs, database paths, and study
    settings that the sourced scripts use directly.
 
+The relationships between those files and the execution flow look like this:
+
+```mermaid
+flowchart TD
+  RP["run/run_pipeline.R<br/>master runner"] --> P["picard::pipeline$new()"]
+  CP["configuration/config_pipeline.yaml"] --> P
+
+  P --> SR["run/run_T*_pipeline.R<br/>step runner"]
+  SR --> SP["picard::t*_pipeline$new()"]
+
+  CT["configuration/config_T*.yaml<br/>step config"] --> SP
+  SP --> SUB["substep scripts /transformations/T*_/source_code/*.R"]
+
+  CPJ["configuration/config_project.yaml<br/>project config"] --> LC["picard::load_config()"]
+  LC --> SUB
+
+  SUB --> OUT["outputs, audit, and logging"]
+```
+
 `picard::load_config()` is what makes those YAML files available inside the
 scripts. It loads all `.yaml` files from `configuration/` into the global
 environment using lowercase object names derived from the file names:
@@ -444,9 +463,15 @@ Important:
 
 The common project pattern is:
 
-- `LoggerManager` is configured once in the master runner,
+- `LoggerManager` is configured once in the master runner
+```r
+lm <- picard:::LoggerManager$new()
+lm$configure(verbose = "Normal") # Low or High
+logger::log_info("Message")
+```
 - step runners call `start_step_logger("T2")`, `start_step_logger("T3")`, ...
-- substeps call `start_script()` and optionally capture printed output,
+- substeps call `start_script()` and optionally capture printed output
+- Logger produces two types of log files in the `logs` folder: A *main one* that has all log messages from all steps. And a second kind a *step one* that is contained in sub-folder of `logs`, with all log messages and **print messages/message from other packages**. If you code fails it is good practice to investigate these step logs.
 - `audit_start()` / `audit_add()` / `audit_end()` create a human-readable audit
   trail next to the data outputs.
 
