@@ -2,10 +2,24 @@
 
 This tutorial shows how to structure a project around PICARD.
 
+Terminology used in this tutorial:
+
+- A `pipeline` is the full orchestrated run across one or more top-level
+  steps.
+- A `step` is one top-level stage such as `T2`, `T3`, `T4`, or `T5`.
+- A `substep` is a plain R script inside a step, such as `set_db.R`.
+- A `master runner` is the script that starts the full pipeline.
+- A `step runner` is the script that starts one step.
+- `audit` means human-readable records written during execution.
+- `logging` means structured run and step messages written by
+  `LoggerManager`.
+
+This tutorial shows how those pieces fit together:
+
 - a master runner in `run/`,
-- one YAML file per pipeline concern,
-- one runner per step (`T2`, `T3`, `T4`, `T5`),
-- step scripts stored under `transformations/<step>/source_code`,
+- YAML files for pipeline, step, and project configuration,
+- one step runner per step (`T2`, `T3`, `T4`, `T5`),
+- substep scripts stored under `transformations/<step>/source_code`,
 - shared functions and shared configuration outside the package,
 - and substeps that use PICARD for orchestration, config loading, I/O, SQL,
   audit, and logging.
@@ -230,9 +244,6 @@ What this does:
 - loads all YAML files into objects such as `config_pipeline` and
   `config_project`,
 - then sources each configured step runner in order.
-
-If your project uses `renv`, restore the environment before running the
-pipeline rather than installing packages inside every runner.
 
 ## 7. Create a Step Runner
 
