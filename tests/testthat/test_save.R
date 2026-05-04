@@ -2,9 +2,9 @@ testthat::teardown({
   unlink("tests/testthat/data/intermediate_plots/", recursive = TRUE)
 })
 ###############################
-# Tests for save_data
+# Tests for save
 ###############################
-testthat::test_that("save_data errors when file has no extension", {
+testthat::test_that("save errors when file has no extension", {
   withr::local_tempdir()
   testthat::skip_if_not_installed("fs")
 
@@ -14,7 +14,7 @@ testthat::test_that("save_data errors when file has no extension", {
   path <- base::file.path(root, "no_extension")
 
   testthat::expect_error(
-    save_data(data.frame(a = 1), file_path = path),
+    save(data.frame(a = 1), file_path = path),
     regexp = "file_path contains no filename and file_name is NULL.",
   )
 })
@@ -29,7 +29,7 @@ testthat::test_that("Errors when no writer registered for extension", {
   path <- base::file.path(root, "x.unknownext")
 
   testthat::expect_error(
-    save_data(data.frame(a = 1), file_path = path),
+    save(data.frame(a = 1), file_path = path),
     "No writer registered for extension",
     fixed = TRUE
   )
@@ -56,7 +56,7 @@ testthat::test_that("Dispatches to custom writer and returns file_path", {
   })
 
   res <- testthat::expect_invisible(
-    save_data(list(a = 1), file_path = path)
+    save(list(a = 1), file_path = path)
   )
   testthat::expect_equal(res, fs::path_norm(path))
   testthat::expect_true(base::file.exists(path))
@@ -65,7 +65,7 @@ testthat::test_that("Dispatches to custom writer and returns file_path", {
   unlink(root, recursive = TRUE)
 })
 
-testthat::test_that("save_data wraps writer errors with helpful message", {
+testthat::test_that("save wraps writer errors with helpful message", {
   withr::local_tempdir()
   testthat::skip_if_not_installed("fs")
 
@@ -79,18 +79,18 @@ testthat::test_that("save_data wraps writer errors with helpful message", {
   })
 
   testthat::expect_error(
-    save_data(list(a = 1), file_path = path),
+    save(list(a = 1), file_path = path),
     "Failed to save file:",
     fixed = TRUE
   )
   testthat::expect_error(
-    save_data(list(a = 1), file_path = path),
+    save(list(a = 1), file_path = path),
     "boom",
     fixed = TRUE
   )
 })
 
-testthat::test_that("save_data can save csv via built-in writer", {
+testthat::test_that("save can save csv via built-in writer", {
   withr::local_tempdir()
   testthat::skip_if_not_installed("fs")
   testthat::skip_if_not_installed("data.table")
@@ -100,7 +100,7 @@ testthat::test_that("save_data can save csv via built-in writer", {
   root <- withr::local_tempdir()
   path <- base::file.path(root, "x.csv")
 
-  save_data(data.frame(a = 1:3, b = c("x", "y", "z")), file_path = path)
+  save(data.frame(a = 1:3, b = c("x", "y", "z")), file_path = path)
 
   testthat::expect_true(base::file.exists(path))
 
@@ -109,7 +109,7 @@ testthat::test_that("save_data can save csv via built-in writer", {
   testthat::expect_equal(dt$b, c("x", "y", "z"))
 })
 
-testthat::test_that("save_data can save rds via built-in writer", {
+testthat::test_that("save can save rds via built-in writer", {
   withr::local_tempdir()
   testthat::skip_if_not_installed("fs")
 
@@ -119,7 +119,7 @@ testthat::test_that("save_data can save rds via built-in writer", {
   path <- base::file.path(root, "x.rds")
 
   obj <- list(a = 1, b = "x")
-  save_data(obj, file_path = path)
+  save(obj, file_path = path)
 
   testthat::expect_true(base::file.exists(path))
   testthat::expect_equal(base::readRDS(path), obj)
@@ -143,7 +143,7 @@ testthat::test_that("create_plot does not error even if plotting fails", {
   )
 
   testthat::expect_no_error(
-    save_data(
+    save(
       dt,
       file_path = path,
       create_plot = TRUE,
@@ -286,7 +286,7 @@ testthat::test_that(".init_writer_registry clears existing writers", {
 ###############################
 # Tests for .init_writer_registry
 ###############################
-testthat::test_that("save_data writes xlsx via built-in writer", {
+testthat::test_that("save writes xlsx via built-in writer", {
   testthat::skip_if_not_installed("openxlsx")
   testthat::skip_if_not_installed("fs")
 
@@ -297,7 +297,7 @@ testthat::test_that("save_data writes xlsx via built-in writer", {
 
   df <- data.frame(a = 1:3, b = c("x", "y", "z"))
 
-  save_data(df, file_path = path)
+  save(df, file_path = path)
 
   testthat::expect_true(base::file.exists(path))
 
@@ -307,7 +307,7 @@ testthat::test_that("save_data writes xlsx via built-in writer", {
   testthat::expect_equal(read_back$b, df$b)
 })
 
-testthat::test_that("save_data writes rdata via built-in writer", {
+testthat::test_that("save writes rdata via built-in writer", {
   testthat::skip_if_not_installed("fs")
 
   .init_writer_registry()
@@ -317,7 +317,7 @@ testthat::test_that("save_data writes rdata via built-in writer", {
 
   obj <- data.frame(a = 1:3, b = c("x", "y", "z"))
 
-  save_data(obj, file_path = path)
+  save(obj, file_path = path)
   testthat::expect_true(base::file.exists(path))
 
   # Verify the fixed object name exists and content matches
@@ -329,7 +329,7 @@ testthat::test_that("save_data writes rdata via built-in writer", {
   testthat::expect_equal(loaded, obj)
 })
 
-testthat::test_that("save_data writes fst via built-in writer", {
+testthat::test_that("save writes fst via built-in writer", {
   testthat::skip_if_not_installed("fst")
   testthat::skip_if_not_installed("data.table")
   testthat::skip_if_not_installed("fs")
@@ -341,7 +341,7 @@ testthat::test_that("save_data writes fst via built-in writer", {
 
   df <- data.frame(a = 1:3, b = c("x", "y", "z"))
 
-  save_data(df, file_path = path)
+  save(df, file_path = path)
   testthat::expect_true(base::file.exists(path))
 
   dt <- fst::read_fst(path, as.data.table = TRUE)
@@ -349,7 +349,7 @@ testthat::test_that("save_data writes fst via built-in writer", {
   testthat::expect_equal(dt$b, df$b)
 })
 
-testthat::test_that("save_data writes txt via built-in writer", {
+testthat::test_that("save writes txt via built-in writer", {
   testthat::skip_if_not_installed("fs")
 
   .init_writer_registry()
@@ -359,7 +359,7 @@ testthat::test_that("save_data writes txt via built-in writer", {
 
   df <- data.frame(a = 1:3, b = c("x", "y", "z"))
 
-  save_data(df, file_path = path)
+  save(df, file_path = path)
   testthat::expect_true(base::file.exists(path))
 
   # Read back (match utils::write.table defaults)
@@ -368,7 +368,7 @@ testthat::test_that("save_data writes txt via built-in writer", {
   testthat::expect_equal(back$b, df$b)
 })
 
-testthat::test_that("save_data writes parquet via built-in writer", {
+testthat::test_that("save writes parquet via built-in writer", {
   testthat::skip_if_not_installed("arrow")
   testthat::skip_if_not_installed("fs")
 
@@ -379,7 +379,7 @@ testthat::test_that("save_data writes parquet via built-in writer", {
 
   df <- data.frame(a = 1:3, b = c("x", "y", "z"))
 
-  save_data(df, file_path = path)
+  save(df, file_path = path)
   testthat::expect_true(base::file.exists(path))
 
   back <- arrow::read_parquet(path)

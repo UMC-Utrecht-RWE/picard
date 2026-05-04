@@ -12,7 +12,7 @@
 #' @param ... Additional arguments passed to the reader function
 #' @return Data data.table
 #' @export
-read_data <- function(file_path, file_name = NULL, col_types = NULL, ...) {
+load <- function(file_path, file_name = NULL, col_types = NULL, ...) {
   # Validate and normalize path
   path_info <- validate_and_normalize_path(file_path, file_name)
 
@@ -154,8 +154,9 @@ validate_and_normalize_path <- function(file_path, file_name = NULL) {
 #' @return Corrected file_path if a case-insensitive match is found
 #' @keywords internal
 case_sensitive_filename <- function(
-    file_path, file_name, dir_path, actual_files) {
-  # In read_data(), replace the file finding logic:
+  file_path, file_name, dir_path, actual_files
+) {
+  # In load(), replace the file finding logic:
   if (!file_name %in% actual_files) {
     similar_files <- actual_files[tolower(actual_files) == tolower(file_name)]
 
@@ -368,25 +369,31 @@ list_readers <- function() {
 #' @return A data frame
 #' @export
 load_rdata <- function(file_path) {
-  load(file_path)
-  objects <- ls()[ls() != "file_path"]
+  env <- new.env(parent = emptyenv())
+  objects <- base::load(file_path, envir = env)
+
+  if (length(objects) == 0) {
+    stop("The RData file ", file_path, " does not contain any objects.")
+  }
+
   if (length(objects) > 1) {
     warning(
       "The RData file ", file_path,
       " contains more than one object. Only the first object will be returned."
     )
   }
-  get(objects[1])
+
+  get(objects[1], envir = env)
 }
 
 
 #' Get summary statistics for a data file
 #' @param file_path Path to the file
-#' @param ... Additional arguments passed to read_data
+#' @param ... Additional arguments passed to load
 #' @return List with file info and data summary
 #' @export
 summarize_data_file <- function(file_path, ...) {
-  data <- read_data(file_path, ...)
+  data <- load(file_path, ...)
 
   summary <- list(
     file = file_path,
@@ -405,10 +412,10 @@ summarize_data_file <- function(file_path, ...) {
 #' Read multiple files and combine them
 #' @param file_paths Character vector of file paths
 #' @param combine_method How to combine: "rbind" (stack rows) or "list"
-#' @param ... Additional arguments passed to read_data
+#' @param ... Additional arguments passed to load
 #' @return Combined data.table or list of data.tables
 #' @export
-read_data_batch <- function(file_paths, combine_method = "rbind", ...) {
+load_batch <- function(file_paths, combine_method = "rbind", ...) {
   if (length(file_paths) == 0) {
     stop("file_paths cannot be empty", call. = FALSE)
   }
@@ -417,7 +424,7 @@ read_data_batch <- function(file_paths, combine_method = "rbind", ...) {
 
   data_list <- lapply(file_paths, function(fp) {
     logger::log_debug(paste0("Reading: ", basename(fp)))
-    read_data(fp, ...)
+    load(fp, ...)
   })
 
   if (combine_method == "rbind") {
