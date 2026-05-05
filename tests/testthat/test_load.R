@@ -276,7 +276,7 @@ testthat::test_that("Resets registry and loads defaults", {
     all(
       c(
         "csv", "duckdb", "fst", "parquet", "rdata",
-        "rds", "xlsx", "yaml", "yml"
+        "rds", "sql", "xlsx", "yaml", "yml"
       ) %in% readers
     )
   )

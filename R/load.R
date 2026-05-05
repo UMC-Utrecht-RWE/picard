@@ -373,6 +373,13 @@ define_column_types <- function(df, col_types) {
   register_reader("yml", function(path, ...) {
     yaml::read_yaml(path, ...)
   })
+
+  register_reader("sql", function(path, encoding = "UTF-8", ...) {
+    con <- base::file(path, open = "r", encoding = encoding)
+    on.exit(close(con), add = TRUE)
+
+    paste(readLines(con, warn = FALSE), collapse = "\n")
+  })
 }
 
 
