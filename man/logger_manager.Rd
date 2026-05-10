@@ -5,7 +5,7 @@
 \alias{logger_manager}
 \title{Logger Manager Singleton}
 \format{
-An object of class \code{LoggerManager} (inherits from \code{R6}) of length 29.
+An object of class \code{LoggerManager} (inherits from \code{R6}) of length 30.
 }
 \usage{
 logger_manager
