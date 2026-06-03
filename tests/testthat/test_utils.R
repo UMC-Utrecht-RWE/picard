@@ -84,6 +84,23 @@ testthat::test_that("read_yaml reads a valid yaml mapping", {
   testthat::expect_identical(out$b, TRUE)
 })
 
+testthat::test_that("read_yaml uses the shared raw loader", {
+  picard:::.init_reader_registry()
+  withr::defer(picard:::.init_reader_registry())
+
+  picard:::register_reader("yaml", function(path, ...) {
+    list(a = 99L, from_dispatch = basename(path))
+  })
+
+  tmp <- tempfile(fileext = ".yaml")
+  writeLines("a: 1", tmp)
+
+  out <- read_yaml(tmp)
+
+  testthat::expect_identical(out$a, 99L)
+  testthat::expect_identical(out$from_dispatch, basename(tmp))
+})
+
 testthat::test_that("read_yaml rejects yaml that is not a mapping", {
   tmp <- tempfile(fileext = ".yaml")
   writeLines("hello world", tmp) # valid YAML scalar, not a mapping
