@@ -87,15 +87,12 @@ read_yaml <- function(file_path) {
 
 #' Get all files of interest
 #'
-#' @param path Character or NULL. Directory to scan. If NULL, uses current
-#'   working directory.
-#' @param only_format Character vector of file extensions to include, for
-#'   example `c("R", "sql")`. If `NULL`, no inclusion filter is applied.
-#'   Mutually exclusive with `exclude_format`.
-#' @param exclude_format Character vector of file extensions to exclude, for
-#'   example `c("csv", "txt", "parquet")`. If `NULL`, no exclusion filter is
-#'   applied. Mutually exclusive with `only_format`.
-#' @return list of all files
+#' @param formats Character vector of file extensions to include or exclude, for
+#'  example `c("R", "sql")`. If `NULL`, no filter is applied. Mutually exclusive
+#' with `exclude_format`.
+#' @param arg_name Name of the argument for error messages.
+#' @return Normalized character vector of file extensions or
+#' NULL if no valid formats are provided.
 #' @keywords internal
 normalize_format_filter <- function(formats, arg_name) {
   if (base::is.null(formats)) {

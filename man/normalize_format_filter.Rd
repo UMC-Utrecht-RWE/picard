@@ -7,19 +7,15 @@
 normalize_format_filter(formats, arg_name)
 }
 \arguments{
-\item{path}{Character or NULL. Directory to scan. If NULL, uses current
-working directory.}
+\item{formats}{Character vector of file extensions to include or exclude, for
+example \code{c("R", "sql")}. If \code{NULL}, no filter is applied. Mutually exclusive
+with \code{exclude_format}.}
 
-\item{only_format}{Character vector of file extensions to include, for
-example \code{c("R", "sql")}. If \code{NULL}, no inclusion filter is applied.
-Mutually exclusive with \code{exclude_format}.}
-
-\item{exclude_format}{Character vector of file extensions to exclude, for
-example \code{c("csv", "txt", "parquet")}. If \code{NULL}, no exclusion filter is
-applied. Mutually exclusive with \code{only_format}.}
+\item{arg_name}{Name of the argument for error messages.}
 }
 \value{
-list of all files
+Normalized character vector of file extensions or
+NULL if no valid formats are provided.
 }
 \description{
 Get all files of interest
