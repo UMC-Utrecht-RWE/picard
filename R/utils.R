@@ -89,46 +89,109 @@ read_yaml <- function(file_path) {
 #'
 #' @param path Character or NULL. Directory to scan. If NULL, uses current
 #'   working directory.
-#' @param only_format Character vector of file formats to include. Default "R"
-#' @param exclude_format Character vector of file formats to exclude. Default
-#' NULL, Example: c("csv", "txt", "parquet")
+#' @param only_format Character vector of file extensions to include, for
+#'   example `c("R", "sql")`. If `NULL`, no inclusion filter is applied.
+#'   Mutually exclusive with `exclude_format`.
+#' @param exclude_format Character vector of file extensions to exclude, for
+#'   example `c("csv", "txt", "parquet")`. If `NULL`, no exclusion filter is
+#'   applied. Mutually exclusive with `only_format`.
 #' @return list of all files
 #' @keywords internal
+normalize_format_filter <- function(formats, arg_name) {
+  if (base::is.null(formats)) {
+    return(NULL)
+  }
+
+  if (!base::is.character(formats)) {
+    base::stop(arg_name, " must be a character vector.", call. = FALSE)
+  }
+
+  if (base::anyNA(formats)) {
+    base::stop(arg_name, " cannot contain NA values.", call. = FALSE)
+  }
+
+  formats <- base::trimws(formats)
+  formats <- base::sub("^\\.+", "", formats)
+  formats <- base::tolower(formats[base::nzchar(formats)])
+
+  if (!base::length(formats)) {
+    return(NULL)
+  }
+
+  base::unique(formats)
+}
+
+validate_format_filters <- function(
+  only_format = NULL,
+  exclude_format = NULL
+) {
+  only_format <- normalize_format_filter(only_format, "only_format")
+  exclude_format <- normalize_format_filter(exclude_format, "exclude_format")
+
+  # The logic here is that the user can either choose which file to select or
+  # which file to exclude, but not both at the same time. This is to avoid
+  # confusion and potential conflicts in the filtering logic.
+  if (!base::is.null(only_format) && !base::is.null(exclude_format)) {
+    base::stop(
+      "Use either `only_format` or `exclude_format`, not both.",
+      call. = FALSE
+    )
+  }
+
+  if (length(only_format)) {
+    only_format
+  } else {
+    exclude_format
+  }
+}
+
+is_hidden_path <- function(paths) {
+  purrr::map_lgl(
+    base::strsplit(paths, "[/\\\\]"),
+    ~ base::any(base::startsWith(.x, "."))
+  )
+}
+
 get_tracked_files <- function(
   path = NULL,
-  only_format = c("R"),
-  exclude_format = c("csv", "txt", "parquet")
+  only_format = NULL,
+  exclude_format = NULL
 ) {
   scan_path <- if (base::is.null(path)) "." else path
+  filter <- validate_format_filters(
+    only_format = only_format,
+    exclude_format = exclude_format
+  )
 
   # Validate path exists
   if (!base::dir.exists(scan_path)) {
-    base::stop("Path does not exist: ", scan_path)
+    base::stop("Path does not exist: ", scan_path, call. = FALSE)
   }
 
-  all_files <- base::list.files(
+  relative_files <- base::list.files(
     path = scan_path,
     all.files = TRUE,
-    full.names = TRUE,
+    full.names = FALSE,
     recursive = TRUE,
     no.. = TRUE
   )
 
-  # remove directories (hidden and not)
-  all_files <- all_files[!base::file.info(all_files)$isdir]
-  all_files[!base::grepl("(^|/)\\.", all_files)]
-
-  # Filter by only_format
-  if (length(only_format)) {
-    pattern <- paste0("\\.(", paste(only_format, collapse = "|"), ")$")
-    all_files <- all_files[grepl(pattern, all_files, ignore.case = TRUE)]
+  if (!base::length(relative_files)) {
+    return(base::character())
   }
 
-  # Filter by exclude_format
-  if (length(exclude_format)) {
-    pattern <- paste0("\\.(", paste(exclude_format, collapse = "|"), ")$")
-    all_files <- all_files[!grepl(pattern, all_files, ignore.case = TRUE)]
-  }
+  all_files <- base::file.path(scan_path, relative_files)
+  file_info <- base::file.info(all_files)
+  keep_files <- !file_info$isdir
+  all_files <- all_files[keep_files]
+  relative_files <- relative_files[keep_files]
+
+  # Remove hidden files and directories (sometimes .keep is present)
+  hidden_files <- is_hidden_path(relative_files)
+  all_files <- all_files[!hidden_files]
+  file_ext <- base::tolower(tools::file_ext(all_files))
+
+  all_files[!file_ext %in% filter]
 }
 
 #' Compute file hashes
@@ -166,18 +229,26 @@ compute_hash <- function(file_path = NULL, algo = "sha1") {
 #' @param log_dir Character. Directory to store the registry when
 #'   \code{registry_path} is NULL.
 #' @param path Character. Path to the file(s). Default NULL
-#' @param only_format Character vector of file formats to include. Default "R"
-#' @param exclude_format Character vector of file formats to exclude. Default
-#' NULL, Example: c("csv", "txt", "parquet")
+#' @param only_format Character vector of file extensions to include, for
+#'   example `c("R", "sql")`. If `NULL`, no inclusion filter is applied.
+#'   Mutually exclusive with `exclude_format`.
+#' @param exclude_format Character vector of file extensions to exclude, for
+#'   example `c("csv", "txt", "parquet")`. If `NULL`, no exclusion filter is
+#'   applied. Mutually exclusive with `only_format`.
 #' @param output_file Output file Default NULL
 #' @export
 track_file_changes <- function(
   log_dir = "logs",
   path = NULL,
   output_file = NULL,
-  only_format = c("R"),
+  only_format = NULL,
   exclude_format = NULL
 ) {
+  filters <- validate_format_filters(
+    only_format = only_format,
+    exclude_format = exclude_format
+  )
+
   # Validate inputs
   if (!is.null(path) && !dir.exists(path)) {
     stop("Specified path does not exist: ", path)
@@ -198,8 +269,8 @@ track_file_changes <- function(
   # get the files
   file_paths <- get_tracked_files(
     path = path,
-    only_format = only_format,
-    exclude_format = exclude_format
+    only_format = filters$only_format,
+    exclude_format = filters$exclude_format
   )
 
   if (length(file_paths) == 0) {
