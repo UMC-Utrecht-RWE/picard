@@ -26,12 +26,55 @@ None
 
 None
 
-None
+\item{\code{capture_target}}{Target log file for captured prints.
+Initialize LoggerManager
+Constructor for the LoggerManager class.}
+}
+\if{html}{\out{</div>}}
+}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-LoggerManager-new}{\code{LoggerManager$new()}}
+\item \href{#method-LoggerManager-is_configured}{\code{LoggerManager$is_configured()}}
+\item \href{#method-LoggerManager-configure}{\code{LoggerManager$configure()}}
+\item \href{#method-LoggerManager-cleanup_old_logs}{\code{LoggerManager$cleanup_old_logs()}}
+\item \href{#method-LoggerManager-start_step_logger}{\code{LoggerManager$start_step_logger()}}
+\item \href{#method-LoggerManager-end_step_logger}{\code{LoggerManager$end_step_logger()}}
+\item \href{#method-LoggerManager-start_script}{\code{LoggerManager$start_script()}}
+\item \href{#method-LoggerManager-end_script}{\code{LoggerManager$end_script()}}
+\item \href{#method-LoggerManager-.layout_with_timers}{\code{LoggerManager$.layout_with_timers()}}
+\item \href{#method-LoggerManager-start_capturing_prints}{\code{LoggerManager$start_capturing_prints()}}
+\item \href{#method-LoggerManager-stop_capturing_prints}{\code{LoggerManager$stop_capturing_prints()}}
+\item \href{#method-LoggerManager-clone}{\code{LoggerManager$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LoggerManager-new"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-new}{}}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$new()}\if{html}{\out{</div>}}
 }
 \description{
 Initialize the LoggerManager instance.
 
-Configure the LoggerManager instance.
+\subsection{Returns}{
+NULL
+Check whether the logger has been configured
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LoggerManager-is_configured"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-is_configured}{}}}
+\subsection{Method \code{is_configured()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LoggerManager$is_configured()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Logical scalar. TRUE when configure() has been called.
+configure the LoggerManager
 
 Sets up the logging directory, global log file, and log appenders.
 Cleans up old logs and configures the global logger.

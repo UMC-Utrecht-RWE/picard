@@ -70,8 +70,14 @@ read_yaml <- function(file_path) {
     stop("Config must be .yaml or .yml", call. = FALSE)
   }
   out <- tryCatch(
-    yaml::read_yaml(file_path),
-    error = function(e) stop("Invalid YAML: ", e$message, call. = FALSE)
+    load_raw(file_path),
+    error = function(e) {
+      msg <- conditionMessage(e)
+      if (startsWith(msg, "File not found: ")) {
+        stop(msg, call. = FALSE)
+      }
+      stop("Invalid YAML: ", msg, call. = FALSE)
+    }
   )
   if (!is.list(out)) {
     stop("Config must be a YAML mapping (top-level object).", call. = FALSE)

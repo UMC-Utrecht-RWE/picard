@@ -274,9 +274,25 @@ testthat::test_that("Resets registry and loads defaults", {
   testthat::expect_false("zzz" %in% readers)
   testthat::expect_true(
     all(
-      c("csv", "rdata", "rds", "xlsx", "fst", "duckdb", "parquet") %in% readers
+      c(
+        "csv", "duckdb", "fst", "parquet", "rdata",
+        "rds", "sql", "xlsx", "yaml", "yml"
+      ) %in% readers
     )
   )
+})
+
+testthat::test_that("load_raw returns the reader's native object", {
+  picard:::.init_reader_registry()
+  withr::defer(picard:::.init_reader_registry())
+
+  tf_yaml <- tempfile(fileext = ".yaml")
+  writeLines("a: 1", tf_yaml)
+
+  result <- load_raw(tf_yaml)
+
+  testthat::expect_true(is.list(result))
+  testthat::expect_identical(result$a, 1L)
 })
 
 testthat::test_that(".init_reader_registry for load_rdata reader", {

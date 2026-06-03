@@ -13,6 +13,43 @@
 #' @return Data data.table
 #' @export
 load <- function(file_path, file_name = NULL, col_types = NULL, ...) {
+  request <- prepare_load_request(file_path, file_name)
+  result <- tryCatch(
+    dispatch_reader(request, ...),
+    error = function(e) {
+      stop(
+        "Failed to read file: ", request$file_path, "\n",
+        "Error: ", e$message,
+        call. = FALSE
+      )
+    }
+  )
+
+  result <- data.table::as.data.table(result)
+  define_column_types(result, col_types = col_types)
+}
+
+
+#' Read a file using the registered reader without coercing its output
+#'
+#' @param file_path Path to the file
+#' @param file_name Optional filename to append to file_path
+#' @param ... Additional arguments passed to the reader function
+#' @return The native object returned by the registered reader
+#' @keywords internal
+load_raw <- function(file_path, file_name = NULL, ...) {
+  request <- prepare_load_request(file_path, file_name)
+  dispatch_reader(request, ...)
+}
+
+
+#' Prepare a file for reader dispatch
+#'
+#' @param file_path Path to the file or directory
+#' @param file_name Optional filename to append to file_path
+#' @return Named list with resolved file path, extension, and reader function
+#' @keywords internal
+prepare_load_request <- function(file_path, file_name = NULL) {
   # Validate and normalize path
   path_info <- validate_and_normalize_path(file_path, file_name)
 
@@ -45,21 +82,24 @@ load <- function(file_path, file_name = NULL, col_types = NULL, ...) {
       call. = FALSE
     )
   }
-  # Call the reader
-  logger::log_info(paste0("Reading file: ", basename(file_path)))
-  result <- tryCatch(
-    reader_func(file_path, ...),
-    error = function(e) {
-      stop(
-        "Failed to read file: ", file_path, "\n",
-        "Error: ", e$message,
-        call. = FALSE
-      )
-    }
-  )
 
-  result <- data.table::as.data.table(result)
-  define_column_types(result, col_types = col_types)
+  list(
+    file_path = file_path,
+    ext = ext,
+    reader_func = reader_func
+  )
+}
+
+
+#' Dispatch a prepared file request to its reader
+#'
+#' @param request Named list created by prepare_load_request()
+#' @param ... Additional arguments passed to the reader function
+#' @return The native object returned by the registered reader
+#' @keywords internal
+dispatch_reader <- function(request, ...) {
+  logger::log_info(paste0("Reading file: ", basename(request$file_path)))
+  request$reader_func(request$file_path, ...)
 }
 
 #' Validate and normalize file path
@@ -324,6 +364,21 @@ define_column_types <- function(df, col_types) {
 
   register_reader("parquet", function(path, ...) {
     arrow::read_parquet(path, ...)
+  })
+
+  register_reader("yaml", function(path, ...) {
+    yaml::read_yaml(path, ...)
+  })
+
+  register_reader("yml", function(path, ...) {
+    yaml::read_yaml(path, ...)
+  })
+
+  register_reader("sql", function(path, encoding = "UTF-8", ...) {
+    con <- base::file(path, open = "r", encoding = encoding)
+    on.exit(close(con), add = TRUE)
+
+    paste(readLines(con, warn = FALSE), collapse = "\n")
   })
 }
 

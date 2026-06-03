@@ -39,7 +39,7 @@ pipeline <- R6::R6Class(
         logger::log_error(base::paste("Config not found:", path))
         base::stop("Missing configuration file")
       }
-      yaml::yaml.load_file(path)
+      read_yaml(path)
     },
 
     #' @description Delete all files within a folder.

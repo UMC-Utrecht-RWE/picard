@@ -31,6 +31,23 @@ testthat::test_that("load_sql_query returns a single string", {
   )
 })
 
+testthat::test_that("load_sql_query uses the shared raw loader", {
+  picard:::.init_reader_registry()
+  withr::defer(picard:::.init_reader_registry())
+
+  picard:::register_reader("sql", function(path, encoding = "UTF-8", ...) {
+    testthat::expect_identical(encoding, "UTF-8")
+    "-- comment\tline\nSELECT 1;"
+  })
+
+  tmp <- tempfile(fileext = ".sql")
+  writeLines("SELECT 0;", tmp, useBytes = TRUE)
+
+  out <- load_sql_query(tmp)
+
+  testthat::expect_equal(out, "/* comment line */\nSELECT 1;")
+})
+
 testthat::test_that("tabs are replaced by spaces", {
   tmp <- tempfile(fileext = ".sql")
   writeLines(

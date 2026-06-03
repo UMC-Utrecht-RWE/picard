@@ -3,8 +3,15 @@ testthat::teardown({
   picard:::.reset_logger_manager_instance()
 
   # Reset the global logger package to defaults.
-  try(logger::log_appender(logger::appender_console), silent = TRUE)
-  try(logger::log_layout(logger::layout_simple), silent = TRUE)
+  namespaces <- c("global", "picard")
+  try(
+    logger::log_appender(logger::appender_console, namespace = namespaces),
+    silent = TRUE
+  )
+  try(
+    logger::log_layout(logger::layout_simple, namespace = namespaces),
+    silent = TRUE
+  )
 
   # Close any open sinks.
   while (base::sink.number() > 0) {
@@ -199,6 +206,55 @@ testthat::test_that("Test error verbose options", {
     ),
     regexp = "'arg' should be one of "
   )
+})
+
+testthat::test_that("picard log wrappers work standalone", {
+  namespaces <- c("global", "picard")
+  logger::log_appender(logger::appender_console, namespace = namespaces)
+  logger::log_layout(logger::layout_simple, namespace = namespaces)
+
+  testthat::expect_silent(picard::log_info("wrapper ok"))
+  testthat::expect_silent(picard::start_script_logging("standalone-script"))
+  testthat::expect_silent(picard::stop_script_logging())
+})
+
+testthat::test_that("picard log wrappers use configured picard logger", {
+  log_dir <- withr::local_tempdir()
+  lm <- picard::logger_manager
+  lm$configure(log_dir = log_dir)
+
+  picard::log_info("wrapper configured")
+
+  lines <- base::readLines(lm$global_log_file, warn = FALSE)
+  testthat::expect_true(any(grepl("wrapper configured", lines, fixed = TRUE)))
+})
+
+testthat::test_that("script logging helper works in sourced scripts", {
+  log_dir <- withr::local_tempdir()
+  lm <- picard::logger_manager
+  lm$configure(log_dir = log_dir)
+  lm$start_step_logger("T2")
+  on.exit(try(lm$end_step_logger(), silent = TRUE), add = TRUE)
+  step_log <- lm$step_log_file
+
+  script_path <- tempfile(fileext = ".R")
+  base::writeLines(
+    c(
+      "picard::start_script_logging(\"helper-script\")",
+      "on.exit(picard::stop_script_logging(), add = TRUE)",
+      "picard::log_info(\"from sourced script\")",
+      "print(\"captured print\")"
+    ),
+    con = script_path
+  )
+
+  base::source(script_path, local = new.env(parent = globalenv()))
+  lm$end_step_logger()
+
+  lines <- base::readLines(step_log, warn = FALSE)
+  testthat::expect_true(any(grepl("Script started: helper-script", lines)))
+  testthat::expect_true(any(grepl("from sourced script", lines, fixed = TRUE)))
+  testthat::expect_true(any(grepl("Script ended: helper-script", lines)))
 })
 
 

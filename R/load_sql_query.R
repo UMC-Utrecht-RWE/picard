@@ -27,18 +27,22 @@
 #' )
 #' }
 load_sql_query <- function(
-    file_path,
-    encoding = "UTF-8",
-    params = NULL) {
-  # Validate file exists
-  if (!file.exists(file_path)) {
-    stop("SQL file not found: ", file_path, call. = FALSE)
-  }
+  file_path,
+  encoding = "UTF-8",
+  params = NULL
+) {
+  sql <- tryCatch(
+    load_raw(file_path, encoding = encoding),
+    error = function(e) {
+      msg <- conditionMessage(e)
+      if (startsWith(msg, "File not found: ")) {
+        stop(sub("^File not found:", "SQL file not found:", msg), call. = FALSE)
+      }
+      stop(msg, call. = FALSE)
+    }
+  )
 
-  con <- base::file(file_path, open = "r", encoding = encoding)
-  on.exit(close(con), add = TRUE)
-
-  lines <- readLines(con, warn = FALSE)
+  lines <- strsplit(sql, "\n", fixed = TRUE)[[1]]
 
   # Normalize each line
   lines <- vapply(
@@ -168,13 +172,14 @@ interpolate_sql_params <- function(sql, params) {
 #' )
 #' }
 execute_sql_file <- function(
-    sql,
-    conn,
-    execute = TRUE,
-    save_as_parquet = FALSE,
-    parquet_path = NULL,
-    partition_by = NULL,
-    ...) {
+  sql,
+  conn,
+  execute = TRUE,
+  save_as_parquet = FALSE,
+  parquet_path = NULL,
+  partition_by = NULL,
+  ...
+) {
   if (!execute) {
     return(sql)
   }

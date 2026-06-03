@@ -54,7 +54,17 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' @description Configure the LoggerManager instance.
+    #' Check whether the logger has been configured
+    #'
+    #' @return Logical scalar. TRUE when configure() has been called.
+    is_configured = function() {
+      !base::is.null(self$global_log_file) &&
+        base::is.character(self$global_log_file) &&
+        base::length(self$global_log_file) == 1 &&
+        base::nzchar(self$global_log_file)
+    },
+
+    #' configure the LoggerManager
     #'
     #' Sets up the logging directory, global log file, and log appenders.
     #' Cleans up old logs and configures the global logger.
