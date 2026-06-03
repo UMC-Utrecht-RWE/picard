@@ -158,10 +158,15 @@ get_tracked_files <- function(
   exclude_format = NULL
 ) {
   scan_path <- if (base::is.null(path)) "." else path
-  filter <- validate_format_filters(
-    only_format = only_format,
-    exclude_format = exclude_format
-  )
+  # if only_format or exclude_format are not null, validate and normalize them
+  if (!base::is.null(only_format) || !base::is.null(exclude_format)) {
+    filter <- validate_format_filters(
+      only_format = only_format,
+      exclude_format = exclude_format
+    )
+  } else {
+    filter <- NULL
+  }
 
   # Validate path exists
   if (!base::dir.exists(scan_path)) {
@@ -191,6 +196,9 @@ get_tracked_files <- function(
   all_files <- all_files[!hidden_files]
   file_ext <- base::tolower(tools::file_ext(all_files))
 
+  if (base::is.null(filter)) {
+    return(all_files)
+  }
   all_files[file_ext %in% filter]
 }
 
@@ -244,11 +252,6 @@ track_file_changes <- function(
   only_format = NULL,
   exclude_format = NULL
 ) {
-  filters <- validate_format_filters(
-    only_format = only_format,
-    exclude_format = exclude_format
-  )
-
   # Validate inputs
   if (!is.null(path) && !dir.exists(path)) {
     stop("Specified path does not exist: ", path)
@@ -269,8 +272,8 @@ track_file_changes <- function(
   # get the files
   file_paths <- get_tracked_files(
     path = path,
-    only_format = filters$only_format,
-    exclude_format = filters$exclude_format
+    only_format = only_format,
+    exclude_format = exclude_format
   )
 
   if (length(file_paths) == 0) {

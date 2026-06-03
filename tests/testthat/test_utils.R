@@ -147,7 +147,7 @@ testthat::test_that("get_tracked_files finds file on all OS", {
 
   tracked_files <- get_tracked_files(path = test_dir)
 
-  tracked_files_normalized <- normalizePath(
+  tracked_files_normalized <- base::normalizePath(
     tracked_files,
     winslash = "/", mustWork = FALSE
   )
@@ -163,6 +163,12 @@ testthat::test_that("get_tracked_files can include only selected formats", {
   writeLines("x <- 1", r_file)
   writeLines("select 1", sql_file)
   writeLines("select 2", sql_file_2)
+
+  tracked_files <- get_tracked_files(
+    path = test_dir
+  )
+
+  testthat::expect_equal(length(tracked_files), 3L)
 
   tracked_files <- get_tracked_files(
     path = test_dir,
