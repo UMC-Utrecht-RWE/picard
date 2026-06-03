@@ -98,7 +98,7 @@ get_tracked_files <- function(
 
   # Validate path exists
   if (!base::dir.exists(scan_path)) {
-    stop("Path does not exist: ", scan_path)
+    base::stop("Path does not exist: ", scan_path)
   }
 
   all_files <- base::list.files(
@@ -161,11 +161,14 @@ track_file_changes <- function(
 
   # Make log folder with error handling
   if (!base::dir.exists(log_dir)) {
-    tryCatch({
-      base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
-    }, error = function(e) {
-      stop("Failed to create log directory: ", e$message)
-    })
+    tryCatch(
+      {
+        base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+      },
+      error = function(e) {
+        stop("Failed to create log directory: ", e$message)
+      }
+    )
   }
 
   # get the files
@@ -184,7 +187,10 @@ track_file_changes <- function(
   hashes <- compute_hash(file_path = file_paths)
 
   # export the result
-  dt <- data.table::data.table(file_path = file_paths, hash = hashes)
+  dt <- data.table::data.table(
+    file_path = file_paths,
+    hash = hashes
+  )
   picard::save(
     data = dt,
     file_path = output_file,
@@ -208,7 +214,8 @@ track_file_changes <- function(
 #' @import data.table
 #' @export
 set_dates <- function(
-    df, date_cols, date_format = NULL, reference_date = "1970-01-01") {
+  df, date_cols, date_format = NULL, reference_date = "1970-01-01"
+) {
   # Validate inputs
   if (!data.table::is.data.table(df)) {
     stop("df must be a data.table")
@@ -253,7 +260,7 @@ set_dates <- function(
   for (col in date_cols) {
     col_class <- class(df[[col]])
     if (is.character(col_class) ||
-        any(class(col_class) %in% c("numeric", "integer"))
+      any(class(col_class) %in% c("numeric", "integer"))
     ) {
       # If character or numeric, convert via origin
       df <- data.table::setDT(df)
@@ -288,9 +295,10 @@ set_dates <- function(
 #' get_date_value(c("20251119", "20251118", "Ciao"))
 #' @export
 get_date_value <- function(
-    date_input,
-    origin = "1970-01-01",
-    date_formats = c("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d")) {
+  date_input,
+  origin = "1970-01-01",
+  date_formats = c("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d")
+) {
   # Already Date
   if (base::inherits(date_input, "Date")) {
     return(date_input)

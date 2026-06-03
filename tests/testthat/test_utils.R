@@ -136,7 +136,8 @@ testthat::test_that("read_yaml rejects invalid YAML syntax", {
 ##############################
 testthat::test_that("get_tracked_files finds file on all OS", {
   test_dir <- normalizePath(
-    withr::local_tempdir(), winslash = "/", mustWork = FALSE
+    withr::local_tempdir(),
+    winslash = "/", mustWork = FALSE
   )
 
   tmp <- tempfile(tmpdir = test_dir, fileext = ".txt")
@@ -147,7 +148,8 @@ testthat::test_that("get_tracked_files finds file on all OS", {
   tracked_files <- get_tracked_files(path = test_dir)
 
   tracked_files_normalized <- normalizePath(
-    tracked_files, winslash = "/", mustWork = FALSE
+    tracked_files,
+    winslash = "/", mustWork = FALSE
   )
   testthat::expect_true(tmp_normalized %in% tracked_files_normalized)
 })
@@ -212,9 +214,8 @@ testthat::test_that("track_file_changes creates registry correctly", {
   )
 
   testthat::expect_true(test_file %in% dt$file_path)
-  testthat::expect_equal(nrow(dt), 1)  # Should only have our test file
+  testthat::expect_equal(nrow(dt), 1) # Should only have our test file
 })
-
 
 
 ################################################
