@@ -89,10 +89,15 @@ read_yaml <- function(file_path) {
 #'
 #' @param path Character or NULL. Directory to scan. If NULL, uses current
 #'   working directory.
+#' @param only_format Character vector of file formats to include. Default "R"
+#' @param exclude_format Character vector of file formats to exclude. Default
+#' NULL, Example: c("csv", "txt", "parquet")
 #' @return list of all files
 #' @keywords internal
 get_tracked_files <- function(
-  path = NULL
+  path = NULL,
+  only_format = c("R"),
+  exclude_format = c("csv", "txt", "parquet")
 ) {
   scan_path <- if (base::is.null(path)) "." else path
 
@@ -112,6 +117,18 @@ get_tracked_files <- function(
   # remove directories (hidden and not)
   all_files <- all_files[!base::file.info(all_files)$isdir]
   all_files[!base::grepl("(^|/)\\.", all_files)]
+
+  # Filter by only_format
+  if (length(only_format)) {
+    pattern <- paste0("\\.(", paste(only_format, collapse = "|"), ")$")
+    all_files <- all_files[grepl(pattern, all_files, ignore.case = TRUE)]
+  }
+
+  # Filter by exclude_format
+  if (length(exclude_format)) {
+    pattern <- paste0("\\.(", paste(exclude_format, collapse = "|"), ")$")
+    all_files <- all_files[!grepl(pattern, all_files, ignore.case = TRUE)]
+  }
 }
 
 #' Compute file hashes
@@ -149,10 +166,17 @@ compute_hash <- function(file_path = NULL, algo = "sha1") {
 #' @param log_dir Character. Directory to store the registry when
 #'   \code{registry_path} is NULL.
 #' @param path Character. Path to the file(s). Default NULL
+#' @param only_format Character vector of file formats to include. Default "R"
+#' @param exclude_format Character vector of file formats to exclude. Default
+#' NULL, Example: c("csv", "txt", "parquet")
 #' @param output_file Output file Default NULL
 #' @export
 track_file_changes <- function(
-  log_dir = "logs", path = NULL, output_file = NULL
+  log_dir = "logs",
+  path = NULL,
+  output_file = NULL,
+  only_format = c("R"),
+  exclude_format = NULL
 ) {
   # Validate inputs
   if (!is.null(path) && !dir.exists(path)) {
@@ -172,7 +196,11 @@ track_file_changes <- function(
   }
 
   # get the files
-  file_paths <- get_tracked_files(path = path)
+  file_paths <- get_tracked_files(
+    path = path,
+    only_format = only_format,
+    exclude_format = exclude_format
+  )
 
   if (length(file_paths) == 0) {
     warning("No files found to track")
@@ -181,7 +209,8 @@ track_file_changes <- function(
   # get the output file
 
   output_file <- get_hash_output(
-    output_file = output_file, log_dir = log_dir
+    output_file = output_file,
+    log_dir = log_dir
   )
   # get hashes from files
   hashes <- compute_hash(file_path = file_paths)
