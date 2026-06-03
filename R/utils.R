@@ -191,7 +191,7 @@ get_tracked_files <- function(
   all_files <- all_files[!hidden_files]
   file_ext <- base::tolower(tools::file_ext(all_files))
 
-  all_files[!file_ext %in% filter]
+  all_files[file_ext %in% filter]
 }
 
 #' Compute file hashes
