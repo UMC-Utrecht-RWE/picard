@@ -50,7 +50,7 @@ load_config <- function(
   for (yaml in yamls) {
     var_name <- tolower(tools::file_path_sans_ext(basename(yaml)))
     base::assign(var_name, read_yaml(yaml), envir = .GlobalEnv)
-    logger::log_info(paste0("Loaded config '", var_name, "' from: ", yaml))
+    logger::log_trace(paste0("Loaded config '", var_name, "' from: ", yaml))
   }
   invisible(yamls)
 }
