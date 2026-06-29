@@ -46,8 +46,9 @@ t5_pipeline <- R6::R6Class(
     #' Run the T5 pipeline
     #' @return NULL
     run = function() {
-      logger::log_debug("Running T5 substeps via Pipeline engine")
+      logger::log_info("Running T5 substeps via Pipeline engine")
       super$run_substeps(self$T5, step_key = "T5")
+      logger::log_success("Step T5 completed successfully")
       base::invisible(NULL)
     },
 
@@ -56,7 +57,7 @@ t5_pipeline <- R6::R6Class(
     #' @return NULL
     delete_data = function(files = NULL) {
       spec <- if (is.null(files)) self$T5$parquet_files
-      logger::log_debug("Deleting files.")
+      logger::log_info("Deleting files.")
       super$delete_data(spec = spec)
       base::invisible(NULL)
     }
