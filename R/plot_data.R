@@ -363,6 +363,9 @@ plot_data_features <- function(
         "No columns found to be excluded from plots."
       )
     }
+    # Copy first: `:=` mutates by reference, and we must not delete
+    # columns from the caller's own data.table.
+    data <- data.table::copy(data)
     data[, (existing_cols) := NULL]
 
     logger::log_info(
