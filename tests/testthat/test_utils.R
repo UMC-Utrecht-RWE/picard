@@ -54,11 +54,9 @@ testthat::test_that("Test for file_path null and at least a yaml file exists", {
   temp_yaml <- file.path(config_dir, "config_values.yaml")
   writeLines(c("start_study_date: 2023-8-24"), temp_yaml)
 
-  # change working directory to tempdir to use here::here correctly
+  # load_config() resolves paths off getwd(), so just switch into tmp
   old_wd <- getwd()
   setwd(tmp)
-  file.create(".here")
-  here::i_am(".here")
 
   # Test loading the configuration values
   config <- load_config()
