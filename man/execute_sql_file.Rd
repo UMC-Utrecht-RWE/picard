@@ -22,7 +22,11 @@ execute_sql_file(
 \item{execute}{logical; if TRUE (default), execute the query.
 If FALSE, return the interpolated SQL string.}
 
-\item{save_as_parquet}{logical; if TRUE, saves the result of a SELECT query}
+\item{save_as_parquet}{logical; if TRUE, saves the result of a SELECT query
+to Parquet. For DuckDB connections, the query result is streamed
+directly to disk via DuckDB's \verb{COPY ... TO ... (FORMAT PARQUET)},
+without materialising it as an R data.frame first. Other DBI backends
+fall back to \code{DBI::dbGetQuery()} + \code{arrow::write_dataset()}.}
 
 \item{parquet_path}{character; file path to save the Parquet file if \verb{save as_parquet} is TRUE. Required if \code{save_as_parquet} is TRUE.}
 
@@ -31,8 +35,9 @@ If FALSE, return the interpolated SQL string.}
 \item{...}{additional arguments passed to DBI::dbExecute or DBI::dbGetQuery}
 }
 \value{
-If execute = TRUE, returns result from DBI.
-If FALSE, returns SQL string.
+If execute = TRUE and save_as_parquet = TRUE on a DuckDB
+connection, returns invisible(parquet_path). Otherwise, if execute =
+TRUE, returns the result from DBI. If FALSE, returns the SQL string.
 }
 \description{
 Convenience wrapper that loads and executes a SQL file in one step.
