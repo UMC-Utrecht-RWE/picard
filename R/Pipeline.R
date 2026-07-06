@@ -173,7 +173,7 @@ pipeline <- R6::R6Class(
       if (spec$type == "parquet_partition") {
         tryCatch({
           partition_col <- self$config$partition_col
-          partition_col <- if (is.null(partition_col)) "concept_id"
+          partition_col <- if (is.null(partition_col)) "concept_id" else partition_col
         },
         error = function(e) {
           partition_col <- "concept_id"

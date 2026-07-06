@@ -17,11 +17,12 @@
 #' @return NULL
 #' @export
 audit_start <- function(
-    dir_output = "data/audits",
-    file_name = NULL,
-    deap_name = NULL,
-    delete_old = TRUE,
-    format = ".txt") {
+  dir_output = "data/audits",
+  file_name = NULL,
+  deap_name = NULL,
+  delete_old = TRUE,
+  format = ".txt"
+) {
   if (is.null(file_name)) {
     file_name <- scriptName::current_filename()
     file_name <- basename(tools::file_path_sans_ext(file_name))
@@ -46,10 +47,15 @@ audit_start <- function(
     dir_output,
     pattern = file_name_sens, full.names = TRUE
   )
-  # create or clear file if delete_old = TRUE
-  if (all(base::file.exists(audit_file)) && delete_old) {
-    # remove old files with same name sens
-    base::file.remove(audit_file)
+  # create a fresh file if none exists yet, or clear it if delete_old = TRUE
+  if (
+    length(audit_file) == 0 ||
+      (all(base::file.exists(audit_file)) && delete_old)
+  ) {
+    if (delete_old && length(audit_file) > 0) {
+      # remove old files with same name sens
+      base::file.remove(audit_file)
+    }
     # create new file
     audit_file <- file.path(dir_output, file_name)
     base::file.create(audit_file)
@@ -129,7 +135,6 @@ audit_add <- function(...) {
 #' @return Character string with version info
 #' @keywords internal
 .get_release_version <- function() {
-
   desc <- tryCatch(
     base::suppressWarnings(base::read.dcf("DESCRIPTION")),
     error = function(e) NULL

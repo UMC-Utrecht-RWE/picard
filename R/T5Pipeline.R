@@ -56,7 +56,7 @@ t5_pipeline <- R6::R6Class(
     #' @param files Dictionary containing file to be deleted.
     #' @return NULL
     delete_data = function(files = NULL) {
-      spec <- if (is.null(files)) self$T5$parquet_files
+      spec <- if (is.null(files)) self$T5$parquet_files else files
       logger::log_info("Deleting files.")
       super$delete_data(spec = spec)
       base::invisible(NULL)
