@@ -25,6 +25,7 @@ t3_pipeline <- R6::R6Class(
     ) {
       logger::log_info("Initializing T3 class")
       self$T3 <- super$load_yaml(config_t3)
+      self$config <- self$T3
       logger::log_debug("T3 config loaded")
     },
 

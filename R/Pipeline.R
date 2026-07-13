@@ -169,15 +169,12 @@ pipeline <- R6::R6Class(
     #' @return NULL
     delete_data = function(spec, dry_run = TRUE) {
       if (spec$type == "parquet_partition") {
-        tryCatch(
-          {
-            partition_col <- self$config$partition_col
-            partition_col <- if (is.null(partition_col)) "concept_id" else partition_col # nolint
-          },
-          error = function(e) {
-            partition_col <- "concept_id"
-          }
-        )
+        partition_col <- self$config$partition_col
+        if (is.null(partition_col)) {
+          msg <- "partition_col not specified in config; usually: 'concept_id'"
+          logger::log_error(msg)
+          base::stop(msg)
+        }
 
         delete_parquet_partition(
           dataset_dir = spec$dataset_dir,
