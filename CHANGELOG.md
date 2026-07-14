@@ -6,51 +6,71 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ## [V1.2.4]
-### Changed 
+
+### Changed
+
 - Packaged pubblished in zenodo.org
 
 ## [V1.2.3]
+
 ### Changed
+
 - Minor changes in `README.md` and cheatsheet file.
+- CSV files read by `data.table` and not by `utils` package.
+
 ### Added
+
 - Added `codemeta.json`
 
 ## [V1.2.2]
+
 ### Added
+
 - Added `R/deprecated.R` for deprecated but still in use for now functions.
 
 ### Changed
+
 - Simplyfied tag originations for `R/audit.R`.
 - `R/read_data.R::read_data()` is now `R/load.R::load()` all other aspects of the function are unchanged.
 - `R/save_data.R::save_data()` is now `R/save.R::save()` all other aspects of the function are unchanged.
 - `R/load_sql_query.R::execute_sql_file()` can now save results in parquet.
 
 ### Future Work
+
 - `R/load_sql_query.R::load_sql_query()` should be handle by `R/load.R::load()`.
 - Fix warning in `R/audit.R` when `DESCRIPTION` not present.
 
 ## [V1.2.1]
+
 ### Fixed
+
 - `R/audit.R:.get_release_version` kept giving us problems with the DEAPs, we decided to remove any call to git as not prosent in DEAPs'enviroment.
 - Fixed bug with `save_data:save_data.R` it was not passing file name correctly to `plot_data`
 
 ### Added
+
 - `save_data.R:prepare_output_path` handles all combinations of `file_path` and `file_name`. If `file_name` is present will overwrite the name in `file_path` (if that is present). If `file_name` has no extension, it will take the one in `file_path` (if that is present). If that is not possible, it will give an error.
 
 ## [V1.2.0]
+
 ### Added
+
 - `R/delete_data.R`: File that deletes whetever path you pass to in not a dry run.
 
 ### Changed
+
 - `R/audit.R`: Expanded and fixed but in `.get_release_version` that created a bug when git was not prosent. Infos are now also gathered from `DESCRIPTION`. It does not create errors if none if present.
 
 ### Fixed
+
 - `DESCRIPTION`'s Version was not updated to 1.1.0, creating installation problems. It is now fixed with release 1.2.0.
 
 ## [V1.1.0]
 
 ### Added
+
 - Testing: Created tests for every part of the code and brought test coverage >95% (Ubuntu only GitHub action check).
 - `R/utils.R:read_yaml`: Validate if file is yaml or not.
 - `R/zzz.R` added handle for global variable so R-CMD does not give errors for data.table and the plotting functions.
@@ -61,28 +81,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New file `R/delete_data.R` with functionality `delete_parquet_partition`. Such function (and potentially others) can be used by the pipeline class(es) to delete parquet files that are now the way we save intermidate data files.
 
 ### Changed
+
 - `R/run_logger.R` refactoring of the code so to have a `global` and `step` log. The first captures all log messages from each step, the seconds contain also print message. The idea is the first gives a general overview the second more details. New functions:
-    - `start_script/end_script`: For capturing logs on singular scripts.
-    - `start_capturing_prints/stop_capturing_prints`: For capturing whatever is printed on terminal.
-    - `start_step_logger/end_step_logger`: For capturing logs for the whole step (is not `init_step_logger` any longer)
-    - `.layout_with_timers`: The system records turn-around-time of every interaction. User can select the verbose level of messaging.
-    - SHA1 value for logging.
+  - `start_script/end_script`: For capturing logs on singular scripts.
+  - `start_capturing_prints/stop_capturing_prints`: For capturing whatever is printed on terminal.
+  - `start_step_logger/end_step_logger`: For capturing logs for the whole step (is not `init_step_logger` any longer)
+  - `.layout_with_timers`: The system records turn-around-time of every interaction. User can select the verbose level of messaging.
+  - SHA1 value for logging.
 - `R/audit.R:audit_add`: It can save lists (thus data.table) into the txt files.
 - `R/utils.R:load_config_values` is now `R/utils.R:load_config`.
 - `code-quality.yaml` is now `code_quality.yaml` and it has been refactor.
 - `testthat.yaml` now tests for every enviroment and
 
 ### Removed
+
 - Removed `R/globals.R` and put its content in `R/zzz.R`
 
 ### Fixed
+
 - A typo prevented Github action triggering
 - All test files have the same nomenclature test_<name\>.R
 
 ## [V1.0.0]
+
 - All major functions transfered here from the RSV-1026 repository.
 
 # List of releases
+
 - unreleased: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
 - V1.2.4: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.4
 - V1.2.3: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.3
