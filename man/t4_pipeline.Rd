@@ -13,115 +13,123 @@ harmonization. It loads configuration files, executes the steps defined in
 the configuration, and cleans up files as needed.
 }
 \section{Super class}{
-\code{\link[picard:Pipeline]{picard::Pipeline}} -> \code{T4Pipeline}
+\code{\link[picard:Pipeline]{Pipeline}} -> \code{T4Pipeline}
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{T4}}{Configuration for the T4 pipeline
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{T4}}{Configuration for the T4 pipeline
 Initialize the T4 pipeline with a YAML configuration file}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-T4Pipeline-new}{\code{t4_pipeline$new()}}
-\item \href{#method-T4Pipeline-clean}{\code{t4_pipeline$clean()}}
-\item \href{#method-T4Pipeline-run}{\code{t4_pipeline$run()}}
-\item \href{#method-T4Pipeline-delete_data}{\code{t4_pipeline$delete_data()}}
-\item \href{#method-T4Pipeline-clone}{\code{t4_pipeline$clone()}}
+  \itemize{
+    \item \href{#method-T4Pipeline-initialize}{\code{T4Pipeline$new()}}
+    \item \href{#method-T4Pipeline-clean}{\code{T4Pipeline$clean()}}
+    \item \href{#method-T4Pipeline-run}{\code{T4Pipeline$run()}}
+    \item \href{#method-T4Pipeline-delete_data}{\code{T4Pipeline$delete_data()}}
+    \item \href{#method-T4Pipeline-clone}{\code{T4Pipeline$clone()}}
+  }
 }
-}
-\if{html}{\out{
-<details open><summary>Inherited methods</summary>
+\if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="load_yaml"><a href='../../picard/html/Pipeline.html#method-Pipeline-load_yaml'><code>picard::Pipeline$load_yaml()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="run_substeps"><a href='../../picard/html/Pipeline.html#method-Pipeline-run_substeps'><code>picard::Pipeline$run_substeps()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="skip_step"><a href='../../picard/html/Pipeline.html#method-Pipeline-skip_step'><code>picard::Pipeline$skip_step()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="load_yaml"><a href='../../picard/html/Pipeline.html#method-Pipeline-load_yaml'><code>Pipeline$load_yaml()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="run_substeps"><a href='../../picard/html/Pipeline.html#method-Pipeline-run_substeps'><code>Pipeline$run_substeps()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="skip_step"><a href='../../picard/html/Pipeline.html#method-Pipeline-skip_step'><code>Pipeline$skip_step()</code></a></span></li>
 </ul>
-</details>
-}}
+</details>}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-T4Pipeline-new"></a>}}
-\if{latex}{\out{\hypertarget{method-T4Pipeline-new}{}}}
-\subsection{Method \code{new()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{t4_pipeline$new(config_t4 = base::file.path("configuration", "config_T4.yaml"))}\if{html}{\out{</div>}}
+\if{html}{\out{<a id="method-T4Pipeline-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-T4Pipeline-initialize}{}}}
+\subsection{\code{T4Pipeline$new()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T4Pipeline$new(config_t4 = base::file.path("configuration", "config_T4.yaml"))}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{config_t4}}{Path to the YAML configuration file for T4}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    An instance of T4Pipeline
+Clean up files related to the T4 pipeline
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{config_t4}}{Path to the YAML configuration file for T4}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-An instance of T4Pipeline
-Clean up files related to the T4 pipeline
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-T4Pipeline-clean"></a>}}
 \if{latex}{\out{\hypertarget{method-T4Pipeline-clean}{}}}
-\subsection{Method \code{clean()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{t4_pipeline$clean()}\if{html}{\out{</div>}}
+\subsection{\code{T4Pipeline$clean()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T4Pipeline$clean()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    NULL
+Run the T4 pipeline
+  }
 }
 
-\subsection{Returns}{
-NULL
-Run the T4 pipeline
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-T4Pipeline-run"></a>}}
 \if{latex}{\out{\hypertarget{method-T4Pipeline-run}{}}}
-\subsection{Method \code{run()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{t4_pipeline$run()}\if{html}{\out{</div>}}
+\subsection{\code{T4Pipeline$run()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T4Pipeline$run()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    NULL
+Delete files
+  }
 }
 
-\subsection{Returns}{
-NULL
-Delete files
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-T4Pipeline-delete_data"></a>}}
 \if{latex}{\out{\hypertarget{method-T4Pipeline-delete_data}{}}}
-\subsection{Method \code{delete_data()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{t4_pipeline$delete_data(files = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{T4Pipeline$delete_data()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T4Pipeline$delete_data(files = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{files}}{Dictionary containing file to be deleted.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    NULL
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{files}}{Dictionary containing file to be deleted.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-NULL
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-T4Pipeline-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-T4Pipeline-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{t4_pipeline$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{T4Pipeline$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T4Pipeline$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }
