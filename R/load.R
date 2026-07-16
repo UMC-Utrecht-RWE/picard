@@ -301,15 +301,19 @@ define_column_types <- function(df, col_types) {
       ...
     )
 
-    line_count <- length(readLines(path, warn = FALSE)) - 1
-    if (nrow(dt) != line_count) {
-      stop(
-        "Row count mismatch in file '", path, "': expected ", line_count,
-        " data row(s) but read ", nrow(dt), ". The CSV file appears to be ",
-        "corrupt (e.g. rows with an inconsistent number of columns). ",
-        "Please check the file.",
-        call. = FALSE
-      )
+    dots <- list(...)
+    limits_rows <- any(c("nrow", "nrows", "skip") %in% names(dots))
+    if (!limits_rows) {
+      line_count <- length(readLines(path, warn = FALSE)) - 1
+      if (nrow(dt) != line_count) {
+        stop(
+          "Row count mismatch in file '", path, "': expected ", line_count,
+          " data row(s) but read ", nrow(dt), ". The CSV file appears to be ",
+          "corrupt (e.g. rows with an inconsistent number of columns). ",
+          "Please check the file.",
+          call. = FALSE
+        )
+      }
     }
 
     # Identify columns that look like dates in the format YYYYMMDD
