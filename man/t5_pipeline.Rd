@@ -28,9 +28,124 @@ The T5Pipeline class is designed to handle the T5 pipeline for semantic
 harmonization. It loads configuration files, executes the steps defined in
 the configuration, and cleans up files as needed.
 }
-\section{Fields}{
+\section{Super class}{
+\code{\link[picard:Pipeline]{Pipeline}} -> \code{T5Pipeline}
+}
+\section{Public fields}{
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{T5}}{Configuration for the T5 pipeline
+Initialize the T5 pipeline with a YAML configuration file}
+  }
+  \if{html}{\out{</div>}}
+}
+\section{Methods}{
+\subsection{Public methods}{
+  \itemize{
+    \item \href{#method-T5Pipeline-initialize}{\code{T5Pipeline$new()}}
+    \item \href{#method-T5Pipeline-clean}{\code{T5Pipeline$clean()}}
+    \item \href{#method-T5Pipeline-run}{\code{T5Pipeline$run()}}
+    \item \href{#method-T5Pipeline-delete_data}{\code{T5Pipeline$delete_data()}}
+    \item \href{#method-T5Pipeline-clone}{\code{T5Pipeline$clone()}}
+  }
+}
+\if{html}{\out{<details open><summary>Inherited methods</summary>
+<ul>
+  <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="load_yaml"><a href='../../picard/html/Pipeline.html#method-Pipeline-load_yaml'><code>Pipeline$load_yaml()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="run_substeps"><a href='../../picard/html/Pipeline.html#method-Pipeline-run_substeps'><code>Pipeline$run_substeps()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="picard" data-topic="Pipeline" data-id="skip_step"><a href='../../picard/html/Pipeline.html#method-Pipeline-skip_step'><code>Pipeline$skip_step()</code></a></span></li>
+</ul>
+</details>}}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-T5Pipeline-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-T5Pipeline-initialize}{}}}
+\subsection{\code{T5Pipeline$new()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T5Pipeline$new(config_t5 = base::file.path("configuration", "config_T5.yaml"))}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{config_t5}}{Path to the YAML configuration file for T5}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    An instance of T5Pipeline
+Clean up files related to the T5 pipeline
+  }
+}
 
-\describe{
-\item{\code{T5}}{Configuration for the T5 pipeline}
-}}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-T5Pipeline-clean"></a>}}
+\if{latex}{\out{\hypertarget{method-T5Pipeline-clean}{}}}
+\subsection{\code{T5Pipeline$clean()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T5Pipeline$clean()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    NULL
+Run the T5 pipeline
+  }
+}
 
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-T5Pipeline-run"></a>}}
+\if{latex}{\out{\hypertarget{method-T5Pipeline-run}{}}}
+\subsection{\code{T5Pipeline$run()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T5Pipeline$run()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    NULL
+Delete files
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-T5Pipeline-delete_data"></a>}}
+\if{latex}{\out{\hypertarget{method-T5Pipeline-delete_data}{}}}
+\subsection{\code{T5Pipeline$delete_data()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T5Pipeline$delete_data(files = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{files}}{Dictionary containing file to be deleted.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    NULL
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-T5Pipeline-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-T5Pipeline-clone}{}}}
+\subsection{\code{T5Pipeline$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{T5Pipeline$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+}

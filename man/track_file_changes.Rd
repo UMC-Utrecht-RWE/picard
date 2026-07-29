@@ -4,7 +4,13 @@
 \alias{track_file_changes}
 \title{Get all files of interest and get their has in a CSV file.}
 \usage{
-track_file_changes(log_dir = "logs", path = NULL, output_file = NULL)
+track_file_changes(
+  log_dir = "logs",
+  path = NULL,
+  output_file = NULL,
+  only_format = NULL,
+  exclude_format = NULL
+)
 }
 \arguments{
 \item{log_dir}{Character. Directory to store the registry when
@@ -13,6 +19,14 @@ track_file_changes(log_dir = "logs", path = NULL, output_file = NULL)
 \item{path}{Character. Path to the file(s). Default NULL}
 
 \item{output_file}{Output file Default NULL}
+
+\item{only_format}{Character vector of file extensions to include, for
+example \code{c("R", "sql")}. If \code{NULL}, no inclusion filter is applied.
+Mutually exclusive with \code{exclude_format}.}
+
+\item{exclude_format}{Character vector of file extensions to exclude, for
+example \code{c("csv", "txt", "parquet")}. If \code{NULL}, no exclusion filter is
+applied. Mutually exclusive with \code{only_format}.}
 }
 \description{
 Get all files of interest and get their has in a CSV file.

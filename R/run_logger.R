@@ -129,7 +129,7 @@ LoggerManager <- R6::R6Class( # nolint
           NULL
         }
       )
-      if (base::is.null(self$registry) & self$verbose == "High") {
+      if (base::is.null(self$registry) && self$verbose == "High") {
         logger::log_error("Registry file necessary!")
         stop("Registry file necessary!")
       }

@@ -107,7 +107,7 @@ pipeline <- R6::R6Class(
         )
       })
 
-      logger::log_info("Pipeline completed successfully")
+      logger::log_success("Pipeline completed successfully")
       base::invisible(NULL)
     },
 

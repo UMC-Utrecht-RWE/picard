@@ -46,7 +46,7 @@ t2_pipeline <- R6::R6Class(
     clean = function() {
       # Implement if you need to clear intermediates, etc.
       # Keep no-op to preserve current caller expectations.
-      logger::log_debug("Removing T2 intermediate files")
+      logger::log_info("Removing T2 intermediate files")
       if (self$T2$cleanup$intermediate_data_file) {
         super$clean(content_to_delete = fs::path(
           self$T2$T2$root,
@@ -59,8 +59,9 @@ t2_pipeline <- R6::R6Class(
     #' @description Run the T2 pipeline.
     #' @return NULL
     run = function() {
-      logger::log_debug("Running T2 substeps via Pipeline engine")
+      logger::log_info("Running T2 substeps via Pipeline engine")
       super$run_substeps(self$T2, step_key = "T2")
+      logger::log_success("Step T2 completed successfully")
       base::invisible(NULL)
     },
 
@@ -69,7 +70,7 @@ t2_pipeline <- R6::R6Class(
     #' @return NULL
     delete_data = function(files = NULL) {
       spec <- if (is.null(files)) self$T2$parquet_files
-      logger::log_debug("Deleting files.")
+      logger::log_info("Deleting files.")
       super$delete_data(spec = spec)
       base::invisible(NULL)
     }
