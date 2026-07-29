@@ -11,11 +11,15 @@
 #' Default is "configuration/config_values.yaml".
 #' @param config_dir Directory to look for YAML configuration files
 #' if file_path is NULL.
+#' @param envir Environment in which to assign the loaded configuration
+#' values when `file_path` is NULL. Defaults to the caller's environment,
+#' which is the global environment when called from a top-level script.
 #' @return A list of configuration values.
 #' @export
 load_config <- function(
   file_path = NULL,
-  config_dir = "configuration"
+  config_dir = "configuration",
+  envir = parent.frame()
 ) {
   if (!is.null(file_path)) {
     # Normalise so both relative and absolute paths work
@@ -49,7 +53,7 @@ load_config <- function(
 
   for (yaml in yamls) {
     var_name <- tolower(tools::file_path_sans_ext(basename(yaml)))
-    base::assign(var_name, read_yaml(yaml), envir = .GlobalEnv)
+    base::assign(var_name, read_yaml(yaml), envir = envir)
     logger::log_trace(paste0("Loaded config '", var_name, "' from: ", yaml))
   }
   invisible(yamls)

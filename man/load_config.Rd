@@ -4,7 +4,11 @@
 \alias{load_config}
 \title{Loead configuration values used during the pipeline execution}
 \usage{
-load_config(file_path = NULL, config_dir = "configuration")
+load_config(
+  file_path = NULL,
+  config_dir = "configuration",
+  envir = parent.frame()
+)
 }
 \arguments{
 \item{file_path}{Path to the YAML configuration file.
@@ -12,6 +16,10 @@ Default is "configuration/config_values.yaml".}
 
 \item{config_dir}{Directory to look for YAML configuration files
 if file_path is NULL.}
+
+\item{envir}{Environment in which to assign the loaded configuration
+values when \code{file_path} is NULL. Defaults to the caller's environment,
+which is the global environment when called from a top-level script.}
 }
 \value{
 A list of configuration values.

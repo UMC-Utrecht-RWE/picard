@@ -11,7 +11,7 @@ Description: Provides a unified interface to configure, trigger, and log
     substeps, logging, auditing, plotting, and reproducibility tracking.
     It is designed to promote consistent, transparent, and reproducible
     execution of data processing pipelines.
-License: file LICENSE
+License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
@@ -41,5 +41,5 @@ Suggests:
     testthat (>= 3.2.3),
     withr (>= 3.0.2)
 Depends:
-    R (>= 4.0.0)
+    R (>= 4.1.0)
 Config/roxygen2/version: 8.0.0

@@ -4,36 +4,6 @@
 \alias{Pipeline}
 \alias{pipeline}
 \title{Pipeline Class for RSV-1026 Project}
-\arguments{
-\item{config_pipeline}{Path to the YAML configuration file}
-
-\item{path}{Path to the YAML file}
-
-\item{content_to_delete}{Path to be deleted}
-
-\item{config_file}{The content of YAML file as a list.}
-
-\item{project}{loaded from YAML}
-
-\item{step_subset}{Optional vector of step names to run}
-
-\item{cfg}{Configuration list containing substeps}
-
-\item{step_key}{Key for the step in the configuration, for example "T2"}
-
-\item{spec}{Specification of what to delete}
-
-\item{dry_run}{Logical. If TRUE (default), do not delete anything;
-only compute and report which partition paths would be removed.
-If FALSE, the matching partition directories are actually deleted.}
-}
-\value{
-An instance of the class
-
-Parsed YAML content as a list
-
-Parsed YAML content as a list
-}
 \description{
 Provides the common orchestration utilities:
 \itemize{
@@ -50,8 +20,7 @@ run_substeps().
   \describe{
     \item{\code{config}}{Configuration loaded from YAML}
 
-    \item{\code{steps}}{List of steps to execute, loaded from the config
-Initialize the pipeline with a YAML configuration file}
+    \item{\code{steps}}{List of steps to execute, loaded from the config}
   }
   \if{html}{\out{</div>}}
 }
@@ -72,6 +41,7 @@ Initialize the pipeline with a YAML configuration file}
 \if{html}{\out{<a id="method-Pipeline-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-initialize}{}}}
 \subsection{\code{Pipeline$new()}}{
+  Initialize the pipeline with a YAML configuration file.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{Pipeline$new(
@@ -88,7 +58,6 @@ Initialize the pipeline with a YAML configuration file}
   }
   \subsection{Returns}{
     An instance of the class
-Load a YAML configuration file
   }
 }
 
@@ -96,6 +65,7 @@ Load a YAML configuration file
 \if{html}{\out{<a id="method-Pipeline-load_yaml"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-load_yaml}{}}}
 \subsection{\code{Pipeline$load_yaml()}}{
+  Load a YAML configuration file.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{Pipeline$load_yaml(path)}
@@ -110,7 +80,6 @@ Load a YAML configuration file
   }
   \subsection{Returns}{
     Parsed YAML content as a list
-Clean method, delete all files within a folder.
   }
 }
 
@@ -118,6 +87,7 @@ Clean method, delete all files within a folder.
 \if{html}{\out{<a id="method-Pipeline-clean"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-clean}{}}}
 \subsection{\code{Pipeline$clean()}}{
+  Delete all files within a folder.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{Pipeline$clean(content_to_delete)}
@@ -132,9 +102,6 @@ Clean method, delete all files within a folder.
   }
   \subsection{Returns}{
     NULL
-Take the config YAML file for the substep, looks a the list of substeps.
-If the substep is assigned as TRUE but its output is present, it skips
-that step.
   }
 }
 
@@ -142,6 +109,10 @@ that step.
 \if{html}{\out{<a id="method-Pipeline-skip_step"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-skip_step}{}}}
 \subsection{\code{Pipeline$skip_step()}}{
+  Update substep flags when outputs already exist.
+
+Take the configuration for a pipeline component, inspect its substeps,
+and disable any substep whose expected outputs are already present.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{Pipeline$skip_step(config_file, project)}
@@ -157,7 +128,6 @@ that step.
   }
   \subsection{Returns}{
     Parsed YAML content as a list
-Run the full pipeline
   }
 }
 
@@ -165,6 +135,7 @@ Run the full pipeline
 \if{html}{\out{<a id="method-Pipeline-run"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-run}{}}}
 \subsection{\code{Pipeline$run()}}{
+  Run the full pipeline.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{Pipeline$run(step_subset = NULL)}
@@ -179,7 +150,6 @@ Run the full pipeline
   }
   \subsection{Returns}{
     NULL
-Run substeps defined in a configuration file
   }
 }
 
@@ -187,6 +157,7 @@ Run substeps defined in a configuration file
 \if{html}{\out{<a id="method-Pipeline-run_substeps"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-run_substeps}{}}}
 \subsection{\code{Pipeline$run_substeps()}}{
+  Run substeps defined in a configuration file.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{Pipeline$run_substeps(cfg, step_key)}
@@ -196,13 +167,12 @@ Run substeps defined in a configuration file
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{cfg}}{Configuration list containing substeps}
-      \item{\code{step_key}}{Key for the step in the configuration (e.g., "T}
+      \item{\code{step_key}}{Key for the step in the configuration, for example "T2"}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
     NULL
-Delete data when needed
   }
 }
 
@@ -210,6 +180,7 @@ Delete data when needed
 \if{html}{\out{<a id="method-Pipeline-delete_data"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-delete_data}{}}}
 \subsection{\code{Pipeline$delete_data()}}{
+  Delete data for a supported specification.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{Pipeline$delete_data(spec, dry_run = TRUE)}

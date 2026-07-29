@@ -31,10 +31,8 @@ testthat::test_that("audit_start writes header with deap_name", {
   tmp <- base::file.path(base::tempdir(), "audit_hdr")
   base::unlink(tmp, recursive = TRUE, force = TRUE)
 
-  withr::local_options(list(
-    .current_audit_file = NULL,
-    .current_start_time = NULL
-  ))
+  .audit_state$current_audit_file <- NULL
+  .audit_state$current_start_time <- NULL
 
   audit_start(
     dir_output = tmp,
@@ -42,7 +40,7 @@ testthat::test_that("audit_start writes header with deap_name", {
     deap_name = "DEAP_X"
   )
 
-  audit_file <- base::getOption(".current_audit_file")
+  audit_file <- .audit_state$current_audit_file
   testthat::expect_true(base::file.exists(audit_file))
 
   lines <- base::readLines(audit_file, warn = FALSE)
@@ -50,10 +48,8 @@ testthat::test_that("audit_start writes header with deap_name", {
 })
 
 testthat::test_that("audit_add errors if called before audit_start", {
-  withr::local_options(list(
-    .current_audit_file = NULL,
-    .current_start_time = NULL
-  ))
+  .audit_state$current_audit_file <- NULL
+  .audit_state$current_start_time <- NULL
 
   testthat::expect_error(
     audit_add("x"),
@@ -68,13 +64,11 @@ testthat::test_that("audit_add appends text lines", {
   tmp <- base::file.path(base::tempdir(), "audit_add_txt")
   base::unlink(tmp, recursive = TRUE, force = TRUE)
 
-  withr::local_options(list(
-    .current_audit_file = NULL,
-    .current_start_time = NULL
-  ))
+  .audit_state$current_audit_file <- NULL
+  .audit_state$current_start_time <- NULL
 
   audit_start(dir_output = tmp, file_name = "unit")
-  audit_file <- base::getOption(".current_audit_file")
+  audit_file <- .audit_state$current_audit_file
 
   audit_add("Hello", " ", "World")
 
@@ -87,13 +81,11 @@ testthat::test_that("audit_add writes a data.table (overwrites file)", {
   tmp <- base::file.path(base::tempdir(), "audit_add_dt")
   base::unlink(tmp, recursive = TRUE, force = TRUE)
 
-  withr::local_options(list(
-    .current_audit_file = NULL,
-    .current_start_time = NULL
-  ))
+  .audit_state$current_audit_file <- NULL
+  .audit_state$current_start_time <- NULL
 
   audit_start(dir_output = tmp, file_name = "unit")
-  audit_file <- base::getOption(".current_audit_file")
+  audit_file <- .audit_state$current_audit_file
 
   dt <- data.table::data.table(id = 1L, n = 2L)
   audit_add(dt)
@@ -106,40 +98,33 @@ testthat::test_that("audit_add writes a data.table (overwrites file)", {
 # Tests for .get_release_version
 ###############################
 testthat::test_that(
-  ".get_release_version falls back to DESCRIPTION",
+  ".get_release_version returns the installed package version",
   {
-    tmp <- withr::local_tempdir(pattern = "from_description")
+    ver <- .get_release_version()
+    expected_version <- as.character(utils::packageVersion("picard"))
 
-    withr::with_dir(tmp, {
-      base::writeLines(
-        c("Package: x", "Version: 9.9.9"),
-        "DESCRIPTION"
-      )
-
-      ver <- .get_release_version()
-
-      testthat::expect_type(ver, "character")
-      testthat::expect_length(ver, 1)
-      testthat::expect_true(grepl("^9\\.9\\.9", ver))
-      testthat::expect_true(grepl("\\(", ver))
-      testthat::expect_true(grepl("\\)", ver))
-    })
+    testthat::expect_type(ver, "character")
+    testthat::expect_length(ver, 1)
+    testthat::expect_true(base::startsWith(ver, expected_version))
+    testthat::expect_true(grepl("installed package version", ver))
+    testthat::expect_true(grepl("Time of creation", ver))
   }
 )
 
 testthat::test_that(
-  ".get_release_version returns unknown when DESCRIPTION missing",
+  ".get_release_version returns unknown when the version cannot be resolved",
   {
-    tmp <- withr::local_tempdir(pattern = "no_desc_")
+    testthat::local_mocked_bindings(
+      packageVersion = function(...) stop("not installed"),
+      .package = "utils"
+    )
 
-    withr::with_dir(tmp, {
-      ver <- .get_release_version()
+    ver <- .get_release_version()
 
-      testthat::expect_type(ver, "character")
-      testthat::expect_length(ver, 1)
-      testthat::expect_match(ver, "^unknown \\(unknown tag origin\\)")
-      testthat::expect_match(ver, "Time of creation")
-    })
+    testthat::expect_type(ver, "character")
+    testthat::expect_length(ver, 1)
+    testthat::expect_match(ver, "^unknown \\(unknown tag origin\\)")
+    testthat::expect_match(ver, "Time of creation")
   }
 )
 ###############################
@@ -157,10 +142,8 @@ testthat::test_that("audit_end writes footer and clears options", {
   base::unlink(repo, recursive = TRUE, force = TRUE)
   base::dir.create(repo, recursive = TRUE, showWarnings = FALSE)
 
-  withr::local_options(list(
-    .current_audit_file = NULL,
-    .current_start_time = NULL
-  ))
+  .audit_state$current_audit_file <- NULL
+  .audit_state$current_start_time <- NULL
 
   withr::with_dir(repo, {
     base::system2("git", "init", stdout = TRUE, stderr = TRUE)
@@ -184,13 +167,13 @@ testthat::test_that("audit_end writes footer and clears options", {
     base::system2("git", c("tag", "v0.0.1"), stdout = TRUE, stderr = TRUE)
 
     audit_start(dir_output = out, file_name = "unit")
-    audit_file <- base::getOption(".current_audit_file")
+    audit_file <- .audit_state$current_audit_file
 
     audit_add("Step: ", "1")
     audit_end()
 
-    testthat::expect_true(is.null(base::getOption(".current_audit_file")))
-    testthat::expect_true(is.null(base::getOption(".current_start_time")))
+    testthat::expect_true(is.null(.audit_state$current_audit_file))
+    testthat::expect_true(is.null(.audit_state$current_start_time))
 
     lines <- base::readLines(audit_file, warn = FALSE)
     testthat::expect_true(any(grepl("^Audit completed:", lines)))
@@ -200,10 +183,8 @@ testthat::test_that("audit_end writes footer and clears options", {
 })
 
 testthat::test_that("audit_add stops if called before audit_start", {
-  withr::local_options(list(
-    .current_audit_file = NULL,
-    .current_start_time = NULL
-  ))
+  .audit_state$current_audit_file <- NULL
+  .audit_state$current_start_time <- NULL
 
   testthat::expect_error(
     audit_add("x"),
