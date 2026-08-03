@@ -9,7 +9,8 @@ register_reader(extension, reader_func)
 \arguments{
 \item{extension}{File extension (e.g., "csv", "parquet")}
 
-\item{reader_func}{Function that takes \verb{path, ...} and returns data}
+\item{reader_func}{Function that accepts a file path and optional extra
+arguments, and returns data.}
 }
 \description{
 Register a reader for a file extension

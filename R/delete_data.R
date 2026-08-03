@@ -14,7 +14,7 @@
 #'
 #' @details
 #' Each partition is assumed to be stored as a directory of the form
-#' `partition_col=<partition_id>` directly under each hive path.
+#' `partition_col=partition_id` directly under each hive path.
 #'
 #' This function operates at the filesystem level and is intended for use with
 #' external or unmanaged Hive tables. For managed Hive tables, partitions should
