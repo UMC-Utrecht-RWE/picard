@@ -801,8 +801,8 @@ analyze_pipeline_log <- function(
     ggplot2::aes(
       x = start_run_s,
       xend = end_run_s,
-      y = step,
-      yend = step,
+      y = stats::reorder(step, start_run_s, FUN = min),
+      yend = stats::reorder(step, start_run_s, FUN = min),
       color = step
     )
   ) +
@@ -829,6 +829,7 @@ analyze_pipeline_log <- function(
   }
 
   p +
+    ggplot2::scale_y_discrete(limits = rev) +
     ggplot2::labs(
       title = "Step timeline",
       subtitle = if (has_gaps) {
@@ -857,8 +858,8 @@ analyze_pipeline_log <- function(
     ggplot2::aes(
       x = start_run_s,
       xend = end_run_s,
-      y = script_label,
-      yend = script_label,
+      y = stats::reorder(script_label, start_run_s, FUN = min),
+      yend = stats::reorder(script_label, start_run_s, FUN = min),
       color = script_label
     )
   ) +
@@ -878,6 +879,7 @@ analyze_pipeline_log <- function(
       scales = "free_y",
       ncol = 1
     ) +
+    ggplot2::scale_y_discrete(limits = rev) +
     ggplot2::labs(
       title = "Script timeline",
       subtitle = "Grouped by step",
