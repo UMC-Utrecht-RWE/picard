@@ -233,7 +233,8 @@ prepare_output_path <- function(
 #' Register a writer for a file extension
 #'
 #' @param extension File extension (e.g. "csv", "parquet")
-#' @param writer_func Function(data, path, ...) that writes data to path
+#' @param writer_func Function that accepts data, an output path, and optional
+#'   extra arguments, then writes the data to that path.
 #' @export
 register_writer <- function(extension, writer_func) {
   if (!base::is.function(writer_func)) {

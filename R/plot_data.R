@@ -3,8 +3,8 @@
 
 #' Register a feature plotter
 #' @param name Unique plotter name (e.g., "dist")
-#' @param fun  Function with signature function(dt, opts) -> named list of
-#'             ggplot objects (one per column)
+#' @param fun Function that takes `dt` and `opts` and returns a named list of
+#'   ggplot objects, one per column.
 #' @importFrom stats density
 #' @return Invisibly returns TRUE
 #' @export

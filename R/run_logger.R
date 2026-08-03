@@ -48,8 +48,7 @@ LoggerManager <- R6::R6Class( # nolint
     #' @field capture_target Target log file for captured prints.
     capture_target = NULL,
 
-    #' Initialize LoggerManager
-    #' Constructor for the LoggerManager class.
+    #' @description Initialize the LoggerManager instance.
     #' @return NULL
     initialize = function() {
       invisible(self)
@@ -103,7 +102,7 @@ LoggerManager <- R6::R6Class( # nolint
 
       # Configure logger for global and package namespaces.
       namespaces <- c("global", "picard")
-      logger::log_layout(self$.layout_with_timers, namespace = namespaces)
+      logger::log_layout(private$.layout_with_timers, namespace = namespaces)
       logger::log_threshold(logger::TRACE, namespace = namespaces)
 
       logger::log_appender(function(line) {
@@ -130,7 +129,7 @@ LoggerManager <- R6::R6Class( # nolint
           NULL
         }
       )
-      if (base::is.null(self$registry) & self$verbose == "High") {
+      if (base::is.null(self$registry) && self$verbose == "High") {
         logger::log_error("Registry file necessary!")
         stop("Registry file necessary!")
       }
@@ -139,9 +138,7 @@ LoggerManager <- R6::R6Class( # nolint
       base::invisible(self)
     },
 
-    #' Cleanup Old Logs
-    #'
-    #' Deletes log files older than a specified number of days.
+    #' @description Delete log files older than a specified number of days.
     #'
     #' @param days_to_keep Number of days to retain logs. Defaults to 30 days.
     cleanup_old_logs = function(days_to_keep = 30) {
@@ -163,7 +160,7 @@ LoggerManager <- R6::R6Class( # nolint
       base::invisible(NULL)
     },
 
-    #' Initialize Step Logger
+    #' @description Initialize a step-specific logger.
     #'
     #' Sets up a step-specific logger that logs only to the log file.
     #'
@@ -191,9 +188,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' End Step Logger
-    #'
-    #' Reset the step-specific logger.
+    #' @description Reset the step-specific logger.
     #' @return None
     end_step_logger = function() {
       if (!base::is.null(self$current_step)) {
@@ -210,9 +205,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' Start Script Timer
-    #'
-    #' As for start_step_logger, but for scripts within steps.
+    #' @description Start the timer for a script within the current step.
     #' @param script_name Name of the script being started.
     start_script = function(script_name) {
       self$current_script <- script_name
@@ -221,9 +214,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' End Script Timer
-    #'
-    #' Resets the script timer.
+    #' @description Reset the current script timer.
     #' @return None
     end_script = function() {
       if (!base::is.null(self$current_script)) {
@@ -234,18 +225,82 @@ LoggerManager <- R6::R6Class( # nolint
       base::invisible(self)
     },
 
-    #' Layout with Timers
+    #' @description Start capturing print statements.
     #'
-    #' Custom log layout function that includes timing information.
-    #' @param record Log record.
-    #' @param level Log level.
-    #' @param msg Log message.
-    #' @param namespace Namespace of the log message.
-    #' @param .logcall Call information.
-    #' @param .topcall Top-level call information.
-    #' @param .topenv Top-level environment.
-    #' @param ... Additional arguments.
-    #' @return Formatted log message string.
+    #' Redirect `stdout` output, such as print statements, to a log file.
+    #' @param target Target log file to capture prints.
+    #'  Options are "global" or "step".
+    #' @param capture_messages Whether to also capture messages/warnings.
+    #' @return None
+    start_capturing_prints = function(target = c("step", "global"),
+                                      capture_messages = TRUE) {
+      target <- base::match.arg(target)
+
+      sink_file <- if (target == "global") {
+        self$global_log_file
+      } else {
+        self$step_log_file
+      }
+
+      self$stop_capturing_prints()
+
+      self$capture_active <- TRUE
+      self$capture_target <- target
+
+      sink_path <- base::as.character(sink_file)
+
+      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
+      base::sink(self$output_con, type = "output", split = TRUE)
+
+      if (isTRUE(capture_messages)) {
+        self$message_con <- file(sink_path, open = "at", encoding = "UTF-8")
+
+        ok <- TRUE
+        tryCatch(
+          base::sink(self$message_con, type = "message", split = TRUE),
+          error = function(e) ok <<- FALSE
+        )
+
+        if (!ok) {
+          # fallback: capture messages to file only
+          base::sink(self$message_con, type = "message")
+        }
+      }
+      invisible(TRUE)
+    },
+
+    #' @description Stop capturing print statements.
+    #'
+    #' Stop redirecting `stdout` output to the active log file.
+    #'
+    #' @return None
+    stop_capturing_prints = function() {
+      if (!isTRUE(self$capture_active)) {
+        return(invisible(TRUE))
+      }
+
+      self$capture_active <- FALSE
+      self$capture_target <- NULL
+
+      if (sink.number(type = "message") > 0 && !is.null(self$message_con)) {
+        base::sink(type = "message")
+      }
+      if (sink.number(type = "output") > 0 && !is.null(self$output_con)) {
+        base::sink(type = "output")
+      }
+
+      if (!base::is.null(self$message_con)) {
+        base::close(self$message_con)
+        self$message_con <- NULL
+      }
+      if (!base::is.null(self$output_con)) {
+        base::close(self$output_con)
+        self$output_con <- NULL
+      }
+      invisible(TRUE)
+    }
+  ),
+  private = list(
     .layout_with_timers = function(level,
                                    msg = NULL,
                                    namespace = NULL,
@@ -327,14 +382,14 @@ LoggerManager <- R6::R6Class( # nolint
 
       # Change the color of the message based on message level,
       # using crayon package. The mapping is as follows:
-      # Level	 Colour
-      # Trace	Purple
-      # Debug	Blue
-      # Info	No change
-      # Success	Green
-      # Warning	Yellow
-      # Error	Red
-      # Fatal	Dark Red (bold)
+      # Level  Colour
+      # Trace  Purple
+      # Debug  Blue
+      # Info   No change
+      # Success Green
+      # Warning Yellow
+      # Error  Red
+      # Fatal  Dark Red (bold)
       line <- if (self$verbose == "Low") {
         base::sprintf(
           "%s | %-5s | %s",
@@ -386,82 +441,6 @@ LoggerManager <- R6::R6Class( # nolint
       }
 
       line
-    },
-
-    #' Start Capturing Print Statements
-    #'
-    #' Redirects all `stdout` output (e.g., print statements)
-    #' to the global log file.
-    #' @param target Target log file to capture prints.
-    #'  Options are "global" or "step".
-    #' @param capture_messages Whether to also capture messages/warnings.
-    #' @return None
-    start_capturing_prints = function(target = c("step", "global"),
-                                      capture_messages = TRUE) {
-      target <- base::match.arg(target)
-
-      sink_file <- if (target == "global") {
-        self$global_log_file
-      } else {
-        self$step_log_file
-      }
-
-      self$stop_capturing_prints()
-
-      self$capture_active <- TRUE
-      self$capture_target <- target
-
-      sink_path <- base::as.character(sink_file)
-
-      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-      base::sink(self$output_con, type = "output", split = TRUE)
-
-      if (isTRUE(capture_messages)) {
-        self$message_con <- file(sink_path, open = "at", encoding = "UTF-8")
-
-        ok <- TRUE
-        tryCatch(
-          base::sink(self$message_con, type = "message", split = TRUE),
-          error = function(e) ok <<- FALSE
-        )
-
-        if (!ok) {
-          # fallback: capture messages to file only
-          base::sink(self$message_con, type = "message")
-        }
-      }
-      invisible(TRUE)
-    },
-
-    #' Stop Capturing Print Statements
-    #'
-    #' Stops redirecting `stdout` output to the global log file.
-    #'
-    #' @return None
-    stop_capturing_prints = function() {
-      if (!isTRUE(self$capture_active)) {
-        return(invisible(TRUE))
-      }
-
-      self$capture_active <- FALSE
-      self$capture_target <- NULL
-
-      if (sink.number(type = "message") > 0 && !is.null(self$message_con)) {
-        base::sink(type = "message")
-      }
-      if (sink.number(type = "output") > 0 && !is.null(self$output_con)) {
-        base::sink(type = "output")
-      }
-
-      if (!base::is.null(self$message_con)) {
-        base::close(self$message_con)
-        self$message_con <- NULL
-      }
-      if (!base::is.null(self$output_con)) {
-        base::close(self$output_con)
-        self$output_con <- NULL
-      }
-      invisible(TRUE)
     }
   )
 )

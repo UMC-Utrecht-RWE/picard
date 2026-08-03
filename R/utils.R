@@ -11,11 +11,15 @@
 #' Default is "configuration/config_values.yaml".
 #' @param config_dir Directory to look for YAML configuration files
 #' if file_path is NULL.
+#' @param envir Environment in which to assign the loaded configuration
+#' values when `file_path` is NULL. Defaults to the caller's environment,
+#' which is the global environment when called from a top-level script.
 #' @return A list of configuration values.
 #' @export
 load_config <- function(
   file_path = NULL,
-  config_dir = "configuration"
+  config_dir = "configuration",
+  envir = parent.frame()
 ) {
   if (!is.null(file_path)) {
     # Normalise so both relative and absolute paths work
@@ -49,7 +53,7 @@ load_config <- function(
 
   for (yaml in yamls) {
     var_name <- tolower(tools::file_path_sans_ext(basename(yaml)))
-    base::assign(var_name, read_yaml(yaml), envir = .GlobalEnv)
+    base::assign(var_name, read_yaml(yaml), envir = envir)
     logger::log_trace(paste0("Loaded config '", var_name, "' from: ", yaml))
   }
   invisible(yamls)
@@ -87,31 +91,116 @@ read_yaml <- function(file_path) {
 
 #' Get all files of interest
 #'
-#' @param path Character or NULL. Directory to scan. If NULL, uses current
-#'   working directory.
-#' @return list of all files
+#' @param formats Character vector of file extensions to include or exclude, for
+#'  example `c("R", "sql")`. If `NULL`, no filter is applied. Mutually exclusive
+#' with `exclude_format`.
+#' @param arg_name Name of the argument for error messages.
+#' @return Normalized character vector of file extensions or
+#' NULL if no valid formats are provided.
 #' @keywords internal
+normalize_format_filter <- function(formats, arg_name) {
+  if (base::is.null(formats)) {
+    return(NULL)
+  }
+
+  if (!base::is.character(formats)) {
+    base::stop(arg_name, " must be a character vector.", call. = FALSE)
+  }
+
+  if (base::anyNA(formats)) {
+    base::stop(arg_name, " cannot contain NA values.", call. = FALSE)
+  }
+
+  formats <- base::trimws(formats)
+  formats <- base::sub("^\\.+", "", formats)
+  formats <- base::tolower(formats[base::nzchar(formats)])
+
+  if (!base::length(formats)) {
+    return(NULL)
+  }
+
+  base::unique(formats)
+}
+
+validate_format_filters <- function(
+  only_format = NULL,
+  exclude_format = NULL
+) {
+  only_format <- normalize_format_filter(only_format, "only_format")
+  exclude_format <- normalize_format_filter(exclude_format, "exclude_format")
+
+  # The logic here is that the user can either choose which file to select or
+  # which file to exclude, but not both at the same time. This is to avoid
+  # confusion and potential conflicts in the filtering logic.
+  if (!base::is.null(only_format) && !base::is.null(exclude_format)) {
+    base::stop(
+      "Use either `only_format` or `exclude_format`, not both.",
+      call. = FALSE
+    )
+  }
+
+  if (length(only_format)) {
+    only_format
+  } else {
+    exclude_format
+  }
+}
+
+is_hidden_path <- function(paths) {
+  purrr::map_lgl(
+    base::strsplit(paths, "[/\\\\]"),
+    ~ base::any(base::startsWith(.x, "."))
+  )
+}
+
 get_tracked_files <- function(
-  path = NULL
+  path = NULL,
+  only_format = NULL,
+  exclude_format = NULL
 ) {
   scan_path <- if (base::is.null(path)) "." else path
+  # if only_format or exclude_format are not null, validate and normalize them
+  if (!base::is.null(only_format) || !base::is.null(exclude_format)) {
+    filter <- validate_format_filters(
+      only_format = only_format,
+      exclude_format = exclude_format
+    )
+  } else {
+    filter <- NULL
+  }
 
   # Validate path exists
   if (!base::dir.exists(scan_path)) {
-    stop("Path does not exist: ", scan_path)
+    base::stop("Path does not exist: ", scan_path, call. = FALSE)
   }
 
-  all_files <- base::list.files(
+  relative_files <- base::list.files(
     path = scan_path,
     all.files = TRUE,
-    full.names = TRUE,
+    full.names = FALSE,
     recursive = TRUE,
     no.. = TRUE
   )
 
-  # remove directories (hidden and not)
-  all_files <- all_files[!base::file.info(all_files)$isdir]
-  all_files[!base::grepl("(^|/)\\.", all_files)]
+  if (!base::length(relative_files)) {
+    return(base::character())
+  }
+
+  all_files <- base::file.path(scan_path, relative_files)
+  file_info <- base::file.info(all_files)
+  keep_files <- !file_info$isdir
+  all_files <- all_files[keep_files]
+  relative_files <- relative_files[keep_files]
+
+  # Remove hidden files and directories (sometimes .keep is present)
+  hidden_files <- is_hidden_path(relative_files)
+  all_files <- all_files[!hidden_files]
+  file_ext <- base::tolower(tools::file_ext(all_files))
+
+  if (base::is.null(filter)) {
+    return(all_files)
+  }
+  all_files[file_ext %in% filter]
 }
 
 #' Compute file hashes
@@ -149,10 +238,20 @@ compute_hash <- function(file_path = NULL, algo = "sha1") {
 #' @param log_dir Character. Directory to store the registry when
 #'   \code{registry_path} is NULL.
 #' @param path Character. Path to the file(s). Default NULL
+#' @param only_format Character vector of file extensions to include, for
+#'   example `c("R", "sql")`. If `NULL`, no inclusion filter is applied.
+#'   Mutually exclusive with `exclude_format`.
+#' @param exclude_format Character vector of file extensions to exclude, for
+#'   example `c("csv", "txt", "parquet")`. If `NULL`, no exclusion filter is
+#'   applied. Mutually exclusive with `only_format`.
 #' @param output_file Output file Default NULL
 #' @export
 track_file_changes <- function(
-  log_dir = "logs", path = NULL, output_file = NULL
+  log_dir = "logs",
+  path = NULL,
+  output_file = NULL,
+  only_format = NULL,
+  exclude_format = NULL
 ) {
   # Validate inputs
   if (!is.null(path) && !dir.exists(path)) {
@@ -161,15 +260,22 @@ track_file_changes <- function(
 
   # Make log folder with error handling
   if (!base::dir.exists(log_dir)) {
-    tryCatch({
-      base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
-    }, error = function(e) {
-      stop("Failed to create log directory: ", e$message)
-    })
+    tryCatch(
+      {
+        base::dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+      },
+      error = function(e) {
+        stop("Failed to create log directory: ", e$message)
+      }
+    )
   }
 
   # get the files
-  file_paths <- get_tracked_files(path = path)
+  file_paths <- get_tracked_files(
+    path = path,
+    only_format = only_format,
+    exclude_format = exclude_format
+  )
 
   if (length(file_paths) == 0) {
     warning("No files found to track")
@@ -178,13 +284,17 @@ track_file_changes <- function(
   # get the output file
 
   output_file <- get_hash_output(
-    output_file = output_file, log_dir = log_dir
+    output_file = output_file,
+    log_dir = log_dir
   )
   # get hashes from files
   hashes <- compute_hash(file_path = file_paths)
 
   # export the result
-  dt <- data.table::data.table(file_path = file_paths, hash = hashes)
+  dt <- data.table::data.table(
+    file_path = file_paths,
+    hash = hashes
+  )
   picard::save(
     data = dt,
     file_path = output_file,
@@ -208,7 +318,8 @@ track_file_changes <- function(
 #' @import data.table
 #' @export
 set_dates <- function(
-    df, date_cols, date_format = NULL, reference_date = "1970-01-01") {
+  df, date_cols, date_format = NULL, reference_date = "1970-01-01"
+) {
   # Validate inputs
   if (!data.table::is.data.table(df)) {
     stop("df must be a data.table")
@@ -253,7 +364,7 @@ set_dates <- function(
   for (col in date_cols) {
     col_class <- class(df[[col]])
     if (is.character(col_class) ||
-        any(class(col_class) %in% c("numeric", "integer"))
+      any(class(col_class) %in% c("numeric", "integer"))
     ) {
       # If character or numeric, convert via origin
       df <- data.table::setDT(df)
@@ -288,9 +399,10 @@ set_dates <- function(
 #' get_date_value(c("20251119", "20251118", "Ciao"))
 #' @export
 get_date_value <- function(
-    date_input,
-    origin = "1970-01-01",
-    date_formats = c("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d")) {
+  date_input,
+  origin = "1970-01-01",
+  date_formats = c("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d")
+) {
   # Already Date
   if (base::inherits(date_input, "Date")) {
     return(date_input)

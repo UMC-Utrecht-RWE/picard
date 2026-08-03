@@ -9,8 +9,8 @@ register_feature_plotter(name, fun)
 \arguments{
 \item{name}{Unique plotter name (e.g., "dist")}
 
-\item{fun}{Function with signature function(dt, opts) -> named list of
-ggplot objects (one per column)}
+\item{fun}{Function that takes \code{dt} and \code{opts} and returns a named list of
+ggplot objects, one per column.}
 }
 \value{
 Invisibly returns TRUE

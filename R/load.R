@@ -295,11 +295,26 @@ define_column_types <- function(df, col_types) {
   # Register built-in formats
   register_reader("csv", function(path, ...) {
     # Read the data
-    dt <- utils::read.csv(
+    dt <- data.table::fread(
       file = path,
       check.names = FALSE,
       ...
     )
+
+    dots <- list(...)
+    limits_rows <- any(c("nrow", "nrows", "skip") %in% names(dots))
+    if (!limits_rows) {
+      line_count <- length(readLines(path, warn = FALSE)) - 1
+      if (nrow(dt) != line_count) {
+        stop(
+          "Row count mismatch in file '", path, "': expected ", line_count,
+          " data row(s) but read ", nrow(dt), ". The CSV file appears to be ",
+          "corrupt (e.g. rows with an inconsistent number of columns). ",
+          "Please check the file.",
+          call. = FALSE
+        )
+      }
+    }
 
     # Identify columns that look like dates in the format YYYYMMDD
     date_cols <- sapply(dt, function(col) {
@@ -386,7 +401,8 @@ define_column_types <- function(df, col_types) {
 #' Register a reader for a file extension
 #'
 #' @param extension File extension (e.g., "csv", "parquet")
-#' @param reader_func Function that takes `path, ...` and returns data
+#' @param reader_func Function that accepts a file path and optional extra
+#'   arguments, and returns data.
 #' @export
 register_reader <- function(extension, reader_func) {
   if (!is.function(reader_func)) {

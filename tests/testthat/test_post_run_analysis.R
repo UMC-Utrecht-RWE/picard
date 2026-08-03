@@ -1,5 +1,6 @@
 testthat::test_that(
-  "analyze_pipeline_log selects the latest log and writes analysis outputs", {
+  "analyze_pipeline_log selects the latest log and writes analysis outputs",
+  {
     temp_dir <- withr::local_tempdir()
     log_dir <- base::file.path(temp_dir, "logs")
 
@@ -73,7 +74,8 @@ testthat::test_that(
 
 
 testthat::test_that(
-  "analyze_pipeline_log handles low-verbosity logs without timing outputs", {
+  "analyze_pipeline_log handles low-verbosity logs without timing outputs",
+  {
     temp_dir <- withr::local_tempdir()
     log_dir <- base::file.path(temp_dir, "logs")
 
