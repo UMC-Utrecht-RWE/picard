@@ -25,6 +25,7 @@ t3_pipeline <- R6::R6Class(
     ) {
       logger::log_info("Initializing T3 class")
       self$T3 <- super$load_yaml(config_t3)
+      self$config <- self$T3
       logger::log_debug("T3 config loaded")
     },
 
@@ -56,7 +57,7 @@ t3_pipeline <- R6::R6Class(
     #' @param files Dictionary containing file to be deleted.
     #' @return NULL
     delete_data = function(files = NULL) {
-      spec <- if (is.null(files)) self$T3$parquet_files
+      spec <- if (is.null(files)) self$T3$parquet_files else files
       logger::log_info("Deleting files.")
       super$delete_data(spec = spec)
       base::invisible(NULL)

@@ -155,7 +155,6 @@ testthat::test_that("Check if clean delete files in folder", {
 # Tests delete_parquet_partition #
 ##################################
 testthat::test_that("Test with dry_run TRUE", {
-
   files <- create_temp_pipeline_yaml(c("A", "B"), marker_path = tempfile())
   pl <- picard::pipeline$new(config_pipeline = files$yaml_path)
 

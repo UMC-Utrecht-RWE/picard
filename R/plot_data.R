@@ -329,16 +329,17 @@ get_feature_plotter <- function(name) {
 #' @return Invisibly returns vector of saved file paths
 #' @export
 plot_data_features <- function(
-    data,
-    file_name = NULL,
-    plot_path = "data/intermediate_plots",
-    exclude_columns_from_plots = c(
-      "person_id", "pregnancy_id", "unique_id"
-    ),
-    chart_types = c("dist"),
-    cols = NULL,
-    show_stats = TRUE,
-    ...) {
+  data,
+  file_name = NULL,
+  plot_path = "data/intermediate_plots",
+  exclude_columns_from_plots = c(
+    "person_id", "pregnancy_id", "unique_id"
+  ),
+  chart_types = c("dist"),
+  cols = NULL,
+  show_stats = TRUE,
+  ...
+) {
   if (is.null(file_name)) {
     file_name <- "plot_examples"
   }
@@ -362,6 +363,9 @@ plot_data_features <- function(
         "No columns found to be excluded from plots."
       )
     }
+    # Copy first: `:=` mutates by reference, and we must not delete
+    # columns from the caller's own data.table.
+    data <- data.table::copy(data)
     data[, (existing_cols) := NULL]
 
     logger::log_info(

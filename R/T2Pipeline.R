@@ -33,11 +33,13 @@ t2_pipeline <- R6::R6Class(
       logger::log_info("Initializing T2 class")
       self$T2 <- super$load_yaml(config_t2)
       self$project <- super$load_yaml(config_project)
+      self$config <- self$T2
       logger::log_debug("T2 config loaded")
 
       if (skip_substeps) {
         logger::log_info("Skipping substeps with existing outputs")
         self$T2 <- super$skip_step(self$T2, self$project)
+        self$config <- self$T2
       }
     },
 
@@ -69,7 +71,7 @@ t2_pipeline <- R6::R6Class(
     #' @param files Dictionary containing file to be deleted.
     #' @return NULL
     delete_data = function(files = NULL) {
-      spec <- if (is.null(files)) self$T2$parquet_files
+      spec <- if (is.null(files)) self$T2$parquet_files else files
       logger::log_info("Deleting files.")
       super$delete_data(spec = spec)
       base::invisible(NULL)
