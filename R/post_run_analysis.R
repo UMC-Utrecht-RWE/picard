@@ -793,6 +793,18 @@ analyze_pipeline_log <- function(
 
   plot_dt <- data.table::copy(step_blocks)
   plot_dt[, midpoint_s := start_run_s + ((end_run_s - start_run_s) / 2)]
+  data.table::set(
+    plot_dt,
+    j = "step",
+    value = factor(
+      plot_dt[["step"]],
+      levels = plot_dt[
+        ,
+        .(min_start = base::min(start_run_s)),
+        by = "step"
+      ][order(-min_start), step]
+    )
+  )
 
   has_gaps <- !base::is.null(gap_summary) && gap_summary[, .N] > 0L
 
@@ -801,8 +813,8 @@ analyze_pipeline_log <- function(
     ggplot2::aes(
       x = start_run_s,
       xend = end_run_s,
-      y = stats::reorder(step, start_run_s, FUN = min),
-      yend = stats::reorder(step, start_run_s, FUN = min),
+      y = step,
+      yend = step,
       color = step
     )
   ) +
@@ -829,7 +841,6 @@ analyze_pipeline_log <- function(
   }
 
   p +
-    ggplot2::scale_y_discrete(limits = rev) +
     ggplot2::labs(
       title = "Step timeline",
       subtitle = if (has_gaps) {
@@ -852,14 +863,26 @@ analyze_pipeline_log <- function(
 
   plot_dt <- data.table::copy(script_blocks)
   plot_dt[, midpoint_s := start_run_s + ((end_run_s - start_run_s) / 2)]
+  data.table::set(
+    plot_dt,
+    j = "script_label",
+    value = factor(
+      plot_dt[["script_label"]],
+      levels = plot_dt[
+        ,
+        .(min_start = base::min(start_run_s)),
+        by = "script_label"
+      ][order(-min_start), script_label]
+    )
+  )
 
   ggplot2::ggplot(
     plot_dt,
     ggplot2::aes(
       x = start_run_s,
       xend = end_run_s,
-      y = stats::reorder(script_label, start_run_s, FUN = min),
-      yend = stats::reorder(script_label, start_run_s, FUN = min),
+      y = script_label,
+      yend = script_label,
       color = script_label
     )
   ) +
@@ -879,7 +902,6 @@ analyze_pipeline_log <- function(
       scales = "free_y",
       ncol = 1
     ) +
-    ggplot2::scale_y_discrete(limits = rev) +
     ggplot2::labs(
       title = "Script timeline",
       subtitle = "Grouped by step",
