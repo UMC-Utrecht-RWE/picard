@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [V1.2.5]
+
+### Added
+
+- `analyze_pipeline_log()` (`R/post_run_analysis.R`): parses a pipeline log and produces run/level/alert/step/script/gap summary tables plus diagnostic plots (`level_summary`, `step_summary`, `script_summary`, `step_timeline`, `script_timeline`, `gap_summary`), written to an `analysis/<log_name>` folder next to the log.
+- `start_script_logging()` / `stop_script_logging()` and exported `log_trace`/`log_debug`/`log_info`/`log_success`/`log_warn`/`log_error`/`log_fatal` wrappers (`R/logging_helpers.R`), so project scripts can log through `picard` without depending on `logger` directly. They become no-ops when the pipeline already owns the logging context.
+- `track_file_changes()` gained `only_format`/`exclude_format` arguments to include or exclude files by extension when hashing (mutually exclusive).
+- Colourised console log output, with a new `SUCCESS` log level used for the final "Pipeline completed successfully" message.
+- `TUTORIAL.md`, a full walkthrough with a terminology section; `README.md` significantly expanded.
+
+### Changed
+
+- CSV reading now goes through `data.table::fread` (`R/load.R`) instead of base/utils readers.
+- Reworked yaml/sql loading internals (`dispatch_reader`, `load_raw`, `prepare_load_request` in `R/load.R`/`R/load_sql_query.R`), replacing the old `get_tracked_files` path.
+- `DESCRIPTION`: `License` switched from `file LICENSE` to the standard `GPL-3` specifier, `Depends` bumped to `R (>= 4.1.0)`, dropped the `here` dependency, cleaned up the Title/Description text, migrated to `Config/roxygen2/version` (roxygen2 8.0.0).
+- General CRAN-compliance pass across `R/Pipeline.R`, `R/audit.R`, `R/run_logger.R`, `R/save.R`, `R/plot_data.R`, `R/delete_data.R`, `R/utils.R`, `.Rbuildignore`, `.gitignore`.
+- `step_timeline`/`script_timeline` plots now order steps/scripts chronologically by their actual start time instead of alphabetically.
+
+### Fixed
+
+- `.parse_log_line()` (`R/post_run_analysis.R`): the "High" verbosity regex required a trailing `| <hash>` field; log lines with an empty message (e.g. a stray ANSI colour code) omitted that field and silently fell back to a mismatched pattern, corrupting the parsed `step` column. The hash field is now optional in the regex.
+- CSV loading no longer raises a spurious row-count-mismatch error when `nrow`/`nrows`/`skip` are passed to limit the rows read.
+
+### Removed
+
+- Bundled `LICENSE` file text (674 lines), in favour of the standard `GPL-3` license specifier in `DESCRIPTION`.
+- `man/cheatsheet/picard.pdf` and `man/figures/*.png` binary assets, removed from the package for CRAN size compliance.
+
 ## [V1.2.4]
 
 ### Changed
@@ -109,6 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # List of releases
 
 - unreleased: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
+- V1.2.5: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.5
 - V1.2.4: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.4
 - V1.2.3: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.3
 - V1.2.2: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.2
