@@ -52,6 +52,7 @@ Options are "Normal", "Low", or "High".}
 \subsection{Public methods}{
   \itemize{
     \item \href{#method-LoggerManager-initialize}{\code{LoggerManager$new()}}
+    \item \href{#method-LoggerManager-reset}{\code{LoggerManager$reset()}}
     \item \href{#method-LoggerManager-is_configured}{\code{LoggerManager$is_configured()}}
     \item \href{#method-LoggerManager-configure}{\code{LoggerManager$configure()}}
     \item \href{#method-LoggerManager-cleanup_old_logs}{\code{LoggerManager$cleanup_old_logs()}}
@@ -72,6 +73,29 @@ Options are "Normal", "Low", or "High".}
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{LoggerManager$new()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    NULL
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LoggerManager-reset"></a>}}
+\if{latex}{\out{\hypertarget{method-LoggerManager-reset}{}}}
+\subsection{\code{LoggerManager$reset()}}{
+  Reset the instance back to its unconfigured state.
+
+Stops any active print capture, clears all configuration fields, and
+undoes the \code{logger::log_appender()}/\code{log_layout()}/\code{log_threshold()}
+registrations that \code{configure()} sets up for the "global"/"picard"
+namespaces. Those registrations live in the \code{logger} package's own
+global state, not on this object, so they would otherwise survive a
+reset and keep pointing at a stale (possibly deleted) log file.
+Used to keep the exported singleton clean between test runs.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{LoggerManager$reset()}
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{

@@ -54,6 +54,52 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
+    #' @description Reset the instance back to its unconfigured state.
+    #'
+    #' Stops any active print capture, clears all configuration fields, and
+    #' undoes the `logger::log_appender()`/`log_layout()`/`log_threshold()`
+    #' registrations that `configure()` sets up for the "global"/"picard"
+    #' namespaces. Those registrations live in the `logger` package's own
+    #' global state, not on this object, so they would otherwise survive a
+    #' reset and keep pointing at a stale (possibly deleted) log file.
+    #' Used to keep the exported singleton clean between test runs.
+    #' @return NULL
+    reset = function() {
+      self$stop_capturing_prints()
+
+      self$log_dir <- NULL
+      self$verbose <- NULL
+      self$run_id <- NULL
+      self$global_log_file <- NULL
+      self$step_log_file <- NULL
+      self$step_appender <- NULL
+      self$registry <- NULL
+
+      self$run_start_time <- NULL
+      self$step_start_time <- NULL
+      self$script_start_time <- NULL
+      self$last_log_time <- NULL
+
+      self$current_step <- NULL
+      self$current_script <- NULL
+
+      namespaces <- c("global", "picard")
+      try(
+        logger::log_appender(logger::appender_console, namespace = namespaces),
+        silent = TRUE
+      )
+      try(
+        logger::log_layout(logger::layout_simple, namespace = namespaces),
+        silent = TRUE
+      )
+      try(
+        logger::log_threshold(logger::INFO, namespace = namespaces),
+        silent = TRUE
+      )
+
+      invisible(self)
+    },
+
     #' Check whether the logger has been configured
     #'
     #' @return Logical scalar. TRUE when configure() has been called.
@@ -471,9 +517,17 @@ logger_manager <- .get_logger_manager_instance()
 
 #' Reset LoggerManager Singleton (for tests)
 #' This is only for testing, ignore it.
+#'
+#' Clears the singleton's configuration state in place. It deliberately
+#' never replaces the underlying object: the exported `logger_manager`
+#' binding is fixed to the original instance for the life of the session,
+#' so anything short of an in-place reset would leave that binding (and any
+#' reference already grabbed from it) permanently out of sync.
 #' @keywords internal
 .reset_logger_manager_instance <- function() {
   env <- base::environment(.get_logger_manager_instance)
-  env$instance <- NULL
+  if (!base::is.null(env$instance)) {
+    env$instance$reset()
+  }
   invisible(NULL)
 }

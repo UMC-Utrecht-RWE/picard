@@ -294,11 +294,20 @@ define_column_types <- function(df, col_types) {
 
   # Register built-in formats
   register_reader("csv", function(path, ...) {
-    # Read the data
-    dt <- data.table::fread(
-      file = path,
-      check.names = FALSE,
-      ...
+    # Read the data. fread() warns and truncates on ragged rows;
+    # the row-count check below already turns that into a clearer error,
+    # muffle just that specific warning here.
+    dt <- withCallingHandlers(
+      data.table::fread(
+        file = path,
+        check.names = FALSE,
+        ...
+      ),
+      warning = function(w) {
+        if (grepl("^Stopped early on line", conditionMessage(w))) {
+          invokeRestart("muffleWarning")
+        }
+      }
     )
 
     dots <- list(...)

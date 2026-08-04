@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `.parse_log_line()` (`R/post_run_analysis.R`): the "High" verbosity regex required a trailing `| <hash>` field; log lines with an empty message (e.g. a stray ANSI colour code) omitted that field and silently fell back to a mismatched pattern, corrupting the parsed `step` column. The hash field is now optional in the regex.
 - CSV loading no longer raises a spurious row-count-mismatch error when `nrow`/`nrows`/`skip` are passed to limit the rows read.
+- CSV reader no longer leaks `data.table::fread`'s own "Stopped early on line ..." warning on ragged/corrupt CSVs; the existing row-count check already raises a clearer error for this case.
+- `LoggerManager` gained a `reset()` method, and `.reset_logger_manager_instance()` now uses it to clear the exported `logger_manager` singleton's fields *and* its `logger::log_appender()`/`log_layout()`/`log_threshold()` registrations in place, instead of only discarding an internal cache reference the exported binding never actually pointed at. Previously, any test (or code) that configured a `LoggerManager` left the shared `logger` namespace registrations dangling on a deleted log file for the rest of the R session, causing unrelated failures the next time the full test suite ran.
 
 ### Removed
 
