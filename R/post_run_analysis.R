@@ -120,6 +120,7 @@ analyze_pipeline_log <- function(
       level_summary = level_summary,
       step_blocks = step_blocks,
       step_summary = step_summary,
+      script_blocks = script_blocks,
       script_summary = script_summary,
       gap_summary = gap_summary,
       top_n = top_n
@@ -233,8 +234,8 @@ analyze_pipeline_log <- function(
     "\\|\\s*([^|]+?)\\s*",
     "\\|\\s*([^|]+?)\\s*",
     "\\|\\s*([^|]+?)\\s*",
-    "\\|\\s*(.*)\\s*",
-    "\\|\\s*(.*)$"
+    "\\|\\s*(.*?)\\s*",
+    "(?:\\|\\s*([^|]*))?$"
   )
 
   normal_fields <- c(
@@ -357,14 +358,6 @@ analyze_pipeline_log <- function(
   data.table::set(
     parsed,
     j = "run_s", value = .extract_seconds(parsed[["run_time"]])
-  )
-  data.table::set(
-    parsed,
-    j = "step_s", value = .extract_seconds(parsed[["step_time"]])
-  )
-  data.table::set(
-    parsed,
-    j = "script_s", value = .extract_seconds(parsed[["script_time"]])
   )
   data.table::set(
     parsed,
@@ -674,6 +667,7 @@ analyze_pipeline_log <- function(
     seq_len(base::min(.N, top_n)),
     .(
       timestamp,
+      run_s,
       gap_s = delta_s,
       step,
       script,
@@ -792,15 +786,29 @@ analyze_pipeline_log <- function(
 }
 
 
-.plot_step_timeline <- function(step_blocks) {
+.plot_step_timeline <- function(step_blocks, gap_summary = NULL) {
   if (step_blocks[, .N] == 0L) {
     return(NULL)
   }
 
   plot_dt <- data.table::copy(step_blocks)
   plot_dt[, midpoint_s := start_run_s + ((end_run_s - start_run_s) / 2)]
+  data.table::set(
+    plot_dt,
+    j = "step",
+    value = factor(
+      plot_dt[["step"]],
+      levels = plot_dt[
+        ,
+        .(min_start = base::min(start_run_s)),
+        by = "step"
+      ][order(-min_start), step]
+    )
+  )
 
-  ggplot2::ggplot(
+  has_gaps <- !base::is.null(gap_summary) && gap_summary[, .N] > 0L
+
+  p <- ggplot2::ggplot(
     plot_dt,
     ggplot2::aes(
       x = start_run_s,
@@ -820,11 +828,85 @@ analyze_pipeline_log <- function(
       size = 3,
       vjust = -0.8,
       show.legend = FALSE
-    ) +
+    )
+
+  if (has_gaps) {
+    p <- p + ggplot2::geom_vline(
+      data = gap_summary,
+      mapping = ggplot2::aes(xintercept = run_s),
+      linetype = "dashed",
+      color = "firebrick3",
+      alpha = 0.6
+    )
+  }
+
+  p +
     ggplot2::labs(
       title = "Step timeline",
+      subtitle = if (has_gaps) {
+        "Dashed lines mark the longest silent gaps"
+      } else {
+        NULL
+      },
       x = "Run time (s)",
       y = "Step"
+    ) +
+    .base_analysis_theme() +
+    ggplot2::theme(legend.position = "none")
+}
+
+
+.plot_script_timeline <- function(script_blocks) {
+  if (script_blocks[, .N] == 0L) {
+    return(NULL)
+  }
+
+  plot_dt <- data.table::copy(script_blocks)
+  plot_dt[, midpoint_s := start_run_s + ((end_run_s - start_run_s) / 2)]
+  data.table::set(
+    plot_dt,
+    j = "script_label",
+    value = factor(
+      plot_dt[["script_label"]],
+      levels = plot_dt[
+        ,
+        .(min_start = base::min(start_run_s)),
+        by = "script_label"
+      ][order(-min_start), script_label]
+    )
+  )
+
+  ggplot2::ggplot(
+    plot_dt,
+    ggplot2::aes(
+      x = start_run_s,
+      xend = end_run_s,
+      y = script_label,
+      yend = script_label,
+      color = script_label
+    )
+  ) +
+    ggplot2::geom_segment(linewidth = 5, lineend = "round") +
+    ggplot2::geom_text(
+      ggplot2::aes(
+        x = midpoint_s,
+        label = base::sprintf("%.1fs", duration_s)
+      ),
+      color = "black",
+      size = 3,
+      vjust = -0.8,
+      show.legend = FALSE
+    ) +
+    ggplot2::facet_wrap(
+      facets = ggplot2::vars(step),
+      scales = "free_y",
+      ncol = 1
+    ) +
+    ggplot2::labs(
+      title = "Script timeline",
+      subtitle = "Grouped by step",
+      x = "Run time (s)",
+      y = "Script"
     ) +
     .base_analysis_theme() +
     ggplot2::theme(legend.position = "none")
@@ -887,6 +969,7 @@ analyze_pipeline_log <- function(
   level_summary,
   step_blocks,
   step_summary,
+  script_blocks,
   script_summary,
   gap_summary,
   top_n = 10L
@@ -911,10 +994,16 @@ analyze_pipeline_log <- function(
       height = 7
     ),
     step_timeline = .save_plot(
-      plot_obj = .plot_step_timeline(step_blocks),
+      plot_obj = .plot_step_timeline(step_blocks, gap_summary = gap_summary),
       file_path = .plot_path(output_dir, "step_timeline.png"),
       width = 11,
       height = 5
+    ),
+    script_timeline = .save_plot(
+      plot_obj = .plot_script_timeline(script_blocks),
+      file_path = .plot_path(output_dir, "script_timeline.png"),
+      width = 11,
+      height = 7
     ),
     gap_summary = .save_plot(
       plot_obj = .plot_gap_summary(gap_summary),
