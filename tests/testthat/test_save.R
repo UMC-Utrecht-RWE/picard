@@ -40,7 +40,10 @@ testthat::test_that("Dispatches to custom writer and returns file_path", {
   if (base::dir.exists(log_dir)) {
     base::unlink(log_dir, recursive = TRUE, force = TRUE)
   }
+  on.exit(base::unlink(log_dir, recursive = TRUE, force = TRUE), add = TRUE)
+
   lm <- picard::LoggerManager$new()
+  withr::defer(lm$reset())
   lm$configure(log_dir = log_dir)
 
   testthat::skip_if_not_installed("fs")

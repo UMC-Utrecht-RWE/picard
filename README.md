@@ -1,104 +1,178 @@
-# Pipeline Integration and Coordination for Automated R Dataflows <a href="https://github.com/UMC-Utrecht-RWE"><img src="man/figures/logo.png" align="right" height="188"/></a>
+[![DOI](https://zenodo.org/badge/1095759057.svg)](https://doi.org/10.5281/zenodo.19554744)
 
-Pipeline Integration and Coordination for Automated R Dataflows (PICARD) is the internal orchestration engine developed by Real World Evidence (RWE) UMC Utrecht to manage and automate our multi-step data transformation pipelines used in clinical research.
+# PICARD: Pipeline Integration and Coordination for Automated R Dataflows <a href="https://github.com/UMC-Utrecht-RWE"><img src="man/figures/logo.png" align="right" height="188"/></a>
 
-It acts as the command bridge for R-based workflows, ensuring that each phase of the data journey — from harmonisation to statistical output — is executed consistently and transparently.
+PICARD is an R orchestration package for configuration-driven clinical data pipelines.
 
-PICARD does not perform the transformations itself.
-Instead, it organises, triggers, and monitors R scripts specific to each project and transformation step (T2, T3, T4 and T5), according to configuration files and logging rules.
+It is designed to:
+- Run multi-step transformation flows (T2, T3, T4, T5) in a reproducible way.
+- Separate orchestration logic from project-specific transformation scripts.
+- Provide consistent logging, auditing, and file I/O utilities.
 
-# Design Philosophy
-PICARD is inspired by principles of modular orchestration and transparency.
+PICARD does not implement project transformations directly. It executes your existing transformation scripts in the order and conditions declared in YAML configuration files.
 
-To address RWE’s peculiar pipeline needs, each ETL pipeline is divided into two parts: one stable and one flexible.
+## Why PICARD
 
-**Transformations**
-The flexible part of each project is due to the fact that each project has different objectives and strategies to achieve them. This brings to the creation of *ad-hoc* scripts for every sub-step of each pipeline step. Each sub-step is contained in the correct sub-folder of the `transformations` folder of the project.
+PICARD helps teams keep pipelines reliable while keeping each project flexible:
+- Stable orchestration layer in the package.
+- Flexible project logic in standalone scripts.
+- Config-driven execution for repeatability and traceability.
 
-Each sub-step script must run independently and, given the instructions in the configuration file, produce an output (intermediate file).
+## Core Concepts
 
-## The pipeline package
-We developed this pipeline orchestrator to run each sub-step.
+1. A pipeline is configured using YAML files.
+2. Each high-level step (T2/T3/T4/T5) contains multiple substeps.
+3. Every substep is a plain R script that can run independently.
+4. PICARD executes only the substeps marked as enabled in config.
 
-Each step (T2, T3, T4 and T5) is defined by its respective class, all subclasses of a main `pipeline` class.
-Given the configuration files, each class finds the sub-step to run (Configuration-Driven Execution).
+## Main Components
 
-Configuration files (YAML) live outside the code, defining structure and runtime parameters, promoting reproducibility and auditability.
+- `pipeline` (R6 class)
+  - Loads YAML files.
+  - Runs full pipeline steps via `run()`.
+  - Runs substeps via `run_substeps()`.
+  - Optionally skips completed substeps with `skip_step()`.
 
-This makes PICARD future-proof for integration with DAG-based frameworks (e.g., targets, Snakemake, or Airflow).
+- `t2_pipeline`, `t3_pipeline`, `t4_pipeline`, `t5_pipeline` (R6 classes)
+  - Step-specific wrappers that load step configs and execute configured substeps.
 
-# Core Functionality
-- `Pipeline.R:pipeline`: This is the mother class that contains the methods of the children classes.
-  - Runs the subclasses with the method `run`.
-  - `skip_step` skips sub-steps script if `intermediate file(s)` is present.
-  - `load_yaml` load the config file that defines the whole pipeline.
-- `T*Pipeline.R:t*_pipeline`:
-  - The `run` method executes all sub-steps configured for the step.
-  - `clean` method not yet fully implemented.
+- I/O layer
+  - `load()` and `save()` provide extension-based readers/writers.
+  - `register_reader()` / `register_writer()` allow custom formats.
+  - `list_readers()` / `list_writers()` show available formats.
 
-Each `t*_pipeline` is identical except for `t2_pipeline` that implements the `skip_step` method.
+- SQL helpers
+  - `load_sql_query()` reads SQL files and interpolates `{parameters}`.
+  - `execute_sql_file()` executes queries through DBI connections.
 
-## Auxiliary functions
-Besides orchestrating the pipeline, the package also provides I/O helpers and auditing utilities.
-- I/O:
-  - `load.R:load`: Unique function to load any kind of file given a path, returns a `data.table`.
-  - `save.R:save`: Unique function to save any kind of file given a path and data.
-  - `load_sql_query.R:load_sql_query` and `execute_sql_file`: Loads and execute SQL code.
-  - `utils.R:load_config`: Load the YAML files used to configure the pipeline.
-- Auditing:
-  - `run_logger.R` Integrated Logging: full audit trail using the internal logger.R module.
-  - `audit.R`: It creates a `.txt` with user defined information to monitor the script.
-  - `plot_data.R:plot_data_features`: It plots each column of an `intermediate file(s)`
+- Audit and logging
+  - `audit_start()`, `audit_add()`, `audit_end()` for human-readable audit files.
+  - `LoggerManager` for structured run and step logging.
 
 ## Installation
-```R
+
+```r
 pak::pkg_install("github::UMC-Utrecht-RWE/picard@main")
 # or
 remotes::install_github("UMC-Utrecht-RWE/picard", ref = "main")
 ```
-If the above does not work and the repository is private, this means that **R is not authenticated to GitHub**, do the following:
-```R
+
+If the repository is private, authenticate R to GitHub first:
+
+```r
 install.packages(c("usethis", "gitcreds", "gh"))
 usethis::create_github_token()
-```
-When prompted, approve the default option.
-```R
 gitcreds::gitcreds_set()
-```
-Double check results with
-```R
 gh::gh_whoami()
-# {
-#   "name": "XXX YYY",
-#   "login": "zzzzz",
-#   "html_url": "https://github.com/zzzzz",
-#   "scopes": "read:user, repo, user:email, workflow",
-#   "token": "xxxx...xxxx"
-# }
 ```
 
-## Example Usage
-```R
+## Quick Start
+
+```r
 library(picard)
 
-# Load configuration
-config <- picard::load_config("configuration/config_pipeline.yaml")
+# 1) Full pipeline execution from a master pipeline config
+pl <- picard::pipeline$new("configuration/config_pipeline.yaml")
+pl$run()
 
-# Initialize and run the pipeline
-pipeline <- picard::Pipeline$new(config)
-pipeline$run_all()
-
-# Logs and intermediates
-# /intermediate_data_file/
-# /logs/
+# 2) Run only selected top-level steps
+pl$run(step_subset = c("T2", "T3"))
 ```
-## Cheatsheets
+
+To run one step class directly (example: T2):
+
+```r
+t2 <- picard::t2_pipeline$new(
+  config_t2 = "configuration/config_T2.yaml",
+  config_project = "configuration/config_project.yaml",
+  skip_substeps = TRUE
+)
+t2$run()
+```
+
+## Minimal Configuration Pattern
+
+At minimum, a step config must define:
+- a top-level section for the step key (`T2`, `T3`, ...), and
+- a sibling `substep` list with booleans.
+
+Example (`config_T2.yaml`):
+
+```yaml
+T2:
+  root: "/path/to/project"
+  source_code: "transformations/T2"
+
+substep:
+  import_source: true
+  map_codes: true
+  derive_outcomes: false
+```
+
+With this config, PICARD executes:
+- `/path/to/project/transformations/T2/import_source.R`
+- `/path/to/project/transformations/T2/map_codes.R`
+
+and skips `derive_outcomes.R`.
+
+## Data I/O API
+
+PICARD includes extension-based readers and writers.
+
+Built-in readers typically include: `csv`, `duckdb`, `fst`, `parquet`, `rdata`, `rds`, `xlsx`.
+
+Built-in writers typically include: `csv`, `fst`, `parquet`, `rdata`, `rds`, `txt`, `xlsx`.
+
+```r
+# Load any supported file type
+dt <- picard::load("data/input.csv")
+
+# Save to any supported file type
+picard::save(dt, "data/output.parquet")
+
+# See available handlers
+picard::list_readers()
+picard::list_writers()
+```
+
+## SQL Helpers
+
+```r
+sql <- picard::load_sql_query(
+  file_path = "sql/my_query.sql",
+  params = list(schema = "main", table = "patients", min_age = 18)
+)
+
+result <- picard::execute_sql_file(sql = sql, conn = con)
+```
+
+## Audit Example
+
+```r
+picard::audit_start(dir_output = "data/audits", file_name = "t2_import")
+picard::audit_add("Rows before filter: ", nrow(dt_before))
+picard::audit_add("Rows after filter: ", nrow(dt_after))
+picard::audit_end()
+```
+
+## Tutorial
+
+A full, step-by-step tutorial is available in [TUTORIAL.md](TUTORIAL.md), including:
+- project folder structure,
+- YAML templates,
+- substep script examples,
+- end-to-end run sequence,
+- troubleshooting checklist.
+
+## Cheatsheet
+
 <a href="man/cheatsheet/picard.pdf"><img src="man/figures/cheatsheet.png" width="630" height="252"/></a>
 
-# Governance and Security
-PICARD aligns with UMC Utrecht’s and VAC4EU’s data protection principles:
-- Designed for execution within the UMCU DRE secure environment
-- Compliant with FAIR data principles
-- Ensures consistent and auditable execution of ETL and analytical pipelines
+## Governance and Security
 
-🖖 “Make it run.”
+PICARD aligns with UMC Utrecht and VAC4EU data governance principles:
+- Designed for secure research environments.
+- Supports transparent and auditable execution.
+- Promotes reproducibility through externalized configuration.
+
+Make it run.

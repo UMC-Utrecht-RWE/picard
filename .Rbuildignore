@@ -4,3 +4,11 @@
 ^CITATION\.cff$
 ^\.zenodo\.json$
 ^codemeta\.json$
+^\.claude$
+^\.vscode$
+^TUTORIAL\.md$
+^.*\.Rproj$
+^\.Rproj\.user$
+^picard\.Rcheck$
+^\.\.Rcheck$
+^picard_.*\.tar\.gz$

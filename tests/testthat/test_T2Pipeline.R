@@ -8,7 +8,10 @@ testthat::test_that("T2Pipeline initializes and loads config", {
   t2 <- picard::t2_pipeline$new(config_t2 = yaml_path, yaml_path)
 
   testthat::expect_type(t2$T2, "list")
-  testthat::expect_named(t2$T2, c("T2", "substep", "cleanup", "parquet_files"))
+  testthat::expect_named(
+    t2$T2,
+    c("T2", "substep", "cleanup", "parquet_files", "partition_col")
+  )
 })
 
 testthat::test_that("T2Pipeline run executes enabled substeps", {
@@ -49,7 +52,10 @@ testthat::test_that("T2Pipeline initializes and skip_substeps", {
   )
 
   testthat::expect_type(t2$T2, "list")
-  testthat::expect_named(t2$T2, c("T2", "substep", "cleanup", "parquet_files"))
+  testthat::expect_named(
+    t2$T2,
+    c("T2", "substep", "cleanup", "parquet_files", "partition_col")
+  )
 })
 
 
@@ -71,7 +77,10 @@ testthat::test_that("Check if clean delete files in folder", {
 
   testthat::expect_true(!file.exists(file_1))
   testthat::expect_true(!file.exists(file_2))
-  testthat::expect_named(t2$T2, c("T2", "substep", "cleanup", "parquet_files"))
+  testthat::expect_named(
+    t2$T2,
+    c("T2", "substep", "cleanup", "parquet_files", "partition_col")
+  )
 })
 
 testthat::test_that("Test with dry_run TRUE", {

@@ -23,7 +23,13 @@ create_temp_pipeline_yaml <- function(step_labels, marker_path) {
   )
 
   yaml_path <- fs::path_norm(file.path(tempdir(), "config_pipeline.yaml"))
-  yaml::write_yaml(list(steps = step_scripts), yaml_path)
+  yaml::write_yaml(
+    list(
+      steps = step_scripts,
+      partition_col = "concept_id"
+    ),
+    yaml_path
+  )
 
   list(yaml_path = yaml_path, marker = marker_path)
 }
@@ -33,7 +39,8 @@ create_substep_config <- function(
     root = "T2root",
     src = "source_code",
     step_name = "T2",
-    marker_path = NULL) {
+    marker_path = NULL,
+    partition_col = "concept_id") {
   full_root <- fs::path_norm(base::file.path(base::tempdir(), root, src))
   base::dir.create(full_root, recursive = TRUE, showWarnings = FALSE)
 
@@ -95,6 +102,7 @@ create_substep_config <- function(
     dataset_dir = dataset_dir,
     partition_ids = c("B_COAGDEF_AESI", "B_COAGDEF_COV")
   )
+  out$partition_col <- partition_col
   out
 }
 

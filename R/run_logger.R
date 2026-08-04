@@ -48,11 +48,66 @@ LoggerManager <- R6::R6Class( # nolint
     #' @field capture_target Target log file for captured prints.
     capture_target = NULL,
 
-    #' Initialize LoggerManager
-    #' Constructor for the LoggerManager class.
+    #' @description Initialize the LoggerManager instance.
     #' @return NULL
     initialize = function() {
       invisible(self)
+    },
+
+    #' @description Reset the instance back to its unconfigured state.
+    #'
+    #' Stops any active print capture, clears all configuration fields, and
+    #' undoes the `logger::log_appender()`/`log_layout()`/`log_threshold()`
+    #' registrations that `configure()` sets up for the "global"/"picard"
+    #' namespaces. Those registrations live in the `logger` package's own
+    #' global state, not on this object, so they would otherwise survive a
+    #' reset and keep pointing at a stale (possibly deleted) log file.
+    #' Used to keep the exported singleton clean between test runs.
+    #' @return NULL
+    reset = function() {
+      self$stop_capturing_prints()
+
+      self$log_dir <- NULL
+      self$verbose <- NULL
+      self$run_id <- NULL
+      self$global_log_file <- NULL
+      self$step_log_file <- NULL
+      self$step_appender <- NULL
+      self$registry <- NULL
+
+      self$run_start_time <- NULL
+      self$step_start_time <- NULL
+      self$script_start_time <- NULL
+      self$last_log_time <- NULL
+
+      self$current_step <- NULL
+      self$current_script <- NULL
+
+      namespaces <- c("global", "picard")
+      try(
+        logger::log_appender(logger::appender_console, namespace = namespaces),
+        silent = TRUE
+      )
+      try(
+        logger::log_layout(logger::layout_simple, namespace = namespaces),
+        silent = TRUE
+      )
+      try(
+        logger::log_threshold(logger::INFO, namespace = namespaces),
+        silent = TRUE
+      )
+
+      invisible(self)
+    },
+
+    #' Check whether the logger has been configured
+    #'
+    #' @return Logical scalar. TRUE when configure() has been called.
+    is_configured = function() {
+      !base::is.null(self$global_log_file) &&
+        base::is.character(self$global_log_file) &&
+        base::length(self$global_log_file) == 1 &&
+        base::nzchar(self$global_log_file)
     },
 
     #' configure the LoggerManager
@@ -62,10 +117,8 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
     #' @param verbose Verbosity level.
-    configure = function(
-      log_dir = "logs",
-      verbose = c("Normal", "High", "Low")
-    ) {
+    configure = function(log_dir = "logs",
+                         verbose = c("Normal", "High", "Low")) {
       self$log_dir <- log_dir
       if (!base::dir.exists(self$log_dir)) {
         base::dir.create(self$log_dir, recursive = TRUE)
@@ -95,43 +148,43 @@ LoggerManager <- R6::R6Class( # nolint
 
       # Configure logger for global and package namespaces.
       namespaces <- c("global", "picard")
-      logger::log_layout(self$.layout_with_timers, namespace = namespaces)
+      logger::log_layout(private$.layout_with_timers, namespace = namespaces)
       logger::log_threshold(logger::TRACE, namespace = namespaces)
 
       logger::log_appender(function(line) {
         app_console(line)
 
-        if (!(isTRUE(self$capture_active) &&
-                base::identical(self$capture_target, "global"))) {
+        if (!(base::isTRUE(self$capture_active) &&
+          base::identical(self$capture_target, "global"))) {
           app_main(line)
         }
 
         if (!base::is.null(self$step_appender)) {
-          if (!(isTRUE(self$capture_active) &&
-                  base::identical(self$capture_target, "step"))) {
+          if (!(base::isTRUE(self$capture_active) &&
+            base::identical(self$capture_target, "step"))) {
             self$step_appender(line)
           }
         }
       }, namespace = namespaces)
 
-      self$registry <- tryCatch({
-        picard::load(picard:::get_hash_output(log_dir = self$log_dir))
-      },
-      error = function(e) {
-        NULL
-      })
-      if (is.null(self$registry) & self$verbose == "High") {
+      self$registry <- base::tryCatch(
+        {
+          picard::load(picard:::get_hash_output(log_dir = self$log_dir))
+        },
+        error = function(e) {
+          NULL
+        }
+      )
+      if (base::is.null(self$registry) && self$verbose == "High") {
         logger::log_error("Registry file necessary!")
         stop("Registry file necessary!")
       }
 
       logger::log_info("Pipeline configured. run_id={self$run_id}")
-      invisible(self)
+      base::invisible(self)
     },
 
-    #' Cleanup Old Logs
-    #'
-    #' Deletes log files older than a specified number of days.
+    #' @description Delete log files older than a specified number of days.
     #'
     #' @param days_to_keep Number of days to retain logs. Defaults to 30 days.
     cleanup_old_logs = function(days_to_keep = 30) {
@@ -141,8 +194,8 @@ LoggerManager <- R6::R6Class( # nolint
         recursive = TRUE
       )
 
-      if (length(old_logs) == 0) {
-        return(invisible(NULL))
+      if (base::length(old_logs) == 0) {
+        return(base::invisible(NULL))
       }
 
       old_logs_dates <- base::file.mtime(old_logs)
@@ -150,10 +203,10 @@ LoggerManager <- R6::R6Class( # nolint
 
       base::file.remove(old_logs[old_logs_dates < cutoff_date])
 
-      invisible(NULL)
+      base::invisible(NULL)
     },
 
-    #' Initialize Step Logger
+    #' @description Initialize a step-specific logger.
     #'
     #' Sets up a step-specific logger that logs only to the log file.
     #'
@@ -181,9 +234,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' End Step Logger
-    #'
-    #' Reset the step-specific logger.
+    #' @description Reset the step-specific logger.
     #' @return None
     end_step_logger = function() {
       if (!base::is.null(self$current_step)) {
@@ -200,9 +251,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' Start Script Timer
-    #'
-    #' As for start_step_logger, but for scripts within steps.
+    #' @description Start the timer for a script within the current step.
     #' @param script_name Name of the script being started.
     start_script = function(script_name) {
       self$current_script <- script_name
@@ -211,9 +260,7 @@ LoggerManager <- R6::R6Class( # nolint
       invisible(self)
     },
 
-    #' End Script Timer
-    #'
-    #' Resets the script timer.
+    #' @description Reset the current script timer.
     #' @return None
     end_script = function() {
       if (!base::is.null(self$current_script)) {
@@ -221,30 +268,92 @@ LoggerManager <- R6::R6Class( # nolint
       }
       self$current_script <- NULL
       self$script_start_time <- NULL
-      invisible(self)
+      base::invisible(self)
     },
 
-    #' Layout with Timers
+    #' @description Start capturing print statements.
     #'
-    #' Custom log layout function that includes timing information.
-    #' @param record Log record.
-    #' @param level Log level.
-    #' @param msg Log message.
-    #' @param namespace Namespace of the log message.
-    #' @param .logcall Call information.
-    #' @param .topcall Top-level call information.
-    #' @param .topenv Top-level environment.
-    #' @param ... Additional arguments.
-    #' @return Formatted log message string.
-    .layout_with_timers = function(
-      level,
-      msg = NULL,
-      namespace = NULL,
-      .logcall = NULL,
-      .topcall = NULL,
-      .topenv = NULL,
-      ...
-    ) {
+    #' Redirect `stdout` output, such as print statements, to a log file.
+    #' @param target Target log file to capture prints.
+    #'  Options are "global" or "step".
+    #' @param capture_messages Whether to also capture messages/warnings.
+    #' @return None
+    start_capturing_prints = function(target = c("step", "global"),
+                                      capture_messages = TRUE) {
+      target <- base::match.arg(target)
+
+      sink_file <- if (target == "global") {
+        self$global_log_file
+      } else {
+        self$step_log_file
+      }
+
+      self$stop_capturing_prints()
+
+      self$capture_active <- TRUE
+      self$capture_target <- target
+
+      sink_path <- base::as.character(sink_file)
+
+      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
+      base::sink(self$output_con, type = "output", split = TRUE)
+
+      if (isTRUE(capture_messages)) {
+        self$message_con <- file(sink_path, open = "at", encoding = "UTF-8")
+
+        ok <- TRUE
+        tryCatch(
+          base::sink(self$message_con, type = "message", split = TRUE),
+          error = function(e) ok <<- FALSE
+        )
+
+        if (!ok) {
+          # fallback: capture messages to file only
+          base::sink(self$message_con, type = "message")
+        }
+      }
+      invisible(TRUE)
+    },
+
+    #' @description Stop capturing print statements.
+    #'
+    #' Stop redirecting `stdout` output to the active log file.
+    #'
+    #' @return None
+    stop_capturing_prints = function() {
+      if (!isTRUE(self$capture_active)) {
+        return(invisible(TRUE))
+      }
+
+      self$capture_active <- FALSE
+      self$capture_target <- NULL
+
+      if (sink.number(type = "message") > 0 && !is.null(self$message_con)) {
+        base::sink(type = "message")
+      }
+      if (sink.number(type = "output") > 0 && !is.null(self$output_con)) {
+        base::sink(type = "output")
+      }
+
+      if (!base::is.null(self$message_con)) {
+        base::close(self$message_con)
+        self$message_con <- NULL
+      }
+      if (!base::is.null(self$output_con)) {
+        base::close(self$output_con)
+        self$output_con <- NULL
+      }
+      invisible(TRUE)
+    }
+  ),
+  private = list(
+    .layout_with_timers = function(level,
+                                   msg = NULL,
+                                   namespace = NULL,
+                                   .logcall = NULL,
+                                   .topcall = NULL,
+                                   .topenv = NULL,
+                                   ...) {
       if (base::is.list(level) && !base::is.null(level$msg)) {
         record <- level
         lvl <- record$level
@@ -304,23 +413,30 @@ LoggerManager <- R6::R6Class( # nolint
       scr_txt <- if (is.na(script_s)) "NA" else base::sprintf("%.2f", script_s)
 
       # Be sure current_script is an existing file (not a directory)
-      # Not all log message are connected with a file
-      if (self$verbose == "High") {
-        if (is.null(self$current_script)) {
-          hash <- ""
-        } else if (file_test("-f", self$current_script)) {
-          hash <- picard:::compute_hash(self$current_script)
-          if (nrow(self$registry[file_path == self$current_script] == 1)) {
-            if (hash != self$registry[file_path == self$current_script]$hash) {
-              hash <- paste0(hash, "\nScript modified by user\n")
-            }
-          }
-        } else {
-          hash <- ""
+      # Not all log messages are connected with a file.
+      hash <- ""
+      if (self$verbose == "High" && !is.null(self$current_script) &&
+        file_test("-f", self$current_script)) {
+        hash <- picard:::compute_hash(self$current_script)
+
+        if (!is.null(self$registry) &&
+          nrow(self$registry[file_path == self$current_script]) == 1 &&
+          hash != self$registry[file_path == self$current_script]$hash) {
+          hash <- paste0(hash, "\nScript modified by user\n")
         }
       }
 
-      if (self$verbose == "Low") {
+      # Change the color of the message based on message level,
+      # using crayon package. The mapping is as follows:
+      # Level  Colour
+      # Trace  Purple
+      # Debug  Blue
+      # Info   No change
+      # Success Green
+      # Warning Yellow
+      # Error  Red
+      # Fatal  Dark Red (bold)
+      line <- if (self$verbose == "Low") {
         base::sprintf(
           "%s | %-5s | %s",
           base::format(now, "%Y-%m-%d %H:%M:%S"),
@@ -341,7 +457,7 @@ LoggerManager <- R6::R6Class( # nolint
       } else if (self$verbose == "High") {
         base::sprintf( # Original with step and script times
           "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", # nolint
-          base::format(now, "%Y-%m-%d %H:%M:%S"), # nolint
+          base::format(now, "%Y-%m-%d %H:%M:%S"),
           lvl_txt,
           run_s,
           step_txt,
@@ -352,80 +468,25 @@ LoggerManager <- R6::R6Class( # nolint
           message,
           hash
         )
+      } else {
+        ""
       }
-    },
 
-    #' Start Capturing Print Statements
-    #'
-    #' Redirects all `stdout` output (e.g., print statements)
-    #' to the global log file.
-    #' @param target Target log file to capture prints.
-    #'  Options are "global" or "step".
-    #' @param capture_messages Whether to also capture messages/warnings.
-    #' @return None
-    start_capturing_prints = function(target = c("step", "global"),
-                                      capture_messages = TRUE) {
-      target <- base::match.arg(target)
-
-      sink_file <- if (target == "global") self$global_log_file
-      else self$step_log_file
-
-      self$stop_capturing_prints()
-
-      self$capture_active <- TRUE
-      self$capture_target <- target
-
-      sink_path <- base::as.character(sink_file)
-
-      self$output_con <- base::file(sink_path, open = "at", encoding = "UTF-8")
-      base::sink(self$output_con, type = "output", split = TRUE)
-
-      if (isTRUE(capture_messages)) {
-        self$message_con <- file(sink_path, open = "at", encoding = "UTF-8")
-
-        ok <- TRUE
-        tryCatch(
-          base::sink(self$message_con, type = "message", split = TRUE),
-          error = function(e) ok <<- FALSE
+      if (requireNamespace("crayon", quietly = TRUE)) {
+        color_fun <- switch(lvl_txt,
+          "TRACE" = crayon::magenta,
+          "DEBUG" = crayon::blue,
+          "INFO" = identity,
+          "SUCCESS" = crayon::green,
+          "WARN" = crayon::yellow,
+          "ERROR" = crayon::red,
+          "FATAL" = crayon::red$bold,
+          identity
         )
-
-        if (!ok) {
-          # fallback: capture messages to file only
-          base::sink(self$message_con, type = "message")
-        }
-      }
-      invisible(TRUE)
-    },
-
-    #' Stop Capturing Print Statements
-    #'
-    #' Stops redirecting `stdout` output to the global log file.
-    #'
-    #' @return None
-    stop_capturing_prints = function() {
-      if (!isTRUE(self$capture_active)) {
-        return(invisible(TRUE))
+        line <- color_fun(line)
       }
 
-      self$capture_active <- FALSE
-      self$capture_target <- NULL
-
-      if (sink.number(type = "message") > 0 && !is.null(self$message_con)) {
-        base::sink(type = "message")
-      }
-      if (sink.number(type = "output") > 0 && !is.null(self$output_con)) {
-        base::sink(type = "output")
-      }
-
-      if (!base::is.null(self$message_con)) {
-        base::close(self$message_con)
-        self$message_con <- NULL
-      }
-      if (!base::is.null(self$output_con)) {
-        base::close(self$output_con)
-        self$output_con <- NULL
-      }
-      invisible(TRUE)
+      line
     }
   )
 )
@@ -456,9 +517,17 @@ logger_manager <- .get_logger_manager_instance()
 
 #' Reset LoggerManager Singleton (for tests)
 #' This is only for testing, ignore it.
+#'
+#' Clears the singleton's configuration state in place. It deliberately
+#' never replaces the underlying object: the exported `logger_manager`
+#' binding is fixed to the original instance for the life of the session,
+#' so anything short of an in-place reset would leave that binding (and any
+#' reference already grabbed from it) permanently out of sync.
 #' @keywords internal
 .reset_logger_manager_instance <- function() {
   env <- base::environment(.get_logger_manager_instance)
-  env$instance <- NULL
+  if (!base::is.null(env$instance)) {
+    env$instance$reset()
+  }
   invisible(NULL)
 }

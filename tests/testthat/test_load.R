@@ -36,6 +36,34 @@ testthat::test_that("warns on case-insensitive file match and reads CSV", {
   base::unlink(temp_file)
 })
 
+testthat::test_that("load errors on corrupt CSV with ragged rows", {
+  picard:::.init_reader_registry()
+  withr::defer(picard:::.init_reader_registry())
+
+  tf <- base::tempfile(fileext = ".csv")
+  base::writeLines(c("col1,col2", "a,b", "a,b,c", "d,e"), tf)
+
+  testthat::expect_error(
+    picard::load(tf),
+    "Row count mismatch in file.*corrupt"
+  )
+})
+
+testthat::test_that("load reads well-formed CSV with fread", {
+  picard:::.init_reader_registry()
+  withr::defer(picard:::.init_reader_registry())
+
+  tf <- base::tempfile(fileext = ".csv")
+  base::writeLines(c("id,dt,val", "1,20240101,10.5", "2,20240115,20.1"), tf)
+
+  result <- picard::load(tf)
+
+  testthat::expect_true(data.table::is.data.table(result))
+  testthat::expect_equal(base::nrow(result), 2L)
+  testthat::expect_true(inherits(result$dt, "Date"))
+  testthat::expect_equal(result$dt, as.Date(c("2024-01-01", "2024-01-15")))
+})
+
 testthat::test_that("load calls the correct reader", {
   # Mock readers for testing
   picard:::register_reader("csv", function(path, ...) {
@@ -274,9 +302,25 @@ testthat::test_that("Resets registry and loads defaults", {
   testthat::expect_false("zzz" %in% readers)
   testthat::expect_true(
     all(
-      c("csv", "rdata", "rds", "xlsx", "fst", "duckdb", "parquet") %in% readers
+      c(
+        "csv", "duckdb", "fst", "parquet", "rdata",
+        "rds", "sql", "xlsx", "yaml", "yml"
+      ) %in% readers
     )
   )
+})
+
+testthat::test_that("load_raw returns the reader's native object", {
+  picard:::.init_reader_registry()
+  withr::defer(picard:::.init_reader_registry())
+
+  tf_yaml <- tempfile(fileext = ".yaml")
+  writeLines("a: 1", tf_yaml)
+
+  result <- load_raw(tf_yaml)
+
+  testthat::expect_true(is.list(result))
+  testthat::expect_identical(result$a, 1L)
 })
 
 testthat::test_that(".init_reader_registry for load_rdata reader", {

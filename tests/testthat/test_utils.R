@@ -54,11 +54,9 @@ testthat::test_that("Test for file_path null and at least a yaml file exists", {
   temp_yaml <- file.path(config_dir, "config_values.yaml")
   writeLines(c("start_study_date: 2023-8-24"), temp_yaml)
 
-  # change working directory to tempdir to use here::here correctly
+  # load_config() resolves paths off getwd(), so just switch into tmp
   old_wd <- getwd()
   setwd(tmp)
-  file.create(".here")
-  here::i_am(".here")
 
   # Test loading the configuration values
   config <- load_config()
@@ -82,6 +80,23 @@ testthat::test_that("read_yaml reads a valid yaml mapping", {
   testthat::expect_true(is.list(out))
   testthat::expect_identical(out$a, 1L)
   testthat::expect_identical(out$b, TRUE)
+})
+
+testthat::test_that("read_yaml uses the shared raw loader", {
+  picard:::.init_reader_registry()
+  withr::defer(picard:::.init_reader_registry())
+
+  picard:::register_reader("yaml", function(path, ...) {
+    list(a = 99L, from_dispatch = basename(path))
+  })
+
+  tmp <- tempfile(fileext = ".yaml")
+  writeLines("a: 1", tmp)
+
+  out <- read_yaml(tmp)
+
+  testthat::expect_identical(out$a, 99L)
+  testthat::expect_identical(out$from_dispatch, basename(tmp))
 })
 
 testthat::test_that("read_yaml rejects yaml that is not a mapping", {
@@ -119,7 +134,8 @@ testthat::test_that("read_yaml rejects invalid YAML syntax", {
 ##############################
 testthat::test_that("get_tracked_files finds file on all OS", {
   test_dir <- normalizePath(
-    withr::local_tempdir(), winslash = "/", mustWork = FALSE
+    withr::local_tempdir(),
+    winslash = "/", mustWork = FALSE
   )
 
   tmp <- tempfile(tmpdir = test_dir, fileext = ".txt")
@@ -129,10 +145,81 @@ testthat::test_that("get_tracked_files finds file on all OS", {
 
   tracked_files <- get_tracked_files(path = test_dir)
 
-  tracked_files_normalized <- normalizePath(
-    tracked_files, winslash = "/", mustWork = FALSE
+  tracked_files_normalized <- base::normalizePath(
+    tracked_files,
+    winslash = "/", mustWork = FALSE
   )
   testthat::expect_true(tmp_normalized %in% tracked_files_normalized)
+})
+
+testthat::test_that("get_tracked_files can include only selected formats", {
+  test_dir <- withr::local_tempdir()
+  r_file <- file.path(test_dir, "script.R")
+  sql_file <- file.path(test_dir, "query.sql")
+  sql_file_2 <- file.path(test_dir, "query_2.sql")
+
+  writeLines("x <- 1", r_file)
+  writeLines("select 1", sql_file)
+  writeLines("select 2", sql_file_2)
+
+  tracked_files <- get_tracked_files(
+    path = test_dir
+  )
+
+  testthat::expect_equal(length(tracked_files), 3L)
+
+  tracked_files <- get_tracked_files(
+    path = test_dir,
+    only_format = c(".R")
+  )
+
+  testthat::expect_equal(basename(tracked_files), "script.R")
+})
+
+testthat::test_that("get_tracked_files can exclude selected formats", {
+  test_dir <- withr::local_tempdir()
+  r_file <- file.path(test_dir, "script.R")
+  txt_file <- file.path(test_dir, "notes.txt")
+
+  writeLines("x <- 1", r_file)
+  writeLines("hello world", txt_file)
+
+  tracked_files <- get_tracked_files(
+    path = test_dir,
+    exclude_format = c("txt")
+  )
+
+  testthat::expect_false(r_file %in% tracked_files)
+  testthat::expect_true(txt_file %in% tracked_files)
+})
+
+testthat::test_that("get_tracked_files rejects conflicting format filters", {
+  test_dir <- withr::local_tempdir()
+  writeLines("x <- 1", file.path(test_dir, "script.R"))
+
+  testthat::expect_error(
+    get_tracked_files(
+      path = test_dir,
+      only_format = "R",
+      exclude_format = "txt"
+    ),
+    "Use either `only_format` or `exclude_format`, not both"
+  )
+})
+
+testthat::test_that("get_tracked_files excludes hidden files and directories", {
+  test_dir <- withr::local_tempdir()
+  visible_file <- file.path(test_dir, "script.R")
+  hidden_dir <- file.path(test_dir, ".hidden")
+  hidden_file <- file.path(hidden_dir, "secret.R")
+
+  writeLines("x <- 1", visible_file)
+  dir.create(hidden_dir)
+  writeLines("x <- 2", hidden_file)
+
+  tracked_files <- get_tracked_files(path = test_dir)
+
+  testthat::expect_false(hidden_file %in% tracked_files)
 })
 
 
@@ -195,10 +282,45 @@ testthat::test_that("track_file_changes creates registry correctly", {
   )
 
   testthat::expect_true(test_file %in% dt$file_path)
-  testthat::expect_equal(nrow(dt), 1)  # Should only have our test file
+  testthat::expect_equal(nrow(dt), 1) # Should only have our test file
 })
 
+testthat::test_that("track_file_changes respects only_format", {
+  temp_dir <- withr::local_tempdir()
+  r_file <- file.path(temp_dir, "script.R")
+  txt_file <- file.path(temp_dir, "notes.txt")
+  log_dir <- file.path(temp_dir, "logs")
 
+  writeLines("x <- 1", r_file)
+  writeLines("hello world", txt_file)
+
+  track_file_changes(
+    log_dir = log_dir,
+    path = temp_dir,
+    only_format = "R"
+  )
+
+  dt <- picard::load(
+    file_path = log_dir,
+    file_name = "registry.csv"
+  )
+
+  testthat::expect_equal(dt$file_path, r_file)
+})
+
+testthat::test_that("track_file_changes rejects conflicting format filters", {
+  temp_dir <- withr::local_tempdir()
+
+  testthat::expect_error(
+    track_file_changes(
+      log_dir = file.path(temp_dir, "logs"),
+      path = temp_dir,
+      only_format = "R",
+      exclude_format = "txt"
+    ),
+    "Use either `only_format` or `exclude_format`, not both"
+  )
+})
 
 ################################################
 # Test functions for set_dates

@@ -5,6 +5,10 @@
 # This is not a log, but a reader friendly way to monitor the content of the
 # data and the results.
 
+# Private environment to hold the state of the currently open audit file,
+# so we don't need to store it in the user's session options().
+.audit_state <- new.env(parent = emptyenv())
+
 #' audit_start
 #' @name audit_start
 #' @description Started of the audit file
@@ -17,11 +21,12 @@
 #' @return NULL
 #' @export
 audit_start <- function(
-    dir_output = "data/audits",
-    file_name = NULL,
-    deap_name = NULL,
-    delete_old = TRUE,
-    format = ".txt") {
+  dir_output = "data/audits",
+  file_name = NULL,
+  deap_name = NULL,
+  delete_old = TRUE,
+  format = ".txt"
+) {
   if (is.null(file_name)) {
     file_name <- scriptName::current_filename()
     file_name <- basename(tools::file_path_sans_ext(file_name))
@@ -46,10 +51,15 @@ audit_start <- function(
     dir_output,
     pattern = file_name_sens, full.names = TRUE
   )
-  # create or clear file if delete_old = TRUE
-  if (all(base::file.exists(audit_file)) && delete_old) {
-    # remove old files with same name sens
-    base::file.remove(audit_file)
+  # create a fresh file if none exists yet, or clear it if delete_old = TRUE
+  if (
+    length(audit_file) == 0 ||
+      (all(base::file.exists(audit_file)) && delete_old)
+  ) {
+    if (delete_old && length(audit_file) > 0) {
+      # remove old files with same name sens
+      base::file.remove(audit_file)
+    }
     # create new file
     audit_file <- file.path(dir_output, file_name)
     base::file.create(audit_file)
@@ -78,9 +88,9 @@ audit_start <- function(
     sep = ""
   )
 
-  # store path in an option so audit_add() can find it
-  base::options(.current_audit_file = audit_file)
-  base::options(.current_start_time = start_time)
+  # store path in the internal state so audit_add() can find it
+  .audit_state$current_audit_file <- audit_file
+  .audit_state$current_start_time <- start_time
 
   base::invisible(NULL)
   file_name
@@ -94,7 +104,7 @@ audit_start <- function(
 #' @return NULL
 #' @export
 audit_add <- function(...) {
-  audit_file <- base::getOption(".current_audit_file")
+  audit_file <- .audit_state$current_audit_file
   if (base::is.null(audit_file)) {
     stop(
       "audit_add() called before audit_start()",
@@ -130,14 +140,14 @@ audit_add <- function(...) {
 #' @keywords internal
 .get_release_version <- function() {
 
-  desc <- tryCatch(
-    base::read.dcf("DESCRIPTION"),
+  version <- tryCatch(
+    as.character(utils::packageVersion("picard")),
     error = function(e) NULL
   )
 
-  if (!is.null(desc) && "Version" %in% colnames(desc)) {
-    latest_tag <- as.character(desc[, "Version"])
-    tag_origin <- "from DESCRIPTION"
+  if (!is.null(version)) {
+    latest_tag <- version
+    tag_origin <- "installed package version"
   } else {
     latest_tag <- "unknown"
     tag_origin <- "unknown tag origin"
@@ -160,8 +170,8 @@ audit_add <- function(...) {
 #' @return NULL
 #' @export
 audit_end <- function() {
-  audit_file <- base::getOption(".current_audit_file")
-  start_time <- base::getOption(".current_start_time")
+  audit_file <- .audit_state$current_audit_file
+  start_time <- .audit_state$current_start_time
   if (base::is.null(audit_file)) {
     stop("audit_end() called before audit_start()", call. = FALSE)
   }
@@ -189,13 +199,9 @@ audit_end <- function() {
     sep = ""
   )
 
-  # Clear options
-  base::options(
-    .current_audit_file = NULL
-  )
-  base::options(
-    .current_start_time = NULL
-  )
+  # Clear internal state
+  .audit_state$current_audit_file <- NULL
+  .audit_state$current_start_time <- NULL
 
   logger::log_info(paste("Audit file saved:", audit_file))
   base::invisible(NULL)

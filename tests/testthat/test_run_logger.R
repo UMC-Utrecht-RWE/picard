@@ -1,10 +1,8 @@
 testthat::teardown({
-  # Reset the internal singleton (as before)
+  # LoggerManager$reset() clears the singleton's own fields plus the
+  # logger::log_appender()/log_layout()/log_threshold() registrations
+  # configure() sets up for the "global"/"picard" namespaces.
   picard:::.reset_logger_manager_instance()
-
-  # Reset the global logger package to defaults.
-  try(logger::log_appender(logger::appender_console), silent = TRUE)
-  try(logger::log_layout(logger::layout_simple), silent = TRUE)
 
   # Close any open sinks.
   while (base::sink.number() > 0) {
@@ -201,6 +199,57 @@ testthat::test_that("Test error verbose options", {
   )
 })
 
+testthat::test_that("picard log wrappers work standalone", {
+  namespaces <- c("global", "picard")
+  logger::log_appender(logger::appender_console, namespace = namespaces)
+  logger::log_layout(logger::layout_simple, namespace = namespaces)
+
+  testthat::expect_silent(picard::log_info("wrapper ok"))
+  testthat::expect_silent(picard::start_script_logging("standalone-script"))
+  testthat::expect_silent(picard::stop_script_logging())
+})
+
+testthat::test_that("picard log wrappers use configured picard logger", {
+  log_dir <- withr::local_tempdir()
+  withr::defer(picard:::.reset_logger_manager_instance())
+  lm <- picard::logger_manager
+  lm$configure(log_dir = log_dir)
+
+  picard::log_info("wrapper configured")
+
+  lines <- base::readLines(lm$global_log_file, warn = FALSE)
+  testthat::expect_true(any(grepl("wrapper configured", lines, fixed = TRUE)))
+})
+
+testthat::test_that("script logging helper works in sourced scripts", {
+  log_dir <- withr::local_tempdir()
+  withr::defer(picard:::.reset_logger_manager_instance())
+  lm <- picard::logger_manager
+  lm$configure(log_dir = log_dir)
+  lm$start_step_logger("T2")
+  on.exit(try(lm$end_step_logger(), silent = TRUE), add = TRUE)
+  step_log <- lm$step_log_file
+
+  script_path <- tempfile(fileext = ".R")
+  base::writeLines(
+    c(
+      "picard::start_script_logging(\"helper-script\")",
+      "on.exit(picard::stop_script_logging(), add = TRUE)",
+      "picard::log_info(\"from sourced script\")",
+      "print(\"captured print\")"
+    ),
+    con = script_path
+  )
+
+  base::source(script_path, local = new.env(parent = globalenv()))
+  lm$end_step_logger()
+
+  lines <- base::readLines(step_log, warn = FALSE)
+  testthat::expect_true(any(grepl("Script started: helper-script", lines)))
+  testthat::expect_true(any(grepl("from sourced script", lines, fixed = TRUE)))
+  testthat::expect_true(any(grepl("Script ended: helper-script", lines)))
+})
+
 
 #######################
 # Log cleanup tests
@@ -241,14 +290,20 @@ testthat::test_that("cleanup_old_logs removes files older than cutoff", {
 #######################
 # Test .get_logger_manager_instance
 #######################
-testthat::test_that("singleton can be reset to a new instance", {
-  picard:::.reset_logger_manager_instance()
+testthat::test_that("singleton reset clears state without changing identity", {
+  withr::defer(picard:::.reset_logger_manager_instance())
 
   a <- picard:::.get_logger_manager_instance()
+  a$configure(log_dir = withr::local_tempdir())
+  testthat::expect_true(a$is_configured())
+
   picard:::.reset_logger_manager_instance()
   b <- picard:::.get_logger_manager_instance()
 
-  testthat::expect_false(base::identical(a, b))
+  # `logger_manager` is a fixed export binding: resetting must clear the
+  # same object in place rather than swap in a new one.
+  testthat::expect_true(base::identical(a, b))
+  testthat::expect_false(b$is_configured())
 })
 
 testthat::test_that("getter returns same instance", {

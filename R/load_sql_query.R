@@ -27,18 +27,22 @@
 #' )
 #' }
 load_sql_query <- function(
-    file_path,
-    encoding = "UTF-8",
-    params = NULL) {
-  # Validate file exists
-  if (!file.exists(file_path)) {
-    stop("SQL file not found: ", file_path, call. = FALSE)
-  }
+  file_path,
+  encoding = "UTF-8",
+  params = NULL
+) {
+  sql <- tryCatch(
+    load_raw(file_path, encoding = encoding),
+    error = function(e) {
+      msg <- conditionMessage(e)
+      if (startsWith(msg, "File not found: ")) {
+        stop(sub("^File not found:", "SQL file not found:", msg), call. = FALSE)
+      }
+      stop(msg, call. = FALSE)
+    }
+  )
 
-  con <- base::file(file_path, open = "r", encoding = encoding)
-  on.exit(close(con), add = TRUE)
-
-  lines <- readLines(con, warn = FALSE)
+  lines <- strsplit(sql, "\n", fixed = TRUE)[[1]]
 
   # Normalize each line
   lines <- vapply(
@@ -145,13 +149,18 @@ interpolate_sql_params <- function(sql, params) {
 #' @param execute logical; if TRUE (default), execute the query.
 #'   If FALSE, return the interpolated SQL string.
 #' @param save_as_parquet logical; if TRUE, saves the result of a SELECT query
+#'   to Parquet. For DuckDB connections, the query result is streamed
+#'   directly to disk via DuckDB's `COPY ... TO ... (FORMAT PARQUET)`,
+#'   without materialising it as an R data.frame first. Other DBI backends
+#'   fall back to `DBI::dbGetQuery()` + `arrow::write_dataset()`.
 #' @param parquet_path character; file path to save the Parquet file if `save
 #'  as_parquet` is TRUE. Required if `save_as_parquet` is TRUE.
 #' @param partition_by vector of column names to partition the Parquet file
 #' @param ... additional arguments passed to DBI::dbExecute or DBI::dbGetQuery
 #'
-#' @return If execute = TRUE, returns result from DBI.
-#' If FALSE, returns SQL string.
+#' @return If execute = TRUE and save_as_parquet = TRUE on a DuckDB
+#'   connection, returns invisible(parquet_path). Otherwise, if execute =
+#'   TRUE, returns the result from DBI. If FALSE, returns the SQL string.
 #' @export
 #'
 #' @examples
@@ -168,13 +177,14 @@ interpolate_sql_params <- function(sql, params) {
 #' )
 #' }
 execute_sql_file <- function(
-    sql,
-    conn,
-    execute = TRUE,
-    save_as_parquet = FALSE,
-    parquet_path = NULL,
-    partition_by = NULL,
-    ...) {
+  sql,
+  conn,
+  execute = TRUE,
+  save_as_parquet = FALSE,
+  parquet_path = NULL,
+  partition_by = NULL,
+  ...
+) {
   if (!execute) {
     return(sql)
   }
@@ -185,9 +195,6 @@ execute_sql_file <- function(
     grepl("^WITH\\b", sql_trimmed)
 
   if (is_select) {
-    result <- DBI::dbGetQuery(conn, sql, ...)
-
-    # If save_as_parquet is TRUE, save the result to a Parquet file
     if (save_as_parquet) {
       if (is.null(parquet_path)) {
         stop(
@@ -195,16 +202,91 @@ execute_sql_file <- function(
           call. = FALSE
         )
       }
+
+      if (inherits(conn, "duckdb_connection")) {
+        return(
+          copy_query_to_parquet(
+            conn,
+            sql,
+            parquet_path = parquet_path,
+            partition_by = partition_by,
+            ...
+          )
+        )
+      }
+
+      # Non-DuckDB connections have no native "stream query to Parquet"
+      # facility, so fall back to materialising the result in R first.
+      result <- DBI::dbGetQuery(conn, sql, ...)
       arrow::write_dataset(
         result,
         path = parquet_path,
         format = "parquet",
         partitioning = partition_by
       )
+      return(result)
     }
 
-    result
+    DBI::dbGetQuery(conn, sql, ...)
   } else {
     DBI::dbExecute(conn, sql, ...)
   }
+}
+
+
+#' Copy a SELECT query's result directly to a Parquet file via DuckDB
+#'
+#' @description
+#' Uses DuckDB's native `COPY ... TO ... (FORMAT PARQUET)` statement so the
+#' result set streams straight from the query engine to disk, without ever
+#' being materialised as an R data.frame first.
+#'
+#' @param conn a duckdb_connection
+#' @param sql character(1) SELECT/WITH query to execute
+#' @param parquet_path character; destination file (or directory, when
+#'   `partition_by` is used)
+#' @param partition_by vector of column names to partition the output by
+#' @param ... additional arguments (e.g. bind parameters) passed to
+#'   DBI::dbExecute
+#'
+#' @return invisible(parquet_path)
+#' @keywords internal
+copy_query_to_parquet <- function(
+  conn,
+  sql,
+  parquet_path,
+  partition_by = NULL,
+  ...
+) {
+  inner_sql <- sub(";\\s*$", "", trimws(sql))
+
+  copy_options <- "FORMAT PARQUET"
+  if (!is.null(partition_by)) {
+    partition_cols <- paste(
+      vapply(
+        partition_by,
+        function(col) as.character(DBI::dbQuoteIdentifier(conn, col)),
+        FUN.VALUE = character(1)
+      ),
+      collapse = ", "
+    )
+    copy_options <- paste0(
+      copy_options,
+      ", PARTITION_BY (", partition_cols, ")",
+      ", FILENAME_PATTERN 'part-{i}'"
+    )
+  }
+
+  DBI::dbExecute(
+    conn,
+    sprintf(
+      "COPY (%s) TO %s (%s)",
+      inner_sql,
+      as.character(DBI::dbQuoteString(conn, parquet_path)),
+      copy_options
+    ),
+    ...
+  )
+
+  invisible(parquet_path)
 }
