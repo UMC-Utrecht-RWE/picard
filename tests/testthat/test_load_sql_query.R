@@ -192,7 +192,10 @@ testthat::test_that("test params passing", {
     useBytes = TRUE
   )
 
-  out <- load_sql_query(tmp, params = list(a = "aa", b = "bb"))
+  testthat::expect_warning(
+    out <- load_sql_query(tmp, params = list(a = "aa", b = "bb")),
+    "unsafe raw SQL interpolation"
+  )
 
   # Expect the two lines joined by newline
   testthat::expect_equal(
@@ -252,7 +255,6 @@ testthat::test_that("execute=FALSE returns sql and does not hit DBI", {
 })
 
 testthat::test_that("INSERT executes and SELECT returns a data frame", {
-
   conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
 
   DBI::dbExecute(conn, "CREATE TABLE t (x INTEGER)")
@@ -272,6 +274,73 @@ testthat::test_that("INSERT executes and SELECT returns a data frame", {
   testthat::expect_s3_class(out, "data.frame")
   testthat::expect_equal(out$x, 1)
   DBI::dbDisconnect(conn)
+})
+
+testthat::test_that("identifiers are quoted and values are bound", {
+  conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  DBI::dbWriteTable(
+    conn,
+    "odd table",
+    data.frame(name = c("O'Brien", "Robert'); DROP TABLE x;--"))
+  )
+
+  out <- execute_sql_file(
+    "SELECT name FROM {table} WHERE name = ?",
+    conn,
+    identifiers = list(table = "odd table"),
+    params = list("Robert'); DROP TABLE x;--")
+  )
+
+  testthat::expect_equal(out$name, "Robert'); DROP TABLE x;--")
+  testthat::expect_true(DBI::dbExistsTable(conn, "odd table"))
+
+  apostrophe <- execute_sql_file(
+    "SELECT name FROM {table} WHERE name = ?",
+    conn,
+    identifiers = list(table = "odd table"),
+    params = list("O'Brien")
+  )
+  testthat::expect_equal(apostrophe$name, "O'Brien")
+})
+
+testthat::test_that("vector values expand IN placeholders safely", {
+  conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  out <- execute_sql_file(
+    "SELECT value FROM (VALUES ('a'), ('b'), ('c'))
+     t(value) WHERE value IN (?) ORDER BY value",
+    conn,
+    params = list(c("a", "c"))
+  )
+
+  testthat::expect_equal(out$value, c("a", "c"))
+})
+
+testthat::test_that("SQL placeholders are validated", {
+  conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  testthat::expect_error(
+    execute_sql_file("SELECT * FROM {table}", conn),
+    "identifiers.*not supplied"
+  )
+  testthat::expect_error(
+    execute_sql_file(
+      "SELECT * FROM {table}", conn,
+      identifiers = list(table = "x", extra = "y")
+    ),
+    "Unused identifiers: extra"
+  )
+  testthat::expect_error(
+    execute_sql_file("SELECT ?", conn, params = list()),
+    "1 value placeholders but 0 parameters"
+  )
+  testthat::expect_error(
+    execute_sql_file("SELECT ?", conn, params = list(character())),
+    "cannot be empty vectors"
+  )
 })
 
 testthat::test_that("SELECT query saves result to Parquet file", {
@@ -297,7 +366,8 @@ testthat::test_that("SELECT query saves result to Parquet file", {
   if (dir.exists(parquet_path)) {
     # If it's a directory, find the first Parquet file
     parquet_files <- list.files(
-      parquet_path, recursive = TRUE, full.names = TRUE, pattern = "\\.parquet$"
+      parquet_path,
+      recursive = TRUE, full.names = TRUE, pattern = "\\.parquet$"
     )
     testthat::expect_true(length(parquet_files) > 0)
     parquet_data <- arrow::read_parquet(parquet_files[1])

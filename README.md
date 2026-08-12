@@ -42,8 +42,9 @@ PICARD helps teams keep pipelines reliable while keeping each project flexible:
   - `list_readers()` / `list_writers()` show available formats.
 
 - SQL helpers
-  - `load_sql_query()` reads SQL files and interpolates `{parameters}`.
-  - `execute_sql_file()` executes queries through DBI connections.
+  - `load_sql_query()` reads SQL files.
+  - `execute_sql_file()` safely quotes `{identifier}` placeholders and binds
+    `?` value parameters through DBI.
 
 - Audit and logging
   - `audit_start()`, `audit_add()`, `audit_end()` for human-readable audit files.
@@ -139,11 +140,15 @@ picard::list_writers()
 
 ```r
 sql <- picard::load_sql_query(
-  file_path = "sql/my_query.sql",
-  params = list(schema = "main", table = "patients", min_age = 18)
+  file_path = "sql/my_query.sql"
 )
 
-result <- picard::execute_sql_file(sql = sql, conn = con)
+result <- picard::execute_sql_file(
+  sql = sql,
+  conn = con,
+  identifiers = list(schema = "main", table = "patients"),
+  params = list(18)
+)
 ```
 
 ## Audit Example

@@ -1,29 +1,28 @@
-#' Load SQL file as a single query string with variable interpolation
+#' Load a SQL file as a single query string
 #'
 #' @name load_sql_query
 #' @description
 #' Reads a .sql script from disk, normalises tabs to spaces,
 #' converts full-line `-- ...` comments into `/* ... */`,
-#' and optionally interpolates variables using \code{\{var_name\}} syntax.
+#' SQL identifiers and values should be supplied to [execute_sql_file()],
+#' where they can be quoted or bound using the active database connection.
 #'
 #' @param file_path path to the .sql file
 #' @param encoding file encoding passed to readLines(); default "UTF-8"
-#' @param params named list of parameters to interpolate into the SQL.
-#'   Use \code{\{param\}} in your SQL file to reference these.
+#' @param params Deprecated. A named list for legacy raw text interpolation.
+#'   Use the `identifiers` and `params` arguments of [execute_sql_file()]
+#'   instead.
 #'
-#' @return character(1) containing the full SQL with interpolated values
+#' @return A character scalar containing the SQL query.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # SQL file content: SELECT * FROM {schema}.{table} WHERE id > {min_id}
-#' query <- load_sql_query(
-#'   "queries/my_query.sql",
-#'   params = list(
-#'     schema = "public",
-#'     table = "users",
-#'     min_id = 100
-#'   )
+#' # SQL file content: SELECT * FROM {schema}.{table} WHERE id > ?
+#' query <- load_sql_query("queries/my_query.sql")
+#' execute_sql_file(query, conn,
+#'   identifiers = list(schema = "public", table = "users"),
+#'   params = list(100)
 #' )
 #' }
 load_sql_query <- function(
@@ -67,6 +66,10 @@ load_sql_query <- function(
 
   # Interpolate parameters if provided
   if (!is.null(params)) {
+    .Deprecated(msg = paste(
+      "`load_sql_query(params=)` performs unsafe raw SQL interpolation.",
+      "Pass identifiers and params to `execute_sql_file()` instead."
+    ))
     sql <- interpolate_sql_params(
       sql,
       params
@@ -139,13 +142,105 @@ interpolate_sql_params <- function(sql, params) {
 }
 
 
-#' Execute SQL file with parameter interpolation
+# Quote and interpolate SQL identifiers using the active DBI connection.
+interpolate_sql_identifiers <- function(sql, identifiers, conn) {
+  if (!is.list(identifiers) || is.null(names(identifiers)) ||
+    any(!nzchar(names(identifiers)))) {
+    stop("identifiers must be a named list", call. = FALSE)
+  }
+
+  placeholders <- unique(
+    regmatches(sql, gregexpr("\\{[^}]+\\}", sql))[[1]]
+  )
+  placeholder_names <- gsub("^\\{|\\}$", "", placeholders)
+  missing_identifiers <- setdiff(placeholder_names, names(identifiers))
+  unused_identifiers <- setdiff(names(identifiers), placeholder_names)
+
+  if (length(missing_identifiers) > 0L) {
+    stop(
+      "Missing required identifiers: ",
+      paste(missing_identifiers, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  if (length(unused_identifiers) > 0L) {
+    stop(
+      "Unused identifiers: ", paste(unused_identifiers, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  for (name in placeholder_names) {
+    value <- identifiers[[name]]
+    if (!is.character(value) || length(value) != 1L || is.na(value) ||
+      !nzchar(value)) {
+      stop("Identifier '", name, "' must be one non-empty string.",
+        call. = FALSE
+      )
+    }
+    sql <- gsub(
+      paste0("{", name, "}"),
+      as.character(DBI::dbQuoteIdentifier(conn, value)),
+      sql,
+      fixed = TRUE
+    )
+  }
+  sql
+}
+
+
+# Expand vector parameters for clauses such as `IN (?)`, then flatten them for
+# DBI binding. Values remain placeholders and are never pasted into SQL.
+prepare_sql_params <- function(sql, params) {
+  if (is.null(params)) {
+    return(list(sql = sql, params = NULL))
+  }
+  if (!is.list(params)) {
+    params <- as.list(params)
+  }
+  if (any(lengths(params) == 0L)) {
+    stop("SQL parameters cannot be empty vectors.", call. = FALSE)
+  }
+
+  placeholder_count <- lengths(
+    regmatches(sql, gregexpr("?", sql, fixed = TRUE))
+  )
+  if (placeholder_count != length(params)) {
+    stop(
+      "SQL contains ", placeholder_count, " value placeholders but ",
+      length(params), " parameters were supplied.",
+      call. = FALSE
+    )
+  }
+
+  search_from <- 1L
+  for (value in params) {
+    match <- regexpr("?", substring(sql, search_from), fixed = TRUE)[1]
+    position <- search_from + match - 1L
+    replacement <- paste(rep("?", length(value)), collapse = ", ")
+    sql <- paste0(
+      substr(sql, 1L, position - 1L), replacement,
+      substr(sql, position + 1L, nchar(sql))
+    )
+    search_from <- position + nchar(replacement)
+  }
+
+  bound_params <- unlist(lapply(params, as.list), recursive = FALSE)
+  list(sql = sql, params = unname(bound_params))
+}
+
+
+#' Execute SQL safely with quoted identifiers and bound values
 #'
 #' @description
 #' Convenience wrapper that loads and executes a SQL file in one step.
 #'
 #' @param sql A sql query string typically loaded via `load_sql_query()`
 #' @param conn DBI connection object
+#' @param identifiers Named list of identifiers used for `{name}` placeholders.
+#'   Identifiers are quoted with [DBI::dbQuoteIdentifier()].
+#' @param params List of values bound to `?` placeholders. Vector elements
+#'   expand one placeholder for use in clauses such as `IN (?)`.
 #' @param execute logical; if TRUE (default), execute the query.
 #'   If FALSE, return the interpolated SQL string.
 #' @param save_as_parquet logical; if TRUE, saves the result of a SELECT query
@@ -156,7 +251,8 @@ interpolate_sql_params <- function(sql, params) {
 #' @param parquet_path character; file path to save the Parquet file if `save
 #'  as_parquet` is TRUE. Required if `save_as_parquet` is TRUE.
 #' @param partition_by vector of column names to partition the Parquet file
-#' @param ... additional arguments passed to DBI::dbExecute or DBI::dbGetQuery
+#' @param ... Additional arguments passed to [DBI::dbExecute()] or
+#'   [DBI::dbGetQuery()].
 #'
 #' @return If execute = TRUE and save_as_parquet = TRUE on a DuckDB
 #'   connection, returns invisible(parquet_path). Otherwise, if execute =
@@ -165,26 +261,38 @@ interpolate_sql_params <- function(sql, params) {
 #'
 #' @examples
 #' \dontrun{
-#' # Execute SQL file with parameters
+#' # SQL: SELECT * FROM {schema}.{table} WHERE id > ?
 #' execute_sql_file(
 #'   sql,
 #'   conn = my_conn,
-#'   file_path = "queries/create_table.sql",
-#'   params = list(
-#'     schema = "staging",
-#'     table = "temp_data"
-#'   )
+#'   identifiers = list(schema = "staging", table = "temp_data"),
+#'   params = list(100)
 #' )
 #' }
 execute_sql_file <- function(
   sql,
   conn,
+  identifiers = NULL,
+  params = NULL,
   execute = TRUE,
   save_as_parquet = FALSE,
   parquet_path = NULL,
   partition_by = NULL,
   ...
 ) {
+  if (!is.null(identifiers)) {
+    sql <- interpolate_sql_identifiers(sql, identifiers, conn)
+  } else if (grepl("\\{[^}]+\\}", sql)) {
+    stop(
+      "SQL contains identifier placeholders but `identifiers` not supplied.",
+      call. = FALSE
+    )
+  }
+
+  prepared <- prepare_sql_params(sql, params)
+  sql <- prepared$sql
+  params <- prepared$params
+
   if (!execute) {
     return(sql)
   }
@@ -210,6 +318,7 @@ execute_sql_file <- function(
             sql,
             parquet_path = parquet_path,
             partition_by = partition_by,
+            params = params,
             ...
           )
         )
@@ -217,7 +326,7 @@ execute_sql_file <- function(
 
       # Non-DuckDB connections have no native "stream query to Parquet"
       # facility, so fall back to materialising the result in R first.
-      result <- DBI::dbGetQuery(conn, sql, ...)
+      result <- DBI::dbGetQuery(conn, sql, params = params, ...)
       arrow::write_dataset(
         result,
         path = parquet_path,
@@ -227,9 +336,9 @@ execute_sql_file <- function(
       return(result)
     }
 
-    DBI::dbGetQuery(conn, sql, ...)
+    DBI::dbGetQuery(conn, sql, params = params, ...)
   } else {
-    DBI::dbExecute(conn, sql, ...)
+    DBI::dbExecute(conn, sql, params = params, ...)
   }
 }
 
