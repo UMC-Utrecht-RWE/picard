@@ -15,8 +15,8 @@ audit_start(
 \arguments{
 \item{dir_output}{Character where to save the file}
 
-\item{file_name}{With default null, the output file name witll be the same
-of the file in which function is invoked.}
+\item{file_name}{With default NULL, the output file name will be the same
+as the file in which the function is invoked.}
 
 \item{deap_name}{Character, name of the DEAP analysis}
 
@@ -24,6 +24,35 @@ of the file in which function is invoked.}
 
 \item{format}{Default txt}
 }
+\value{
+Character, invisibly. The generated file name (without the
+directory), i.e. what \code{dir_output} was joined with to create the file.
+}
 \description{
-Started of the audit file
+Start a new audit file, writing a header with the script
+(and optional DEAP analysis) name and the start time. Must be called
+before \code{\link[=audit_add]{audit_add()}} or \code{\link[=audit_end]{audit_end()}}.
+}
+\examples{
+\dontrun{
+# Typical usage inside a pipeline script:
+picard::audit_start(
+  dir_output = "data/audits",
+  file_name = "create_studycohort",
+  deap_name = "MyStudy"
+)
+
+# Plain text line
+picard::audit_add("Loaded ", nrow(my_data), " rows from D3_ELIGIBILITY")
+
+# A data.frame/data.table is rendered as a readable markdown table
+summary_dt <- data.table::data.table(
+  group = c("EXPOSED", "CONTROL"),
+  n = c(120, 480)
+)
+picard::audit_add(summary_dt)
+
+# Always close the audit file at the end of the script
+picard::audit_end()
+}
 }
