@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pipeline cleanup is now a dry run by default, requires `dry_run = FALSE` to delete files, and refuses dangerous targets such as the filesystem root, home directory, session temporary directory, and current working directory. T2-T5 cleanup methods follow the same behavior.
 - `delete_paths()` now defaults to a dry run, making deletion behavior consistent across the package, and its preview correctly reports nonexistent paths.
+- `R/zzz.R`: grouped the `utils::globalVariables()` entries by where they're used instead of one flat list.
+
+### Fixed
+
+- `R/zzz.R`: `min_start` (used by `.plot_script_timeline()`/`.plot_step_timeline()` in `R/post_run_analysis.R`) was missing from `utils::globalVariables()`, producing an R CMD check NOTE ("no visible binding for global variable 'min_start'"); added it to the whitelist.
 
 ## [V1.2.5]
 
