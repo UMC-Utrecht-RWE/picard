@@ -40,12 +40,72 @@ pipeline <- R6::R6Class(
       read_yaml(path)
     },
 
-    #' @description Delete all files within a folder.
-    #' @param content_to_delete Path to be deleted
-    #' @return NULL
-    clean = function(content_to_delete) {
-      logger::log_info(paste0("Deleting content in: ", content_to_delete))
-      fs::file_delete(fs::dir_ls(content_to_delete))
+    #' @description Delete all contents within a folder.
+    #' @param content_to_delete Path whose contents should be deleted.
+    #' @param dry_run Logical. If `TRUE` (the default), report what would be
+    #'   deleted without changing the filesystem.
+    #' @return Invisibly, the paths found in `content_to_delete`.
+    clean = function(content_to_delete, dry_run = TRUE) {
+      if (!base::is.character(content_to_delete) ||
+          base::length(content_to_delete) != 1L ||
+          base::is.na(content_to_delete) ||
+          !base::nzchar(content_to_delete)) {
+        base::stop("`content_to_delete` must be one non-empty path.",
+          call. = FALSE
+        )
+      }
+
+      target <- fs::path_norm(fs::path_abs(content_to_delete))
+      root <- target
+      repeat {
+        parent <- base::dirname(root)
+        if (base::identical(parent, root)) {
+          break
+        }
+        root <- parent
+      }
+      protected_paths <- base::unique(fs::path_norm(c(
+        root,
+        fs::path_abs("~"),
+        fs::path_abs(base::tempdir()),
+        fs::path_abs(base::getwd())
+      )))
+
+      if (target %in% protected_paths) {
+        base::stop("Refusing to clean protected path: ", target,
+          call. = FALSE
+        )
+      }
+      if (!fs::dir_exists(target)) {
+        base::stop("Directory does not exist: ", target, call. = FALSE)
+      }
+
+      contents <- fs::dir_ls(target, all = TRUE, fail = FALSE)
+      if (base::length(contents) == 0L) {
+        logger::log_info(base::paste0("Nothing to clean in: ", target))
+        return(base::invisible(contents))
+      }
+
+      if (base::isTRUE(dry_run)) {
+        msg <- base::paste0(
+          "[DRY RUN] Would delete contents of ", target, ":\n",
+          base::paste(contents, collapse = "\n")
+        )
+        base::message(msg)
+        logger::log_info(msg)
+        return(base::invisible(contents))
+      }
+
+      logger::log_info(base::paste0("Deleting contents of: ", target))
+      directories <- contents[fs::is_dir(contents)]
+      files <- contents[!fs::is_dir(contents)]
+      if (base::length(files) > 0L) {
+        fs::file_delete(files)
+      }
+      if (base::length(directories) > 0L) {
+        fs::dir_delete(directories)
+      }
+      base::invisible(contents)
     },
 
     #' @description Update substep flags when outputs already exist.
