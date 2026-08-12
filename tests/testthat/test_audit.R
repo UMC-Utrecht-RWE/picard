@@ -76,7 +76,7 @@ testthat::test_that("audit_add appends text lines", {
   testthat::expect_true(any(lines == "Hello World"))
 })
 
-testthat::test_that("audit_add writes a data.table (overwrites file)", {
+testthat::test_that("audit_add appends a data.table as a markdown table", {
   withr::local_tempdir()
   tmp <- base::file.path(base::tempdir(), "audit_add_dt")
   base::unlink(tmp, recursive = TRUE, force = TRUE)
@@ -87,13 +87,21 @@ testthat::test_that("audit_add writes a data.table (overwrites file)", {
   audit_start(dir_output = tmp, file_name = "unit")
   audit_file <- .audit_state$current_audit_file
 
+  audit_add("Some preceding text")
+
   dt <- data.table::data.table(id = 1L, n = 2L)
   audit_add(dt)
 
   lines <- base::readLines(audit_file, warn = FALSE)
-  testthat::expect_identical(lines[1], "\"id\" \"n\"")
-  testthat::expect_identical(lines[2], "1 2")
+  # earlier content (header + preceding text) must survive, i.e. not be
+  # wiped out by the table being added
+  testthat::expect_true(any(grepl("^=== Audit for unit ===", lines)))
+  testthat::expect_true(any(lines == "Some preceding text"))
+  testthat::expect_true(any(grepl("^\\| id \\| n \\|$", lines)))
+  testthat::expect_true(any(grepl("^\\| --- \\| --- \\|$", lines)))
+  testthat::expect_true(any(grepl("^\\| 1  \\| 2 \\|$", lines)))
 })
+
 ###############################
 # Tests for .get_release_version
 ###############################

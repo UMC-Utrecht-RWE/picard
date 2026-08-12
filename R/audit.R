@@ -11,14 +11,39 @@
 
 #' audit_start
 #' @name audit_start
-#' @description Started of the audit file
+#' @description Start a new audit file, writing a header with the script
+#' (and optional DEAP analysis) name and the start time. Must be called
+#' before [audit_add()] or [audit_end()].
 #' @param dir_output Character where to save the file
-#' @param file_name With default null, the output file name witll be the same
-#' of the file in which function is invoked.
+#' @param file_name With default NULL, the output file name will be the same
+#' as the file in which the function is invoked.
 #' @param deap_name Character, name of the DEAP analysis
 #' @param delete_old Boolean, delete_old if file exist
 #' @param format Default txt
-#' @return NULL
+#' @return Character, invisibly. The generated file name (without the
+#' directory), i.e. what `dir_output` was joined with to create the file.
+#' @examples
+#' \dontrun{
+#' # Typical usage inside a pipeline script:
+#' picard::audit_start(
+#'   dir_output = "data/audits",
+#'   file_name = "create_studycohort",
+#'   deap_name = "MyStudy"
+#' )
+#'
+#' # Plain text line
+#' picard::audit_add("Loaded ", nrow(my_data), " rows from D3_ELIGIBILITY")
+#'
+#' # A data.frame/data.table is rendered as a readable markdown table
+#' summary_dt <- data.table::data.table(
+#'   group = c("EXPOSED", "CONTROL"),
+#'   n = c(120, 480)
+#' )
+#' picard::audit_add(summary_dt)
+#'
+#' # Always close the audit file at the end of the script
+#' picard::audit_end()
+#' }
 #' @export
 audit_start <- function(
   dir_output = "data/audits",
@@ -92,16 +117,21 @@ audit_start <- function(
   .audit_state$current_audit_file <- audit_file
   .audit_state$current_start_time <- start_time
 
-  base::invisible(NULL)
-  file_name
+  base::invisible(file_name)
 }
 
 
 #' audit_add
 #' @name audit_add
-#' @description Add as a new lien and string whatever input
-#' @param ... Objects to be pasted together into a single log line.
-#' @return NULL
+#' @description Append content to the currently open audit file. The
+#' behavior depends on what is passed in `...`:
+#' * A single data.frame/data.table is rendered as a readable markdown
+#'   table.
+#' * Anything else is pasted together (as in `paste0(...)`) and appended
+#'   as a single text line.
+#' @param ... Objects to be added to the audit file. See description for
+#' how each type is handled.
+#' @return NULL, invisibly.
 #' @export
 audit_add <- function(...) {
   audit_file <- .audit_state$current_audit_file
@@ -113,12 +143,12 @@ audit_add <- function(...) {
   }
 
   args <- list(...)
-  if (length(args) == 1 && data.table::is.data.table(args[[1]])) {
-    utils::write.table(
-      args[[1]], audit_file,
-      append = FALSE,
-      sep = " ", dec = ".",
-      row.names = FALSE, col.names = TRUE
+  if (length(args) == 1 && base::is.data.frame(args[[1]])) {
+    base::cat(
+      .format_markdown_table(args[[1]]), "\n\n",
+      file = audit_file,
+      append = TRUE,
+      sep = ""
     )
   } else {
     msg <- base::paste0(...)
@@ -129,17 +159,48 @@ audit_add <- function(...) {
       append = TRUE,
       sep = ""
     )
-
-    base::invisible(NULL)
   }
+
+  base::invisible(NULL)
 }
 
+
+#' Format a data.frame/data.table as a padded markdown pipe table
+#' @param dt data.frame or data.table to format
+#' @return Character, a single string with the formatted table
+#' @keywords internal
+.format_markdown_table <- function(dt) {
+  dt <- base::as.data.frame(dt)
+  header <- base::vapply(base::names(dt), base::format, character(1))
+  body <- base::vapply(dt, base::format, character(base::nrow(dt)))
+  body <- base::matrix(body, nrow = base::nrow(dt))
+
+  cells <- base::rbind(header, body)
+  widths <- base::apply(cells, 2, function(col) base::max(base::nchar(col)))
+  pad <- function(row) {
+    base::vapply(
+      base::seq_along(row),
+      function(i) base::formatC(row[i], width = -widths[i]),
+      character(1)
+    )
+  }
+
+  rows <- base::apply(cells, 1, function(row) {
+    base::paste0("| ", base::paste(pad(row), collapse = " | "), " |")
+  })
+  sep <- base::paste0(
+    "| ",
+    base::paste(base::strrep("-", base::pmax(widths, 3L)), collapse = " | "),
+    " |"
+  )
+
+  base::paste(c(rows[1], sep, rows[-1]), collapse = "\n")
+}
 
 #' Get release version
 #' @return Character string with version info
 #' @keywords internal
 .get_release_version <- function() {
-
   version <- tryCatch(
     as.character(utils::packageVersion("picard")),
     error = function(e) NULL
