@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Pipeline cleanup is now a dry run by default, requires `dry_run = FALSE` to delete files, and refuses dangerous targets such as the filesystem root, home directory, session temporary directory, and current working directory. T2-T5 cleanup methods follow the same behavior.
-- `delete_paths()` now also defaults to a dry run, making deletion behavior consistent across the package, and its preview correctly reports nonexistent paths.
+- `delete_paths()` now defaults to a dry run, making deletion behavior consistent across the package, and its preview correctly reports nonexistent paths.
 
 ## [V1.2.5]
 
