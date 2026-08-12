@@ -4,13 +4,13 @@
 \alias{delete_paths}
 \title{Delete one or more files (optionally expanding directories)}
 \usage{
-delete_paths(paths, dry_run = FALSE, del_dir = FALSE)
+delete_paths(paths, dry_run = TRUE, del_dir = FALSE)
 }
 \arguments{
 \item{paths}{Character vector or list of paths to delete.
 Elements may be files or directories.}
 
-\item{dry_run}{Logical; if \code{TRUE} (default FALSE), no files are deleted.}
+\item{dry_run}{Logical; if \code{TRUE} (the default), no files are deleted.}
 
 \item{del_dir}{Logical; if \code{TRUE} (default), delete directories as well
 as files.}
@@ -21,8 +21,8 @@ Can also accept directories and delete all files inside them (opt-in).
 }
 \examples{
 \dontrun{
-   delete_paths("path/to/file.txt")
+   delete_paths("path/to/file.txt") # Preview only
    delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
-   delete_paths("data/", del_dir = TRUE)
+   delete_paths("data/", dry_run = FALSE, del_dir = TRUE)
 }
 }
