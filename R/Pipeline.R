@@ -1,4 +1,4 @@
-#' Pipeline Class for RSV-1026 Project
+#' Pipeline Class for Picard
 #' @name Pipeline
 #' @aliases Pipeline pipeline
 #' @description

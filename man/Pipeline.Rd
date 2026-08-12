@@ -3,7 +3,7 @@
 \name{Pipeline}
 \alias{Pipeline}
 \alias{pipeline}
-\title{Pipeline Class for RSV-1026 Project}
+\title{Pipeline Class for Picard}
 \description{
 Provides the common orchestration utilities:
 \itemize{
