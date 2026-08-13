@@ -136,7 +136,7 @@ testthat::test_that("Testing skip step function", {
   )
 })
 
-testthat::test_that("clean previews and deletes only dedicated folder contents", {
+testthat::test_that("clean previews and deletes dedicated folder contents", {
   files <- create_temp_pipeline_yaml(c("A", "B"), marker_path = tempfile())
   pl <- picard::pipeline$new(config_pipeline = files$yaml_path)
 
