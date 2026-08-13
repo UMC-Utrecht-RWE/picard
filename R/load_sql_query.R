@@ -143,6 +143,9 @@ interpolate_sql_params <- function(sql, params) {
 
 
 # Quote and interpolate SQL identifiers using the active DBI connection.
+# Validates identifiers is a named list, finds every {...} placeholder in sql,
+# and cross-checks names. It errors if a placeholder has no matching identifier,
+#  or if an identifier was supplied but never used.
 interpolate_sql_identifiers <- function(sql, identifiers, conn) {
   if (!is.list(identifiers) || is.null(names(identifiers)) ||
     any(!nzchar(names(identifiers)))) {
@@ -191,6 +194,7 @@ interpolate_sql_identifiers <- function(sql, identifiers, conn) {
 
 # Expand vector parameters for clauses such as `IN (?)`, then flatten them for
 # DBI binding. Values remain placeholders and are never pasted into SQL.
+# Therefore, it catches malformed/mismatched param inputs.
 prepare_sql_params <- function(sql, params) {
   if (is.null(params)) {
     return(list(sql = sql, params = NULL))
