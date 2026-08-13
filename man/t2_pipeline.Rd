@@ -77,7 +77,14 @@ with existing outputs}
   Clean up files related to the T2 pipeline.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{T2Pipeline$clean()}
+    \preformatted{T2Pipeline$clean(dry_run = TRUE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{dry_run}}{Logical. Preview deletions by default.}
+    }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{

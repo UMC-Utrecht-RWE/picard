@@ -92,12 +92,13 @@ testthat::test_that("Test delete_paths with paths", {
 
   testthat::expect_message(
     delete_paths(
-      paths = list(file_1, file_2),
-      dry_run = TRUE
+      paths = list(file_1, file_2)
     ),
     regexp = "[DRY RUN] The following paths would be deleted:",
     fixed = TRUE
   )
+  testthat::expect_true(fs::file_exists(file_1))
+  testthat::expect_true(fs::file_exists(file_2))
 
   testthat::expect_message(
     outcomes <- delete_paths(
@@ -151,14 +152,17 @@ testthat::test_that("Test delete_paths with paths with mix", {
   file_1 <- "/45/minutes/of/delay.txt"
   file_2 <- fs::file_create(fs::path(temp_dir, "file_2.txt"))
 
-  testthat::expect_message(
-    delete_paths(
-      paths = list(file_1, file_2),
-      dry_run = TRUE
-    ),
-    regexp = "The following paths do not exist",
-    fixed = TRUE
+  messages <- testthat::capture_messages(
+    delete_paths(paths = list(file_1, file_2))
   )
+  testthat::expect_true(any(grepl(
+    "The following paths do not exist", messages, fixed = TRUE
+  )))
+  testthat::expect_true(any(grepl(file_1, messages, fixed = TRUE)))
+  testthat::expect_false(any(grepl(
+    paste0("do not exist:\n", file_2), messages, fixed = TRUE
+  )))
+  testthat::expect_true(fs::file_exists(file_2))
 })
 
 testthat::test_that("Test delete_paths with paths with dir", {

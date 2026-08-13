@@ -3,7 +3,7 @@
 \name{Pipeline}
 \alias{Pipeline}
 \alias{pipeline}
-\title{Pipeline Class for RSV-1026 Project}
+\title{Pipeline Class for Picard}
 \description{
 Provides the common orchestration utilities:
 \itemize{
@@ -87,21 +87,23 @@ run_substeps().
 \if{html}{\out{<a id="method-Pipeline-clean"></a>}}
 \if{latex}{\out{\hypertarget{method-Pipeline-clean}{}}}
 \subsection{\code{Pipeline$clean()}}{
-  Delete all files within a folder.
+  Delete all contents within a folder.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{Pipeline$clean(content_to_delete)}
+    \preformatted{Pipeline$clean(content_to_delete, dry_run = TRUE)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{content_to_delete}}{Path to be deleted}
+      \item{\code{content_to_delete}}{Path whose contents should be deleted.}
+      \item{\code{dry_run}}{Logical. If \code{TRUE} (the default), report what would be
+deleted without changing the filesystem.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    NULL
+    Invisibly, the paths found in \code{content_to_delete}.
   }
 }
 
