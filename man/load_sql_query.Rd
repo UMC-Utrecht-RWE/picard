@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_sql_query.R
 \name{load_sql_query}
 \alias{load_sql_query}
-\title{Load SQL file as a single query string with variable interpolation}
+\title{Load a SQL file as a single query string}
 \usage{
 load_sql_query(file_path, encoding = "UTF-8", params = NULL)
 }
@@ -11,27 +11,26 @@ load_sql_query(file_path, encoding = "UTF-8", params = NULL)
 
 \item{encoding}{file encoding passed to readLines(); default "UTF-8"}
 
-\item{params}{named list of parameters to interpolate into the SQL.
-Use \code{\{param\}} in your SQL file to reference these.}
+\item{params}{Deprecated. A named list for legacy raw text interpolation.
+Use the \code{identifiers} and \code{params} arguments of \code{\link[=execute_sql_file]{execute_sql_file()}}
+instead.}
 }
 \value{
-character(1) containing the full SQL with interpolated values
+A character scalar containing the SQL query.
 }
 \description{
 Reads a .sql script from disk, normalises tabs to spaces,
 converts full-line \code{-- ...} comments into \verb{/* ... */},
-and optionally interpolates variables using \code{\{var_name\}} syntax.
+SQL identifiers and values should be supplied to \code{\link[=execute_sql_file]{execute_sql_file()}},
+where they can be quoted or bound using the active database connection.
 }
 \examples{
 \dontrun{
-# SQL file content: SELECT * FROM {schema}.{table} WHERE id > {min_id}
-query <- load_sql_query(
-  "queries/my_query.sql",
-  params = list(
-    schema = "public",
-    table = "users",
-    min_id = 100
-  )
+# SQL file content: SELECT * FROM {schema}.{table} WHERE id > ?
+query <- load_sql_query("queries/my_query.sql")
+execute_sql_file(query, conn,
+  identifiers = list(schema = "public", table = "users"),
+  params = list(100)
 )
 }
 }

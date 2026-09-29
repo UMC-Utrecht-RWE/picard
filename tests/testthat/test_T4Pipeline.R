@@ -67,7 +67,7 @@ testthat::test_that("Check if clean delete files in folder", {
   writeLines("Ciao", con = file_1)
   writeLines("Mondo", con = file_2)
 
-  t4$clean()
+  t4$clean(dry_run = FALSE)
 
   testthat::expect_true(!file.exists(file_1))
   testthat::expect_true(!file.exists(file_2))

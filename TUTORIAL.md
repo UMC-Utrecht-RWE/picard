@@ -426,15 +426,22 @@ sql_path <- file.path(
 )
 
 sql <- picard::load_sql_query(
-  file_path = sql_path,
-  params = list(schema = "main", table = "PERSONS")
+  file_path = sql_path
 )
 
 con <- DBI::dbConnect(duckdb::duckdb(), config_pipeline$databases$dir_d2_db)
 on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
-persons <- picard::execute_sql_file(sql = sql, conn = con)
+persons <- picard::execute_sql_file(
+  sql = sql,
+  conn = con,
+  identifiers = list(schema = "main", table = "PERSONS")
+)
 ```
+
+Use `{name}` only for identifiers and `?` for values. Identifiers are quoted
+for the active connection and values are bound through DBI rather than pasted
+into the SQL text.
 
 Use SQL files for reusable extracts and keep R scripts focused on orchestration
 and post-processing.

@@ -2,11 +2,13 @@
 % Please edit documentation in R/load_sql_query.R
 \name{execute_sql_file}
 \alias{execute_sql_file}
-\title{Execute SQL file with parameter interpolation}
+\title{Execute SQL safely with quoted identifiers and bound values}
 \usage{
 execute_sql_file(
   sql,
   conn,
+  identifiers = NULL,
+  params = NULL,
   execute = TRUE,
   save_as_parquet = FALSE,
   parquet_path = NULL,
@@ -18,6 +20,12 @@ execute_sql_file(
 \item{sql}{A sql query string typically loaded via \code{load_sql_query()}}
 
 \item{conn}{DBI connection object}
+
+\item{identifiers}{Named list of identifiers used for \code{{name}} placeholders.
+Identifiers are quoted with \code{\link[DBI:dbQuoteIdentifier]{DBI::dbQuoteIdentifier()}}.}
+
+\item{params}{List of values bound to \verb{?} placeholders. Vector elements
+expand one placeholder for use in clauses such as \verb{IN (?)}.}
 
 \item{execute}{logical; if TRUE (default), execute the query.
 If FALSE, return the interpolated SQL string.}
@@ -32,7 +40,8 @@ fall back to \code{DBI::dbGetQuery()} + \code{arrow::write_dataset()}.}
 
 \item{partition_by}{vector of column names to partition the Parquet file}
 
-\item{...}{additional arguments passed to DBI::dbExecute or DBI::dbGetQuery}
+\item{...}{Additional arguments passed to \code{\link[DBI:dbExecute]{DBI::dbExecute()}} or
+\code{\link[DBI:dbGetQuery]{DBI::dbGetQuery()}}.}
 }
 \value{
 If execute = TRUE and save_as_parquet = TRUE on a DuckDB
@@ -44,15 +53,12 @@ Convenience wrapper that loads and executes a SQL file in one step.
 }
 \examples{
 \dontrun{
-# Execute SQL file with parameters
+# SQL: SELECT * FROM {schema}.{table} WHERE id > ?
 execute_sql_file(
   sql,
   conn = my_conn,
-  file_path = "queries/create_table.sql",
-  params = list(
-    schema = "staging",
-    table = "temp_data"
-  )
+  identifiers = list(schema = "staging", table = "temp_data"),
+  params = list(100)
 )
 }
 }
