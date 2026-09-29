@@ -7,8 +7,19 @@
 audit_add(...)
 }
 \arguments{
-\item{...}{Objects to be pasted together into a single log line.}
+\item{...}{Objects to be added to the audit file. See description for
+how each type is handled.}
+}
+\value{
+NULL, invisibly.
 }
 \description{
-Add as a new lien and string whatever input
+Append content to the currently open audit file. The
+behavior depends on what is passed in \code{...}:
+\itemize{
+\item A single data.frame/data.table is rendered as a readable markdown
+table.
+\item Anything else is pasted together (as in \code{paste0(...)}) and appended
+as a single text line.
+}
 }
