@@ -88,7 +88,7 @@ delete_parquet_partition <- function(
 #'
 #' @param paths Character vector or list of paths to delete.
 #'   Elements may be files or directories.
-#' @param dry_run Logical; if `TRUE` (default FALSE), no files are deleted.
+#' @param dry_run Logical; if `TRUE` (the default), no files are deleted.
 #' @param del_dir Logical; if `TRUE` (default), delete directories as well
 #' as files.
 #'
@@ -96,14 +96,14 @@ delete_parquet_partition <- function(
 #'
 #' @examples
 #' \dontrun{
-#'    delete_paths("path/to/file.txt")
+#'    delete_paths("path/to/file.txt") # Preview only
 #'    delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
-#'    delete_paths("data/", del_dir = TRUE)
+#'    delete_paths("data/", dry_run = FALSE, del_dir = TRUE)
 #' }
 #' @export
 delete_paths <- function(
   paths,
-  dry_run = FALSE,
+  dry_run = TRUE,
   del_dir = FALSE
 ) {
   # Validate step
@@ -186,7 +186,7 @@ delete_paths <- function(
     if (nrow(registry_files_not_exists) > 0) {
       msg <- paste0(
         "[DRY RUN] The following paths do not exist:\n",
-        paste0(registry_files_exists$path, collapse = "\n ")
+        paste0(registry_files_not_exists$path, collapse = "\n ")
       )
       message(msg)
       logger::log_warn(msg)

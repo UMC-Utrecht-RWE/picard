@@ -136,19 +136,45 @@ testthat::test_that("Testing skip step function", {
   )
 })
 
-## test clean
-testthat::test_that("Check if clean delete files in folder", {
+testthat::test_that("clean previews and deletes dedicated folder contents", {
   files <- create_temp_pipeline_yaml(c("A", "B"), marker_path = tempfile())
   pl <- picard::pipeline$new(config_pipeline = files$yaml_path)
 
-  file_1 <- file.path(tempdir(), "file_1.txt")
-  file_2 <- file.path(tempdir(), "file_2.txt")
+  clean_dir <- tempfile("picard-clean-")
+  dir.create(clean_dir)
+  on.exit(unlink(clean_dir, recursive = TRUE), add = TRUE)
+
+  file_1 <- file.path(clean_dir, "file_1.txt")
+  file_2 <- file.path(clean_dir, "file_2.txt")
+  nested_dir <- file.path(clean_dir, "nested")
+  dir.create(nested_dir)
   writeLines("Ciao", con = file_1)
   writeLines("Mondo", con = file_2)
-  pl$clean(content_to_delete = tempdir())
+  writeLines("Nested", con = file.path(nested_dir, "file_3.txt"))
+  expected_contents <- fs::path_norm(c(file_1, file_2, nested_dir))
 
-  testthat::expect_true(!file.exists(file_1))
-  testthat::expect_true(!file.exists(file_1))
+  testthat::expect_message(
+    preview <- pl$clean(clean_dir),
+    "[DRY RUN]",
+    fixed = TRUE
+  )
+  testthat::expect_setequal(preview, expected_contents)
+  testthat::expect_true(all(file.exists(c(file_1, file_2, nested_dir))))
+
+  deleted <- pl$clean(clean_dir, dry_run = FALSE)
+
+  testthat::expect_setequal(deleted, expected_contents)
+  testthat::expect_false(any(file.exists(c(file_1, file_2, nested_dir))))
+  testthat::expect_true(dir.exists(clean_dir))
+})
+
+testthat::test_that("clean refuses shared and dangerous directories", {
+  files <- create_temp_pipeline_yaml(c("A"), marker_path = tempfile())
+  pl <- picard::pipeline$new(config_pipeline = files$yaml_path)
+
+  testthat::expect_error(pl$clean(tempdir()), "protected path")
+  testthat::expect_error(pl$clean(getwd()), "protected path")
+  testthat::expect_error(pl$clean(""), "one non-empty path")
 })
 
 ##################################

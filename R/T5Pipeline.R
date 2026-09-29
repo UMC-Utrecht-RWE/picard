@@ -30,8 +30,9 @@ t5_pipeline <- R6::R6Class(
     },
 
     #' @description Clean up files related to the T5 pipeline.
+    #' @param dry_run Logical. Preview deletions by default.
     #' @return NULL
-    clean = function() {
+    clean = function(dry_run = TRUE) {
       # Implement if you need to clear intermediates, etc.
       # Keep no-op to preserve current caller expectations.
       logger::log_debug("Removing T5 intermediate files")
@@ -39,7 +40,7 @@ t5_pipeline <- R6::R6Class(
         super$clean(content_to_delete = fs::path(
           self$T5$T5$root,
           self$T5$T5$intermediate
-        ))
+        ), dry_run = dry_run)
       }
       base::invisible(NULL)
     },
