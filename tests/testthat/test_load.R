@@ -146,7 +146,6 @@ testthat::test_that("load wraps reader errors with clear message", {
 })
 
 
-
 ###############################
 # tests for validate_and_normalize_path
 ###############################
