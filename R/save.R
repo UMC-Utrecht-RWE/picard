@@ -22,15 +22,16 @@
 #' @return Invisibly returns file_path
 #' @export
 save <- function(
-    data,
-    file_path,
-    file_name = NULL,
-    create_plot = FALSE,
-    plot_path = "data/intermediate_plots",
-    exclude_columns_from_plots = c(
-      "person_id", "pregnancy_id", "unique_id"
-    ),
-    ...) {
+  data,
+  file_path,
+  file_name = NULL,
+  create_plot = FALSE,
+  plot_path = "data/intermediate_plots",
+  exclude_columns_from_plots = c(
+    "person_id", "pregnancy_id", "unique_id"
+  ),
+  ...
+) {
   # Validate and prepare output path
   path_info <- prepare_output_path(file_path, file_name)
   file_path <- path_info$normalized_path
@@ -70,7 +71,7 @@ save <- function(
 
     # Remove excluded columns if present
     if (!is.null(exclude_columns_from_plots) &&
-        length(exclude_columns_from_plots) > 0
+      length(exclude_columns_from_plots) > 0
     ) {
       cols_to_remove <- intersect(
         exclude_columns_from_plots,
@@ -108,7 +109,6 @@ prepare_output_path <- function(
   file_name = NULL,
   create_dir = TRUE
 ) {
-
   ## STEP 1. Check if everything is good with file_path
   # Validate file_path
   if (is.null(file_path)) {
@@ -159,7 +159,7 @@ prepare_output_path <- function(
   }
 
   # Step 3. Create a final file_path to be used
-  path_dir  <- base::dirname(file_path)
+  path_dir <- base::dirname(file_path)
   path_base <- base::basename(file_path)
   path_has_file <- nzchar(tools::file_ext(path_base))
 
@@ -173,7 +173,6 @@ prepare_output_path <- function(
       )
     }
     file_path <- fs::path(file_path, file_name)
-
   } else {
     # file_path already carries a filename
     if (!is.null(file_name)) {

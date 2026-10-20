@@ -20,9 +20,7 @@ t3_pipeline <- R6::R6Class(
     #' @description Initialize the T3 pipeline with a YAML configuration file.
     #' @param config_t3 Path to the YAML configuration file for T3
     #' @return An instance of T3Pipeline
-    initialize = function(
-      config_t3 = base::file.path("configuration", "config_T3.yaml")
-    ) {
+    initialize = function(config_t3 = base::file.path("configuration", "config_T3.yaml")) {
       logger::log_info("Initializing T3 class")
       self$T3 <- super$load_yaml(config_t3)
       self$config <- self$T3

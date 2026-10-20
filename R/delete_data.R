@@ -96,9 +96,9 @@ delete_parquet_partition <- function(
 #'
 #' @examples
 #' \dontrun{
-#'    delete_paths("path/to/file.txt")
-#'    delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
-#'    delete_paths("data/", del_dir = TRUE)
+#' delete_paths("path/to/file.txt")
+#' delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
+#' delete_paths("data/", del_dir = TRUE)
 #' }
 #' @export
 delete_paths <- function(
@@ -134,11 +134,11 @@ delete_paths <- function(
     # What type?
     type_ <- NA_character_
     if (fs::is_dir(path)) {
-      type_ = "directory"
+      type_ <- "directory"
     } else if (fs::is_file(path)) {
-      type_ = "file"
+      type_ <- "file"
     } else {
-      type_ = "unrecognized"
+      type_ <- "unrecognized"
     }
 
     # Does it exist?

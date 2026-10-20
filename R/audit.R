@@ -139,7 +139,6 @@ audit_add <- function(...) {
 #' @return Character string with version info
 #' @keywords internal
 .get_release_version <- function() {
-
   version <- tryCatch(
     as.character(utils::packageVersion("picard")),
     error = function(e) NULL

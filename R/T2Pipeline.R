@@ -25,11 +25,9 @@ t2_pipeline <- R6::R6Class(
     #' @param skip_substeps Logical indicating whether to skip substeps
     #'  with existing outputs
     #' @return An instance of T2Pipeline
-    initialize = function(
-      config_t2 = base::file.path("configuration", "config_T2.yaml"),
-      config_project = file.path("configuration", "config_project.yaml"),
-      skip_substeps = FALSE
-    ) {
+    initialize = function(config_t2 = base::file.path("configuration", "config_T2.yaml"),
+                          config_project = file.path("configuration", "config_project.yaml"),
+                          skip_substeps = FALSE) {
       logger::log_info("Initializing T2 class")
       self$T2 <- super$load_yaml(config_t2)
       self$project <- super$load_yaml(config_project)

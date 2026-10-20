@@ -35,12 +35,13 @@ create_temp_pipeline_yaml <- function(step_labels, marker_path) {
 }
 
 create_substep_config <- function(
-    substep_names,
-    root = "T2root",
-    src = "source_code",
-    step_name = "T2",
-    marker_path = NULL,
-    partition_col = "concept_id") {
+  substep_names,
+  root = "T2root",
+  src = "source_code",
+  step_name = "T2",
+  marker_path = NULL,
+  partition_col = "concept_id"
+) {
   full_root <- fs::path_norm(base::file.path(base::tempdir(), root, src))
   base::dir.create(full_root, recursive = TRUE, showWarnings = FALSE)
 
@@ -58,7 +59,7 @@ create_substep_config <- function(
     substep_list <- stats::setNames(as.list(flags), substep_names)
   } else {
     if (is.null(base::names(substep_names)) ||
-        any(base::names(substep_names) == "")
+      any(base::names(substep_names) == "")
     ) {
       base::stop("substep_names must be named or character.")
     }

@@ -20,9 +20,7 @@ t4_pipeline <- R6::R6Class(
     #' @description Initialize the T4 pipeline with a YAML configuration file.
     #' @param config_t4 Path to the YAML configuration file for T4
     #' @return An instance of T4Pipeline
-    initialize = function(
-      config_t4 = base::file.path("configuration", "config_T4.yaml")
-    ) {
+    initialize = function(config_t4 = base::file.path("configuration", "config_T4.yaml")) {
       logger::log_info("Initializing T4 class")
       self$T4 <- super$load_yaml(config_t4)
       self$config <- self$T4
