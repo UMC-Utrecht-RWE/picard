@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- CI now runs the shared workflows from [rwe-ecosystem](https://github.com/UMC-Utrecht-RWE/rwe-ecosystem) `@v2` through a single `.github/workflows/ci.yaml` (R CMD check, lint and Air formatting, coverage, pkgdown).
+- Code is formatted with [Air](https://posit-dev.github.io/air/) instead of styler; `air.toml` is managed by rwe-ecosystem and must not be edited here (CI fails if it differs). Run `air format .` before pushing. Formatting only, no behaviour changes.
+- `.lintr`: `indentation_linter` stays off (Air owns layout) and long lines are allowed in `tests/testthat` (long `test_that()` descriptions).
+- `R/run_logger.R`: the `# nolint` for `LoggerManager` moved to a `# nolint next` line, since Air moves trailing comments.
+- Documentation regenerated with roxygen2 8.1.0.
+
+### Removed
+
+- The package's own `code_quality.yaml`, `pkgdown.yaml`, `r_cmd_check.yaml`, `test_coverage.yaml` and `testthat.yaml` workflows, replaced by the shared ones (tests run inside R CMD check).
+
 ## [V1.2.5]
 
 ### Added
