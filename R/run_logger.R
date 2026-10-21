@@ -7,7 +7,8 @@
 #' @import R6
 #' @import logger
 #' @export
-LoggerManager <- R6::R6Class( # nolint
+# nolint next
+LoggerManager <- R6::R6Class(
   classname = "LoggerManager",
   public = list(
     #' @field log_dir Directory where logs are stored.
@@ -117,8 +118,10 @@ LoggerManager <- R6::R6Class( # nolint
     #'
     #' @param log_dir Directory where logs will be stored. Defaults to "logs".
     #' @param verbose Verbosity level.
-    configure = function(log_dir = "logs",
-                         verbose = c("Normal", "High", "Low")) {
+    configure = function(
+      log_dir = "logs",
+      verbose = c("Normal", "High", "Low")
+    ) {
       self$log_dir <- log_dir
       if (!base::dir.exists(self$log_dir)) {
         base::dir.create(self$log_dir, recursive = TRUE)
@@ -285,8 +288,10 @@ LoggerManager <- R6::R6Class( # nolint
     #'  Options are "global" or "step".
     #' @param capture_messages Whether to also capture messages/warnings.
     #' @return None
-    start_capturing_prints = function(target = c("step", "global"),
-                                      capture_messages = TRUE) {
+    start_capturing_prints = function(
+      target = c("step", "global"),
+      capture_messages = TRUE
+    ) {
       target <- base::match.arg(target)
 
       sink_file <- if (target == "global") {
@@ -354,13 +359,15 @@ LoggerManager <- R6::R6Class( # nolint
     }
   ),
   private = list(
-    .layout_with_timers = function(level,
-                                   msg = NULL,
-                                   namespace = NULL,
-                                   .logcall = NULL,
-                                   .topcall = NULL,
-                                   .topenv = NULL,
-                                   ...) {
+    .layout_with_timers = function(
+      level,
+      msg = NULL,
+      namespace = NULL,
+      .logcall = NULL,
+      .topcall = NULL,
+      .topenv = NULL,
+      ...
+    ) {
       if (base::is.list(level) && !base::is.null(level$msg)) {
         record <- level
         lvl <- record$level
@@ -486,7 +493,8 @@ LoggerManager <- R6::R6Class( # nolint
       }
 
       if (requireNamespace("crayon", quietly = TRUE)) {
-        color_fun <- switch(lvl_txt,
+        color_fun <- switch(
+          lvl_txt,
           "TRACE" = crayon::magenta,
           "DEBUG" = crayon::blue,
           "INFO" = identity,
