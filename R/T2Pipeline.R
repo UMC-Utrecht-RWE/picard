@@ -25,9 +25,11 @@ t2_pipeline <- R6::R6Class(
     #' @param skip_substeps Logical indicating whether to skip substeps
     #'  with existing outputs
     #' @return An instance of T2Pipeline
-    initialize = function(config_t2 = base::file.path("configuration", "config_T2.yaml"),
-                          config_project = file.path("configuration", "config_project.yaml"),
-                          skip_substeps = FALSE) {
+    initialize = function(
+      config_t2 = base::file.path("configuration", "config_T2.yaml"),
+      config_project = file.path("configuration", "config_project.yaml"),
+      skip_substeps = FALSE
+    ) {
       logger::log_info("Initializing T2 class")
       self$T2 <- super$load_yaml(config_t2)
       self$project <- super$load_yaml(config_project)
@@ -48,10 +50,12 @@ t2_pipeline <- R6::R6Class(
       # Keep no-op to preserve current caller expectations.
       logger::log_info("Removing T2 intermediate files")
       if (self$T2$cleanup$intermediate_data_file) {
-        super$clean(content_to_delete = fs::path(
-          self$T2$T2$root,
-          self$T2$T2$intermediate
-        ))
+        super$clean(
+          content_to_delete = fs::path(
+            self$T2$T2$root,
+            self$T2$T2$intermediate
+          )
+        )
       }
       base::invisible(NULL)
     },

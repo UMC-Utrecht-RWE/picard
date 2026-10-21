@@ -55,7 +55,8 @@ delete_parquet_partition <- function(
   for (dir in dataset_dir) {
     for (pid in partition_ids) {
       partition_path <- fs::path(
-        dir, paste0(partition_col, "=", pid)
+        dir,
+        paste0(partition_col, "=", pid)
       )
 
       if (dir.exists(partition_path)) {
@@ -173,7 +174,6 @@ delete_paths <- function(
     return(registry_files)
   }
 
-
   # Dry run exit
   if (dry_run) {
     msg <- paste0(
@@ -194,7 +194,6 @@ delete_paths <- function(
 
     return(registry_files)
   }
-
 
   # Move to actual deletion.
   if (nrow(registry_files_not_exists) > 0) {

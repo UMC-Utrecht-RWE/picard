@@ -151,21 +151,28 @@ LoggerManager <- R6::R6Class( # nolint
       logger::log_layout(private$.layout_with_timers, namespace = namespaces)
       logger::log_threshold(logger::TRACE, namespace = namespaces)
 
-      logger::log_appender(function(line) {
-        app_console(line)
+      logger::log_appender(
+        function(line) {
+          app_console(line)
 
-        if (!(base::isTRUE(self$capture_active) &&
-          base::identical(self$capture_target, "global"))) {
-          app_main(line)
-        }
-
-        if (!base::is.null(self$step_appender)) {
-          if (!(base::isTRUE(self$capture_active) &&
-            base::identical(self$capture_target, "step"))) {
-            self$step_appender(line)
+          if (
+            !(base::isTRUE(self$capture_active) &&
+              base::identical(self$capture_target, "global"))
+          ) {
+            app_main(line)
           }
-        }
-      }, namespace = namespaces)
+
+          if (!base::is.null(self$step_appender)) {
+            if (
+              !(base::isTRUE(self$capture_active) &&
+                base::identical(self$capture_target, "step"))
+            ) {
+              self$step_appender(line)
+            }
+          }
+        },
+        namespace = namespaces
+      )
 
       self$registry <- base::tryCatch(
         {
@@ -415,13 +422,18 @@ LoggerManager <- R6::R6Class( # nolint
       # Be sure current_script is an existing file (not a directory)
       # Not all log messages are connected with a file.
       hash <- ""
-      if (self$verbose == "High" && !is.null(self$current_script) &&
-        file_test("-f", self$current_script)) {
+      if (
+        self$verbose == "High" &&
+          !is.null(self$current_script) &&
+          file_test("-f", self$current_script)
+      ) {
         hash <- picard:::compute_hash(self$current_script)
 
-        if (!is.null(self$registry) &&
-          nrow(self$registry[file_path == self$current_script]) == 1 &&
-          hash != self$registry[file_path == self$current_script]$hash) {
+        if (
+          !is.null(self$registry) &&
+            nrow(self$registry[file_path == self$current_script]) == 1 &&
+            hash != self$registry[file_path == self$current_script]$hash
+        ) {
           hash <- paste0(hash, "\nScript modified by user\n")
         }
       }
@@ -455,7 +467,8 @@ LoggerManager <- R6::R6Class( # nolint
           message
         )
       } else if (self$verbose == "High") {
-        base::sprintf( # Original with step and script times
+        base::sprintf(
+          # Original with step and script times
           "%s | %-5s | run+%8.2fs | step+%8ss | scr+%8ss | d+%7.2fs | %s/%s | %s | %s", # nolint
           base::format(now, "%Y-%m-%d %H:%M:%S"),
           lvl_txt,

@@ -46,7 +46,8 @@ load_config <- function(
 
   if (length(yamls) == 0) {
     stop(
-      "No YAML files found in: ", config_path,
+      "No YAML files found in: ",
+      config_path,
       call. = FALSE
     )
   }
@@ -318,7 +319,10 @@ track_file_changes <- function(
 #' @import data.table
 #' @export
 set_dates <- function(
-  df, date_cols, date_format = NULL, reference_date = "1970-01-01"
+  df,
+  date_cols,
+  date_format = NULL,
+  reference_date = "1970-01-01"
 ) {
   # Validate inputs
   if (!data.table::is.data.table(df)) {
@@ -363,16 +367,20 @@ set_dates <- function(
   # Process each date column using data.table idiom
   for (col in date_cols) {
     col_class <- class(df[[col]])
-    if (is.character(col_class) ||
-      any(class(col_class) %in% c("numeric", "integer"))
+    if (
+      is.character(col_class) ||
+        any(class(col_class) %in% c("numeric", "integer"))
     ) {
       # If character or numeric, convert via origin
       df <- data.table::setDT(df)
-      df[, (col) := get_date_value(
-        .SD[[1]],
-        origin = origin,
-        date_formats = date_formats
-      ), .SDcols = col] # nolint
+      df[,
+        (col) := get_date_value(
+          .SD[[1]],
+          origin = origin,
+          date_formats = date_formats
+        ),
+        .SDcols = col
+      ]
     }
   }
 

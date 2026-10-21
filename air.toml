@@ -1,0 +1,14 @@
+# Air formatter settings: https://posit-dev.github.io/air/configuration.html
+# Managed by rwe-ecosystem (templates/r-package/managed/air.toml): do not edit
+# in a package. CI fails if this copy differs from the ecosystem's.
+# Air owns all code layout; lintr (.lintr) only checks non-layout rules.
+# Format the package with `air format .`; CI runs `air format . --check`.
+[format]
+line-width = 80
+indent-width = 2
+indent-style = "space"
+line-ending = "auto"
+persistent-line-breaks = true
+exclude = []
+default-exclude = true
+skip = []

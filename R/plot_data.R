@@ -39,9 +39,9 @@ get_feature_plotter <- function(name) {
   list(
     numeric = names(cls)[cls %in% c("numeric", "integer")],
     logical = names(cls)[cls %in% c("logical")],
-    date    = names(cls)[cls %in% c("Date", "POSIXct", "POSIXt")],
-    factor  = names(cls)[cls %in% c("factor")],
-    char    = names(cls)[cls %in% c("character")]
+    date = names(cls)[cls %in% c("Date", "POSIXct", "POSIXt")],
+    factor = names(cls)[cls %in% c("factor")],
+    char = names(cls)[cls %in% c("character")]
   )
 }
 
@@ -58,16 +58,23 @@ get_feature_plotter <- function(name) {
 .summary_stats <- function(x) {
   if (is.numeric(x)) {
     paste0(
-      "n=", length(x),
-      " | NA=", sum(is.na(x)),
-      " | mean=", round(mean(x, na.rm = TRUE), 2),
-      " | median=", round(stats::median(x, na.rm = TRUE), 2)
+      "n=",
+      length(x),
+      " | NA=",
+      sum(is.na(x)),
+      " | mean=",
+      round(mean(x, na.rm = TRUE), 2),
+      " | median=",
+      round(stats::median(x, na.rm = TRUE), 2)
     )
   } else {
     paste0(
-      "n=", length(x),
-      " | NA=", sum(is.na(x)),
-      " | unique=", length(unique(x[!is.na(x)]))
+      "n=",
+      length(x),
+      " | NA=",
+      sum(is.na(x)),
+      " | unique=",
+      length(unique(x[!is.na(x)]))
     )
   }
 }
@@ -76,22 +83,27 @@ get_feature_plotter <- function(name) {
 .default_opts <- function(...) {
   dots <- list(...)
   modify <- function(x, y) {
-    for (nm in names(y)) x[[nm]] <- y[[nm]]
+    for (nm in names(y)) {
+      x[[nm]] <- y[[nm]]
+    }
     x
   }
-  modify(list(
-    ncol = 3,
-    nrow = 3,
-    width = 12,
-    height = 9,
-    max_levels = 15,
-    sample_n = 0,
-    seed = NA_integer_,
-    title_prefix = "Features",
-    theme = ggplot2::theme_minimal(base_size = 11),
-    show_stats = TRUE, # show summary statistics
-    cols = NULL # column selection
-  ), dots)
+  modify(
+    list(
+      ncol = 3,
+      nrow = 3,
+      width = 12,
+      height = 9,
+      max_levels = 15,
+      sample_n = 0,
+      seed = NA_integer_,
+      title_prefix = "Features",
+      theme = ggplot2::theme_minimal(base_size = 11),
+      show_stats = TRUE, # show summary statistics
+      cols = NULL # column selection
+    ),
+    dots
+  )
 }
 
 # built-in "dist" plotter with FIXED histogram/density issue
@@ -102,7 +114,9 @@ get_feature_plotter <- function(name) {
   # optional sampling
   dts <- dt
   if (is.numeric(opts$sample_n) && opts$sample_n > 0) {
-    if (!is.na(opts$seed)) base::set.seed(opts$seed)
+    if (!is.na(opts$seed)) {
+      base::set.seed(opts$seed)
+    }
     idx <- base::sample.int(
       n = nrow(dts),
       size = min(opts$sample_n, nrow(dts))
@@ -112,7 +126,7 @@ get_feature_plotter <- function(name) {
 
   # numeric - FIXED: use density scale for histogram
   for (nm in buckets$numeric) {
-    p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) + # nolint
+    p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) +
       ggplot2::geom_histogram(
         ggplot2::aes(y = ggplot2::after_stat(density)),
         bins = 30,
@@ -141,7 +155,7 @@ get_feature_plotter <- function(name) {
 
   # logical
   for (nm in buckets$logical) {
-    p <- ggplot2::ggplot(dts, ggplot2::aes(x = as.factor(.data[[nm]]))) + # nolint
+    p <- ggplot2::ggplot(dts, ggplot2::aes(x = as.factor(.data[[nm]]))) +
       ggplot2::geom_bar(na.rm = TRUE, fill = "steelblue") +
       ggplot2::labs(
         title = paste0(nm, " (logical)"),
@@ -159,7 +173,7 @@ get_feature_plotter <- function(name) {
 
   # date
   for (nm in buckets$date) {
-    p <- ggplot2::ggplot(dts, ggplot2::aes(x = as.Date(.data[[nm]]))) + # nolint
+    p <- ggplot2::ggplot(dts, ggplot2::aes(x = as.Date(.data[[nm]]))) +
       ggplot2::geom_histogram(
         na.rm = TRUE,
         bins = 30,
@@ -182,7 +196,7 @@ get_feature_plotter <- function(name) {
 
   # factor
   for (nm in buckets$factor) {
-    p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) + # nolint
+    p <- ggplot2::ggplot(dts, ggplot2::aes(x = .data[[nm]])) +
       ggplot2::geom_bar(na.rm = TRUE, fill = "steelblue") +
       ggplot2::labs(
         title = paste0(nm, " (factor)"),
@@ -204,7 +218,7 @@ get_feature_plotter <- function(name) {
   # character
   for (nm in buckets$char) {
     fac <- .top_n_factor(dts[[nm]], n = opts$max_levels)
-    p <- ggplot2::ggplot(data.frame(x = fac), ggplot2::aes(x = x)) + # nolint
+    p <- ggplot2::ggplot(data.frame(x = fac), ggplot2::aes(x = x)) +
       ggplot2::geom_bar(na.rm = TRUE, fill = "steelblue") +
       ggplot2::labs(
         title = paste0(nm, " (char)"),
@@ -246,18 +260,23 @@ get_feature_plotter <- function(name) {
     pct_missing = missing_pct
   )
 
-  p <- ggplot2::ggplot(missing_df, ggplot2::aes(x = column, y = pct_missing)) + # nolint
+  p <- ggplot2::ggplot(missing_df, ggplot2::aes(x = column, y = pct_missing)) +
     ggplot2::geom_col(
       fill = ifelse(
-        missing_df$pct_missing > 50, "darkred",
+        missing_df$pct_missing > 50,
+        "darkred",
         ifelse(missing_df$pct_missing > 10, "orange", "steelblue")
       )
     ) +
     ggplot2::geom_hline(
-      yintercept = 10, linetype = "dashed", color = "orange"
+      yintercept = 10,
+      linetype = "dashed",
+      color = "orange"
     ) +
     ggplot2::geom_hline(
-      yintercept = 50, linetype = "dashed", color = "darkred"
+      yintercept = 50,
+      linetype = "dashed",
+      color = "darkred"
     ) +
     ggplot2::labs(
       title = "Missing Data Analysis",
@@ -280,7 +299,7 @@ get_feature_plotter <- function(name) {
 
   # Only numeric columns
   for (nm in buckets$numeric) {
-    p <- ggplot2::ggplot(dt, ggplot2::aes(y = .data[[nm]])) + # nolint
+    p <- ggplot2::ggplot(dt, ggplot2::aes(y = .data[[nm]])) +
       ggplot2::geom_boxplot(
         fill = "steelblue",
         outlier.color = "red",
@@ -333,7 +352,9 @@ plot_data_features <- function(
   file_name = NULL,
   plot_path = "data/intermediate_plots",
   exclude_columns_from_plots = c(
-    "person_id", "pregnancy_id", "unique_id"
+    "person_id",
+    "pregnancy_id",
+    "unique_id"
   ),
   chart_types = c("dist"),
   cols = NULL,
@@ -356,7 +377,8 @@ plot_data_features <- function(
   if (!is.null(exclude_columns_from_plots)) {
     # remove one column at a time if exists
     existing_cols <- intersect(
-      exclude_columns_from_plots, colnames(data)
+      exclude_columns_from_plots,
+      colnames(data)
     )
     if (length(existing_cols) == 0) {
       logger::log_warn(
@@ -393,7 +415,8 @@ plot_data_features <- function(
 
     per_page <- opts$ncol * opts$nrow
     pages <- split(
-      seq_along(plt_list), ceiling(seq_along(plt_list) / per_page)
+      seq_along(plt_list),
+      ceiling(seq_along(plt_list) / per_page)
     )
 
     pg_idx <- 1
@@ -401,8 +424,17 @@ plot_data_features <- function(
       page_plots <- plt_list[idx]
       bullet <- "\u2022"
       title <- paste0(
-        opts$title_prefix, " ", bullet, " ", ctype,
-        " ", bullet, " page ", pg_idx, "/", length(pages)
+        opts$title_prefix,
+        " ",
+        bullet,
+        " ",
+        ctype,
+        " ",
+        bullet,
+        " page ",
+        pg_idx,
+        "/",
+        length(pages)
       )
       wrap <- patchwork::wrap_plots(page_plots, ncol = opts$ncol) +
         patchwork::plot_annotation(title = title)

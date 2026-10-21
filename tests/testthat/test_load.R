@@ -7,7 +7,8 @@ testthat::test_that("load validates input incorrectly", {
     "file_path cannot be NULL"
   )
   testthat::expect_error(
-    load(123), "file_path must be a character string, not numeric"
+    load(123),
+    "file_path must be a character string, not numeric"
   )
   testthat::expect_error(
     load(c("a", "b")),
@@ -16,10 +17,12 @@ testthat::test_that("load validates input incorrectly", {
   testthat::expect_error(load(""), "file_path cannot be an empty string")
 
   testthat::expect_error(
-    load("   "), "file_path cannot be an empty string"
+    load("   "),
+    "file_path cannot be an empty string"
   )
   testthat::expect_error(
-    load("nonexistent_file.csv"), "File not found: nonexistent_file.csv"
+    load("nonexistent_file.csv"),
+    "File not found: nonexistent_file.csv"
   )
 })
 
@@ -118,7 +121,7 @@ testthat::test_that("load no method for the extension", {
   testthat::expect_error(
     load(tmp),
     regexp = "No reader registered for extension: 'weird'",
-    fixed  = TRUE
+    fixed = TRUE
   )
 })
 
@@ -167,7 +170,8 @@ testthat::test_that("tests for validate_and_normalize_path", {
 
   testthat::expect_error(
     validate_and_normalize_path(
-      file_path = "file.txt", file_name = c("a", "b")
+      file_path = "file.txt",
+      file_name = c("a", "b")
     ),
     "file_name must be a single string, not a vector of length 2"
   )
@@ -183,7 +187,8 @@ testthat::test_that("tests for validate_and_normalize_path", {
   base::writeLines("Sample text", temp_file)
 
   res <- validate_and_normalize_path(
-    file_path = file_path, file_name = file_name
+    file_path = file_path,
+    file_name = file_name
   )
   base::unlink(file_path)
 })
@@ -195,7 +200,8 @@ testthat::test_that("tests for validate_and_normalize_path", {
 testthat::test_that("tests for case_sensitive_filename", {
   testthat::expect_error(
     case_sensitive_filename(
-      "test_file.txt", "test_file",
+      "test_file.txt",
+      "test_file",
       actual_files = "test_file.txt"
     ),
     regexp = "File not found: "
@@ -212,7 +218,8 @@ testthat::test_that("tests for case_sensitive_filename", {
   testthat::expect_error(
     case_sensitive_filename(
       file_path = file_path,
-      file_name = "test_file.txt", actual_files = c(
+      file_name = "test_file.txt",
+      actual_files = c(
         base::basename(file_name_1),
         base::basename(file_name_2)
       )
@@ -240,7 +247,8 @@ testthat::test_that("tests for define_column_types", {
 
   testthat::expect_error(
     define_column_types(
-      df = head(dt), col_types = list("integer", "numeric", "factor")
+      df = head(dt),
+      col_types = list("integer", "numeric", "factor")
     ),
     regexp = "col_types must be a named list"
   )
@@ -272,11 +280,14 @@ testthat::test_that("tests for define_column_types", {
 
 testthat::test_that("Changing value of some columns", {
   df <- create_test_data()
-  df <- define_column_types(df = df, col_types = c(
-    date = "character",
-    logi = as.logical,
-    chr = as.factor
-  ))
+  df <- define_column_types(
+    df = df,
+    col_types = c(
+      date = "character",
+      logi = as.logical,
+      chr = as.factor
+    )
+  )
   testthat::expect_true(is.character(df$date))
   testthat::expect_true(is.logical(df$logi))
   testthat::expect_true(is.factor(df$chr))
@@ -302,9 +313,18 @@ testthat::test_that("Resets registry and loads defaults", {
   testthat::expect_true(
     all(
       c(
-        "csv", "duckdb", "fst", "parquet", "rdata",
-        "rds", "sql", "xlsx", "yaml", "yml"
-      ) %in% readers
+        "csv",
+        "duckdb",
+        "fst",
+        "parquet",
+        "rdata",
+        "rds",
+        "sql",
+        "xlsx",
+        "yaml",
+        "yml"
+      ) %in%
+        readers
     )
   )
 })

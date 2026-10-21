@@ -18,8 +18,11 @@ load <- function(file_path, file_name = NULL, col_types = NULL, ...) {
     dispatch_reader(request, ...),
     error = function(e) {
       stop(
-        "Failed to read file: ", request$file_path, "\n",
-        "Error: ", e$message,
+        "Failed to read file: ",
+        request$file_path,
+        "\n",
+        "Error: ",
+        e$message,
         call. = FALSE
       )
     }
@@ -65,7 +68,9 @@ prepare_load_request <- function(file_path, file_name = NULL) {
   ext <- tools::file_ext(file_path)
   if (ext == "") {
     stop(
-      "File has no extension: ", file_path, "\n",
+      "File has no extension: ",
+      file_path,
+      "\n",
       call. = FALSE
     )
   }
@@ -76,8 +81,12 @@ prepare_load_request <- function(file_path, file_name = NULL) {
   reader_func <- get_reader(ext)
   if (is.null(reader_func)) {
     stop(
-      "No reader registered for extension: '", ext, "'\n",
-      "Supported extensions: ", paste(list_readers(), collapse = ", "), "\n",
+      "No reader registered for extension: '",
+      ext,
+      "'\n",
+      "Supported extensions: ",
+      paste(list_readers(), collapse = ", "),
+      "\n",
       "Use register_reader() to add a custom reader.",
       call. = FALSE
     )
@@ -194,7 +203,10 @@ validate_and_normalize_path <- function(file_path, file_name = NULL) {
 #' @return Corrected file_path if a case-insensitive match is found
 #' @keywords internal
 case_sensitive_filename <- function(
-  file_path, file_name, dir_path, actual_files
+  file_path,
+  file_name,
+  dir_path,
+  actual_files
 ) {
   # In load(), replace the file finding logic:
   if (!file_name %in% actual_files) {
@@ -202,13 +214,19 @@ case_sensitive_filename <- function(
 
     if (length(similar_files) == 1) {
       logger::log_warn(paste0(
-        "File '", file_name, "' not found. ",
-        "Using case-insensitive match '", similar_files, "'"
+        "File '",
+        file_name,
+        "' not found. ",
+        "Using case-insensitive match '",
+        similar_files,
+        "'"
       ))
       file_path <- file.path(dir_path, similar_files)
     } else if (length(similar_files) > 1) {
       stop(
-        "Multiple case-insensitive matches found for '", file_name, "':\n  ",
+        "Multiple case-insensitive matches found for '",
+        file_name,
+        "':\n  ",
         paste(similar_files, collapse = "\n  "),
         "\nPlease specify the exact filename.",
         call. = FALSE
@@ -216,13 +234,19 @@ case_sensitive_filename <- function(
     } else {
       # Provide helpful suggestions
       suggestion <- agrep(
-        file_name, actual_files,
-        value = TRUE, max.distance = 0.3
+        file_name,
+        actual_files,
+        value = TRUE,
+        max.distance = 0.3
       )
       if (length(suggestion) > 0) {
         stop(
-          "File not found: ", file_path, "\n",
-          "Did you mean: ", paste(suggestion, collapse = ", "), "?",
+          "File not found: ",
+          file_path,
+          "\n",
+          "Did you mean: ",
+          paste(suggestion, collapse = ", "),
+          "?",
           call. = FALSE
         )
       } else {
@@ -270,7 +294,10 @@ define_column_types <- function(df, col_types) {
         },
         error = function(e) {
           warning(paste0(
-            "Failed to convert column '", col, "': ", e$message
+            "Failed to convert column '",
+            col,
+            "': ",
+            e$message
           ))
         }
       )
@@ -316,8 +343,13 @@ define_column_types <- function(df, col_types) {
       line_count <- length(readLines(path, warn = FALSE)) - 1
       if (nrow(dt) != line_count) {
         stop(
-          "Row count mismatch in file '", path, "': expected ", line_count,
-          " data row(s) but read ", nrow(dt), ". The CSV file appears to be ",
+          "Row count mismatch in file '",
+          path,
+          "': expected ",
+          line_count,
+          " data row(s) but read ",
+          nrow(dt),
+          ". The CSV file appears to be ",
           "corrupt (e.g. rows with an inconsistent number of columns). ",
           "Please check the file.",
           call. = FALSE
@@ -376,7 +408,8 @@ define_column_types <- function(df, col_types) {
       # If only one table, return it directly
       if (length(tables) == 1) {
         DBI::dbReadTable(con, tables, ...)
-      } else { # Multiple tables, return a named list
+      } else {
+        # Multiple tables, return a named list
         result <- base::lapply(tables, function(tbl) {
           DBI::dbReadTable(con, tbl, ...)
         })
@@ -458,7 +491,8 @@ load_rdata <- function(file_path) {
 
   if (length(objects) > 1) {
     warning(
-      "The RData file ", file_path,
+      "The RData file ",
+      file_path,
       " contains more than one object. Only the first object will be returned."
     )
   }

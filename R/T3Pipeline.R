@@ -20,7 +20,9 @@ t3_pipeline <- R6::R6Class(
     #' @description Initialize the T3 pipeline with a YAML configuration file.
     #' @param config_t3 Path to the YAML configuration file for T3
     #' @return An instance of T3Pipeline
-    initialize = function(config_t3 = base::file.path("configuration", "config_T3.yaml")) {
+    initialize = function(
+      config_t3 = base::file.path("configuration", "config_T3.yaml")
+    ) {
       logger::log_info("Initializing T3 class")
       self$T3 <- super$load_yaml(config_t3)
       self$config <- self$T3
@@ -34,10 +36,12 @@ t3_pipeline <- R6::R6Class(
       # Keep no-op to preserve current caller expectations.
       logger::log_info("Removing T3 intermediate files")
       if (self$T3$cleanup$intermediate_data_file) {
-        super$clean(content_to_delete = fs::path(
-          self$T3$T3$root,
-          self$T3$T3$intermediate
-        ))
+        super$clean(
+          content_to_delete = fs::path(
+            self$T3$T3$root,
+            self$T3$T3$intermediate
+          )
+        )
       }
       base::invisible(NULL)
     },

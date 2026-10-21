@@ -74,7 +74,8 @@ testthat::test_that("run_substeps validates config keys", {
   bad2 <- list(T2 = list(root = "a", source_code = "b"))
 
   testthat::expect_error(
-    pl$run_substeps(bad1, "T2"), "Missing section in config: T2"
+    pl$run_substeps(bad1, "T2"),
+    "Missing section in config: T2"
   )
   testthat::expect_error(
     pl$run_substeps(bad2, "T2"),
@@ -98,10 +99,12 @@ testthat::test_that("Testing skip step function", {
   output_b <- tempfile(fileext = ".txt")
   on.exit(unlink(c(config_step, config_project, output_a, output_b)))
   yaml::write_yaml(
-    list(substep = list(
-      A = TRUE,
-      B = TRUE
-    )),
+    list(
+      substep = list(
+        A = TRUE,
+        B = TRUE
+      )
+    ),
     config_step
   )
   yaml::write_yaml(
@@ -163,11 +166,13 @@ testthat::test_that("Test with dry_run TRUE", {
   config_step <- tempfile(fileext = ".yaml")
   on.exit(unlink(config_step))
   yaml::write_yaml(
-    list(spec = list(
-      type = "parquet_partition",
-      dataset_dir = dataset_dir,
-      partition_ids = c("B_COAGDEF_AESI", "B_COAGDEF_COV")
-    )),
+    list(
+      spec = list(
+        type = "parquet_partition",
+        dataset_dir = dataset_dir,
+        partition_ids = c("B_COAGDEF_AESI", "B_COAGDEF_COV")
+      )
+    ),
     config_step
   )
   config_file_input <- yaml::read_yaml(config_step)

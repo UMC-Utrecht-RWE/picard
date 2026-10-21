@@ -22,24 +22,24 @@ concurrency:
 
 jobs:
   check:
-    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/r_cmd_check.yaml@v1
+    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/r_cmd_check.yaml@v2
     secrets: inherit
     # with:
     #   error-on: '"error"'
     #   matrix: '[{"os": "ubuntu-latest", "r": "release"}]'
 
   code-quality:
-    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/code_quality.yaml@v1
+    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/code_quality.yaml@v2
     secrets: inherit
 
   coverage:
-    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/test_coverage.yaml@v1
+    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/test_coverage.yaml@v2
     secrets: inherit
     # with:
     #   threshold: 70
 
   pkgdown:
-    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/pkgdown.yaml@v1
+    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/pkgdown.yaml@v2
     secrets: inherit
     permissions:
       contents: write

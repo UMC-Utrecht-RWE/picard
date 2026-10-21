@@ -1,7 +1,12 @@
 linters: linters_with_defaults(
-    object_usage_linter = NULL,
-    indentation_linter = NULL
+    # Layout is owned by Air (air.toml); its indentation style differs
+    indentation_linter = NULL,
+    # False positives with data.table non-standard evaluation
+    object_usage_linter = NULL
   )
 exclusions: list(
-    "tests/testthat.R"
+    "tests/testthat.R",
+    # Air keeps `test_that("description", {` on one line and cannot split
+    # the description string, so long test names are allowed
+    "tests/testthat" = list(line_length_linter = Inf)
   )

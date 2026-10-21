@@ -19,7 +19,8 @@ testthat::test_that("audit_start creates exactly one audit file", {
 
   bob_files <- base::list.files(
     tmp,
-    pattern = "bob.*\\.txt$", full.names = TRUE
+    pattern = "bob.*\\.txt$",
+    full.names = TRUE
   )
   testthat::expect_equal(length(bob_files), 1)
 
@@ -97,36 +98,30 @@ testthat::test_that("audit_add writes a data.table (overwrites file)", {
 ###############################
 # Tests for .get_release_version
 ###############################
-testthat::test_that(
-  ".get_release_version returns the installed package version",
-  {
-    ver <- .get_release_version()
-    expected_version <- as.character(utils::packageVersion("picard"))
+testthat::test_that(".get_release_version returns the installed package version", {
+  ver <- .get_release_version()
+  expected_version <- as.character(utils::packageVersion("picard"))
 
-    testthat::expect_type(ver, "character")
-    testthat::expect_length(ver, 1)
-    testthat::expect_true(base::startsWith(ver, expected_version))
-    testthat::expect_true(grepl("installed package version", ver))
-    testthat::expect_true(grepl("Time of creation", ver))
-  }
-)
+  testthat::expect_type(ver, "character")
+  testthat::expect_length(ver, 1)
+  testthat::expect_true(base::startsWith(ver, expected_version))
+  testthat::expect_true(grepl("installed package version", ver))
+  testthat::expect_true(grepl("Time of creation", ver))
+})
 
-testthat::test_that(
-  ".get_release_version returns unknown when the version cannot be resolved",
-  {
-    testthat::local_mocked_bindings(
-      packageVersion = function(...) stop("not installed"),
-      .package = "utils"
-    )
+testthat::test_that(".get_release_version returns unknown when the version cannot be resolved", {
+  testthat::local_mocked_bindings(
+    packageVersion = function(...) stop("not installed"),
+    .package = "utils"
+  )
 
-    ver <- .get_release_version()
+  ver <- .get_release_version()
 
-    testthat::expect_type(ver, "character")
-    testthat::expect_length(ver, 1)
-    testthat::expect_match(ver, "^unknown \\(unknown tag origin\\)")
-    testthat::expect_match(ver, "Time of creation")
-  }
-)
+  testthat::expect_type(ver, "character")
+  testthat::expect_length(ver, 1)
+  testthat::expect_match(ver, "^unknown \\(unknown tag origin\\)")
+  testthat::expect_match(ver, "Time of creation")
+})
 ###############################
 # Tests for audit_end
 ###############################
@@ -150,19 +145,22 @@ testthat::test_that("audit_end writes footer and clears options", {
     base::system2(
       "git",
       c("config", "user.email", "test@example.com"),
-      stdout = TRUE, stderr = TRUE
+      stdout = TRUE,
+      stderr = TRUE
     )
     base::system2(
       "git",
       c("config", "user.name", "Test User"),
-      stdout = TRUE, stderr = TRUE
+      stdout = TRUE,
+      stderr = TRUE
     )
     base::writeLines("x", "README.md")
     base::system2("git", c("add", "README.md"), stdout = TRUE, stderr = TRUE)
     base::system2(
       "git",
       c("commit", "-m", "init"),
-      stdout = TRUE, stderr = TRUE
+      stdout = TRUE,
+      stderr = TRUE
     )
     base::system2("git", c("tag", "v0.0.1"), stdout = TRUE, stderr = TRUE)
 

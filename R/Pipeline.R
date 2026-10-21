@@ -22,7 +22,9 @@ pipeline <- R6::R6Class(
     #' @description Initialize the pipeline with a YAML configuration file.
     #' @param config_pipeline Path to the YAML configuration file
     #' @return An instance of the class
-    initialize = function(config_pipeline = file.path("configuration", "config_pipeline.yaml")) { # nolint
+    initialize = function(
+      config_pipeline = file.path("configuration", "config_pipeline.yaml")
+    ) {
       logger::log_info("Initializing Pipeline")
       self$config <- self$load_yaml(config_pipeline)
       self$steps <- self$config$steps
@@ -66,7 +68,9 @@ pipeline <- R6::R6Class(
             if (all(file.exists(output_paths))) {
               config_file$substep[[substep]] <- FALSE
               logger::log_info(base::paste0(
-                "SKIPPED: ", substep, ", result(s) already present."
+                "SKIPPED: ",
+                substep,
+                ", result(s) already present."
               ))
             }
           }
@@ -95,7 +99,10 @@ pipeline <- R6::R6Class(
           error = function(e) {
             logger::log_error(
               base::paste(
-                "Failed at", step_name, "with error:", e
+                "Failed at",
+                step_name,
+                "with error:",
+                e
               )
             )
             base::stop(

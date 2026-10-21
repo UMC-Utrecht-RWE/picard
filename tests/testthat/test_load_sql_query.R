@@ -224,7 +224,11 @@ testthat::test_that("Passing nulls", {
     interpolate_sql_params(
       "{a}, {b}, {c}, {d}, {e}",
       params = list(
-        a = "aa", b = 1, c = 1, d = c("x", "y"), e = c(1, 2)
+        a = "aa",
+        b = 1,
+        c = 1,
+        d = c("x", "y"),
+        e = c(1, 2)
       )
     )
   )
@@ -297,7 +301,9 @@ testthat::test_that("SELECT query saves result to Parquet file", {
     # If it's a directory, find the first Parquet file
     parquet_files <- list.files(
       parquet_path,
-      recursive = TRUE, full.names = TRUE, pattern = "\\.parquet$"
+      recursive = TRUE,
+      full.names = TRUE,
+      pattern = "\\.parquet$"
     )
     testthat::expect_true(length(parquet_files) > 0)
     parquet_data <- arrow::read_parquet(parquet_files[1])

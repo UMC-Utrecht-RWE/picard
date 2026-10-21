@@ -8,8 +8,11 @@ create_temp_step_script <- function(label, marker_path) {
 
   base::writeLines(
     paste0(
-      "base::cat(\"", label, "\\n\", file = \"",
-      marker_path_normalized, "\", append = TRUE)"
+      "base::cat(\"",
+      label,
+      "\\n\", file = \"",
+      marker_path_normalized,
+      "\", append = TRUE)"
     ),
     con = script_path
   )
@@ -48,7 +51,8 @@ create_substep_config <- function(
   # Convert marker_path to forward slashes
   marker_path_normalized <- normalizePath(
     marker_path,
-    winslash = "/", mustWork = FALSE
+    winslash = "/",
+    mustWork = FALSE
   )
 
   # Accept either:
@@ -58,8 +62,9 @@ create_substep_config <- function(
     flags <- base::rep(TRUE, base::length(substep_names))
     substep_list <- stats::setNames(as.list(flags), substep_names)
   } else {
-    if (is.null(base::names(substep_names)) ||
-      any(base::names(substep_names) == "")
+    if (
+      is.null(base::names(substep_names)) ||
+        any(base::names(substep_names) == "")
     ) {
       base::stop("substep_names must be named or character.")
     }
@@ -75,8 +80,11 @@ create_substep_config <- function(
     function(.flag, .name) {
       base::writeLines(
         base::paste0(
-          "base::cat(\"", .name, "\\n\", file = \"",
-          marker_path_normalized, "\", append = TRUE)"
+          "base::cat(\"",
+          .name,
+          "\\n\", file = \"",
+          marker_path_normalized,
+          "\", append = TRUE)"
         ),
         fs::path_norm(base::file.path(full_root, base::paste0(.name, ".R")))
       )
@@ -112,7 +120,9 @@ create_test_data <- function() {
   data.table::data.table(
     num = stats::rnorm(100),
     int = base::sample.int(50, 100, replace = TRUE),
-    logi = base::sample(c(TRUE, FALSE, NA), 100,
+    logi = base::sample(
+      c(TRUE, FALSE, NA),
+      100,
       replace = TRUE,
       prob = c(0.45, 0.45, 0.10)
     ),

@@ -20,7 +20,9 @@ t5_pipeline <- R6::R6Class(
     #' @description Initialize the T5 pipeline with a YAML configuration file.
     #' @param config_t5 Path to the YAML configuration file for T5
     #' @return An instance of T5Pipeline
-    initialize = function(config_t5 = base::file.path("configuration", "config_T5.yaml")) {
+    initialize = function(
+      config_t5 = base::file.path("configuration", "config_T5.yaml")
+    ) {
       logger::log_info("Initializing T5 class")
       self$T5 <- super$load_yaml(config_t5)
       self$config <- self$T5
@@ -34,10 +36,12 @@ t5_pipeline <- R6::R6Class(
       # Keep no-op to preserve current caller expectations.
       logger::log_debug("Removing T5 intermediate files")
       if (self$T5$cleanup$intermediate_data_file) {
-        super$clean(content_to_delete = fs::path(
-          self$T5$T5$root,
-          self$T5$T5$intermediate
-        ))
+        super$clean(
+          content_to_delete = fs::path(
+            self$T5$T5$root,
+            self$T5$T5$intermediate
+          )
+        )
       }
       base::invisible(NULL)
     },

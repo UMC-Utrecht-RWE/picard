@@ -28,7 +28,9 @@ save <- function(
   create_plot = FALSE,
   plot_path = "data/intermediate_plots",
   exclude_columns_from_plots = c(
-    "person_id", "pregnancy_id", "unique_id"
+    "person_id",
+    "pregnancy_id",
+    "unique_id"
   ),
   ...
 ) {
@@ -45,8 +47,12 @@ save <- function(
   writer_func <- get_writer(ext)
   if (is.null(writer_func)) {
     stop(
-      "No writer registered for extension: '", ext, "'\n",
-      "Supported extensions: ", paste(list_writers(), collapse = ", "), "\n",
+      "No writer registered for extension: '",
+      ext,
+      "'\n",
+      "Supported extensions: ",
+      paste(list_writers(), collapse = ", "),
+      "\n",
       "Use register_writer() to add a custom writer.",
       call. = FALSE
     )
@@ -58,8 +64,11 @@ save <- function(
     writer_func(data, file_path, ...),
     error = function(e) {
       stop(
-        "Failed to save file: ", file_path, "\n",
-        "Error: ", e$message,
+        "Failed to save file: ",
+        file_path,
+        "\n",
+        "Error: ",
+        e$message,
         call. = FALSE
       )
     }
@@ -70,8 +79,9 @@ save <- function(
     data_to_plot <- data.table::copy(data)
 
     # Remove excluded columns if present
-    if (!is.null(exclude_columns_from_plots) &&
-      length(exclude_columns_from_plots) > 0
+    if (
+      !is.null(exclude_columns_from_plots) &&
+        length(exclude_columns_from_plots) > 0
     ) {
       cols_to_remove <- intersect(
         exclude_columns_from_plots,
@@ -201,15 +211,20 @@ prepare_output_path <- function(
         dir.create(out_dir, recursive = TRUE, showWarnings = FALSE),
         error = function(e) {
           stop(
-            "Failed to create directory: ", out_dir, "\n",
-            "Error: ", e$message,
+            "Failed to create directory: ",
+            out_dir,
+            "\n",
+            "Error: ",
+            e$message,
             call. = FALSE
           )
         }
       )
     } else {
       stop(
-        "Output directory does not exist: ", out_dir, "\n",
+        "Output directory does not exist: ",
+        out_dir,
+        "\n",
         "Set create_dir = TRUE to create it automatically.",
         call. = FALSE
       )
@@ -219,7 +234,8 @@ prepare_output_path <- function(
   # Check write permissions
   if (!file.access(out_dir, mode = 2) == 0) {
     logger::log_warn(paste0(
-      "May not have write permission for directory: ", out_dir
+      "May not have write permission for directory: ",
+      out_dir
     ))
   }
 
@@ -298,11 +314,7 @@ list_writers <- function() {
   # saves object with a fixed name "data" inside the .RData
   register_writer("rdata", function(data, path, ...) {
     data_to_save <- data
-    base::save(data_to_save,
-      file = path,
-      envir = base::environment(),
-      ...
-    )
+    base::save(data_to_save, file = path, envir = base::environment(), ...)
     base::invisible(path)
   })
 

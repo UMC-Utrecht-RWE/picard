@@ -12,3 +12,4 @@
 ^picard\.Rcheck$
 ^\.\.Rcheck$
 ^picard_.*\.tar\.gz$
+^air\.toml$

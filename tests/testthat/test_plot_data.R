@@ -81,8 +81,12 @@ testthat::test_that(".col_buckets respects column selection", {
 # Test: .top_n_factor
 testthat::test_that(".top_n_factor limits levels correctly", {
   x <- c(
-    rep("A", 50), rep("B", 30), rep("C", 10),
-    rep("D", 5), rep("E", 3), rep("F", 2)
+    rep("A", 50),
+    rep("B", 30),
+    rep("C", 10),
+    rep("D", 5),
+    rep("E", 3),
+    rep("F", 2)
   )
 
   result <- .top_n_factor(x, n = 3)
@@ -215,9 +219,7 @@ testthat::test_that(".boxplot_plotter ignores non-numeric columns", {
 testthat::test_that("plot_data_features saves PNG files", {
   # Option A: write to a temp file
   tmp_log <- base::tempfile(fileext = ".log")
-  logger::log_appender(logger::appender_file(tmp_log),
-    namespace = "picard"
-  )
+  logger::log_appender(logger::appender_file(tmp_log), namespace = "picard")
 
   # Option B: silence logging (no I/O)
   # logger::log_appender(function(...) invisible(NULL),
@@ -304,10 +306,18 @@ testthat::test_that("plot_data_features respects column selection", {
 testthat::test_that("plot_data_features creates multi-page output", {
   # Create data with many columns to force pagination
   dt <- data.table::data.table(
-    col1 = rnorm(100), col2 = rnorm(100), col3 = rnorm(100),
-    col4 = rnorm(100), col5 = rnorm(100), col6 = rnorm(100),
-    col7 = rnorm(100), col8 = rnorm(100), col9 = rnorm(100),
-    col10 = rnorm(100), col11 = rnorm(100), col12 = rnorm(100)
+    col1 = rnorm(100),
+    col2 = rnorm(100),
+    col3 = rnorm(100),
+    col4 = rnorm(100),
+    col5 = rnorm(100),
+    col6 = rnorm(100),
+    col7 = rnorm(100),
+    col8 = rnorm(100),
+    col9 = rnorm(100),
+    col10 = rnorm(100),
+    col11 = rnorm(100),
+    col12 = rnorm(100)
   )
 
   temp_file <- tempfile(fileext = ".csv")
