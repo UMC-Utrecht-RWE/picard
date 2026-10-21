@@ -15,7 +15,6 @@ testthat::test_that("Test with dry_run TRUE", {
 })
 
 testthat::test_that("Test with input errors", {
-
   testthat::expect_error(
     delete_parquet_partition(),
     regexp = "argument \"dataset_dir\" is missing, with no default",

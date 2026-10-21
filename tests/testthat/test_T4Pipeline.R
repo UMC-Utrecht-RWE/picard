@@ -3,7 +3,8 @@
 testthat::test_that("T4Pipeline initializes and loads config", {
   cfg <- create_substep_config(
     c("s1", "s2"),
-    step_name = "T4", marker_path = tempfile()
+    step_name = "T4",
+    marker_path = tempfile()
   )
   yaml_path <- file.path(tempdir(), "config_T4.yaml")
   yaml::write_yaml(cfg, yaml_path)
@@ -21,7 +22,8 @@ testthat::test_that("T4Pipeline run executes enabled substeps", {
   marker <- base::tempfile()
 
   cfg <- create_substep_config(
-    substep_names = c(s1 = TRUE, s2 = FALSE), step_name = "T4",
+    substep_names = c(s1 = TRUE, s2 = FALSE),
+    step_name = "T4",
     marker_path = marker
   )
 
@@ -54,7 +56,8 @@ testthat::test_that("T4Pipeline clean() is a no-op", {
 testthat::test_that("Check if clean delete files in folder", {
   cfg <- create_substep_config(
     c("s1", "s2"),
-    step_name = "T4", marker_path = tempfile()
+    step_name = "T4",
+    marker_path = tempfile()
   )
   yaml_path <- file.path(tempdir(), "config_T4.yaml")
   yaml::write_yaml(cfg, yaml_path)
@@ -76,7 +79,8 @@ testthat::test_that("Check if clean delete files in folder", {
 testthat::test_that("Test with dry_run TRUE", {
   cfg <- create_substep_config(
     c(s1 = TRUE, s2 = TRUE),
-    marker_path = tempfile(), step_name = "T4"
+    marker_path = tempfile(),
+    step_name = "T4"
   )
   yaml_path <- file.path(tempdir(), "config_t4.yaml")
   yaml::write_yaml(cfg, yaml_path)

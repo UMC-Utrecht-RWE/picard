@@ -224,7 +224,11 @@ testthat::test_that("Passing nulls", {
     interpolate_sql_params(
       "{a}, {b}, {c}, {d}, {e}",
       params = list(
-        a = "aa", b = 1, c = 1, d = c("x", "y"), e = c(1, 2)
+        a = "aa",
+        b = 1,
+        c = 1,
+        d = c("x", "y"),
+        e = c(1, 2)
       )
     )
   )
@@ -252,7 +256,6 @@ testthat::test_that("execute=FALSE returns sql and does not hit DBI", {
 })
 
 testthat::test_that("INSERT executes and SELECT returns a data frame", {
-
   conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
 
   DBI::dbExecute(conn, "CREATE TABLE t (x INTEGER)")
@@ -297,7 +300,10 @@ testthat::test_that("SELECT query saves result to Parquet file", {
   if (dir.exists(parquet_path)) {
     # If it's a directory, find the first Parquet file
     parquet_files <- list.files(
-      parquet_path, recursive = TRUE, full.names = TRUE, pattern = "\\.parquet$"
+      parquet_path,
+      recursive = TRUE,
+      full.names = TRUE,
+      pattern = "\\.parquet$"
     )
     testthat::expect_true(length(parquet_files) > 0)
     parquet_data <- arrow::read_parquet(parquet_files[1])

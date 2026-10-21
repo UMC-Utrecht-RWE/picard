@@ -1,54 +1,50 @@
-# logs
-logs
-*.log
-
-# History files
+# R session files
 .Rhistory
 .Rapp.history
-
-# Session Data files
 .RData
 .RDataTmp
-
-# User-specific files
 .Ruserdata
 
-# Example code in package build process
-*-Ex.R
-
-# Output files from R CMD build
-/*.tar.gz
-
-# Output files from R CMD check
-/*.Rcheck/
-
-# RStudio files
-.Rproj.user/
-*.DS_Store
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
-
-# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+# Secrets and local environment: never commit
+.Renviron
 .httr-oauth
 
-# knitr and R markdown default cache directories
+# RStudio
+.Rproj.user/
+
+# VS Code / Positron: share only the Air settings and extension recommendations
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# R CMD build / check output
+/*.tar.gz
+/*.Rcheck/
+*-Ex.R
+
+# pkgdown site (built and deployed by CI to the gh-pages branch)
+docs/
+
+# Built vignettes and R Markdown temporaries
+/doc/
+/Meta/
+inst/doc
+vignettes/*.html
+vignettes/*.pdf
 *_cache/
 /cache/
-
-# Temporary files created by R markdown
 *.utf8.md
 *.knit.md
 
-# R Environment Variables
-.Renviron
+# Logs
+*.log
 
-# pkgdown site
-docs/
+# OS files
+.DS_Store
+Thumbs.db
 
 # translation temp files
 po/*~
 
-# RStudio Connect folder
-rsconnect/
-.vscode/
+# Package-specific entries below
+logs

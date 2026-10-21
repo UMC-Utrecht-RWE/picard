@@ -102,8 +102,10 @@ start_script_logging <- function(
     script_name <- basename(script_name)
   }
 
-  if (!base::isTRUE(lm$is_configured()) ||
-    !is.null(lm$current_script)) {
+  if (
+    !base::isTRUE(lm$is_configured()) ||
+      !is.null(lm$current_script)
+  ) {
     assign(owner_flag, FALSE, envir = envir)
     return(invisible(FALSE))
   }

@@ -1,0 +1,9 @@
+# Commits that `git blame` skips (formatting only, no behaviour changes).
+# GitHub uses this file automatically. Locally, run once per clone:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Migration to rwe-ecosystem Air formatting (PR #114)
+d1b67e44faa0b2bdabf9a6b707a93f54d0c3f57e
+d8a1b3dea8e863001d6243ac818a79137ae3df76
+8c82f02088150e537ea445ae17c5860df5660656
+684d3d9b2f3177f431d607fc94d38392183dfcc8

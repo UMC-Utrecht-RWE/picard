@@ -12,6 +12,9 @@ Description: Provides a unified interface to configure, trigger, and log
     It is designed to promote consistent, transparent, and reproducible
     execution of data processing pipelines.
 License: GPL-3
+URL: https://github.com/UMC-Utrecht-RWE/picard,
+    https://umc-utrecht-rwe.github.io/picard/
+BugReports: https://github.com/UMC-Utrecht-RWE/picard/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
@@ -42,4 +45,4 @@ Suggests:
     withr (>= 3.0.2)
 Depends:
     R (>= 4.1.0)
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

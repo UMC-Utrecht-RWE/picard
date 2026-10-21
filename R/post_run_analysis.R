@@ -169,7 +169,8 @@ analyze_pipeline_log <- function(
 
   if (base::length(paths) == 0L) {
     stop(
-      "No pipeline logs found in: ", log_dir,
+      "No pipeline logs found in: ",
+      log_dir,
       call. = FALSE
     )
   }
@@ -223,8 +224,15 @@ analyze_pipeline_log <- function(
   clean_line <- .strip_ansi(line)
 
   high_fields <- c(
-    "timestamp_chr", "level", "run_time", "step_time",
-    "script_time", "delta_time", "step_script", "message", "hash"
+    "timestamp_chr",
+    "level",
+    "run_time",
+    "step_time",
+    "script_time",
+    "delta_time",
+    "step_script",
+    "message",
+    "hash"
   )
   high_pattern <- base::paste0(
     "^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})",
@@ -239,8 +247,12 @@ analyze_pipeline_log <- function(
   )
 
   normal_fields <- c(
-    "timestamp_chr", "level", "run_time",
-    "script_time", "step_script", "message"
+    "timestamp_chr",
+    "level",
+    "run_time",
+    "script_time",
+    "step_script",
+    "message"
   )
   normal_pattern <- base::paste0(
     "^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})",
@@ -357,11 +369,13 @@ analyze_pipeline_log <- function(
 
   data.table::set(
     parsed,
-    j = "run_s", value = .extract_seconds(parsed[["run_time"]])
+    j = "run_s",
+    value = .extract_seconds(parsed[["run_time"]])
   )
   data.table::set(
     parsed,
-    j = "delta_s", value = .extract_seconds(parsed[["delta_time"]])
+    j = "delta_s",
+    value = .extract_seconds(parsed[["delta_time"]])
   )
 
   step_parts <- .split_step_script(parsed[["step_script"]])
@@ -509,8 +523,7 @@ analyze_pipeline_log <- function(
 
 
 .summarise_levels <- function(structured_log) {
-  structured_log[
-    ,
+  structured_log[,
     .(n = .N),
     by = "level"
   ][order(-n, level)]
@@ -542,8 +555,7 @@ analyze_pipeline_log <- function(
     value = data.table::rleid(step_dt[["step"]])
   )
 
-  step_dt[
-    ,
+  step_dt[,
     .(
       start_ts = base::min(timestamp, na.rm = TRUE),
       end_ts = base::max(timestamp, na.rm = TRUE),
@@ -566,8 +578,7 @@ analyze_pipeline_log <- function(
 
   logged_run_s <- .max_or_na(structured_log[["run_s"]])
 
-  out <- step_blocks[
-    ,
+  out <- step_blocks[,
     .(
       total_step_s = base::sum(duration_s, na.rm = TRUE),
       n_blocks = .N,
@@ -578,8 +589,11 @@ analyze_pipeline_log <- function(
     by = "step"
   ][order(-total_step_s, step)]
 
-  if (base::is.finite(logged_run_s) && !base::is.na(logged_run_s) &&
-    logged_run_s > 0) {
+  if (
+    base::is.finite(logged_run_s) &&
+      !base::is.na(logged_run_s) &&
+      logged_run_s > 0
+  ) {
     out[, pct_of_logged_run := total_step_s / logged_run_s]
   } else {
     out[, pct_of_logged_run := NA_real_]
@@ -605,8 +619,7 @@ analyze_pipeline_log <- function(
     value = data.table::rleid(script_dt[["step_script"]])
   )
 
-  script_dt[
-    ,
+  script_dt[,
     .(
       start_ts = base::min(timestamp, na.rm = TRUE),
       end_ts = base::max(timestamp, na.rm = TRUE),
@@ -629,8 +642,7 @@ analyze_pipeline_log <- function(
 
   logged_run_s <- .max_or_na(structured_log[["run_s"]])
 
-  out <- script_blocks[
-    ,
+  out <- script_blocks[,
     .(
       total_script_s = base::sum(duration_s, na.rm = TRUE),
       n_blocks = .N,
@@ -641,8 +653,11 @@ analyze_pipeline_log <- function(
     by = c("step", "script", "script_label")
   ][order(-total_script_s, step, script_label)]
 
-  if (base::is.finite(logged_run_s) && !base::is.na(logged_run_s) &&
-    logged_run_s > 0) {
+  if (
+    base::is.finite(logged_run_s) &&
+      !base::is.na(logged_run_s) &&
+      logged_run_s > 0
+  ) {
     out[, pct_of_logged_run := total_script_s / logged_run_s]
   } else {
     out[, pct_of_logged_run := NA_real_]
@@ -746,7 +761,9 @@ analyze_pipeline_log <- function(
     ggplot2::labs(
       title = "Slowest steps",
       subtitle = base::paste(
-        "Top", base::min(nrow(plot_dt), top_n), "by run time"
+        "Top",
+        base::min(nrow(plot_dt), top_n),
+        "by run time"
       ),
       x = "Step",
       y = "Estimated duration (s)"
@@ -777,7 +794,9 @@ analyze_pipeline_log <- function(
     ggplot2::labs(
       title = "Slowest scripts",
       subtitle = base::paste(
-        "Top", base::min(nrow(plot_dt), top_n), "by run time"
+        "Top",
+        base::min(nrow(plot_dt), top_n),
+        "by run time"
       ),
       x = "Script",
       y = "Estimated duration (s)"
@@ -798,8 +817,7 @@ analyze_pipeline_log <- function(
     j = "step",
     value = factor(
       plot_dt[["step"]],
-      levels = plot_dt[
-        ,
+      levels = plot_dt[,
         .(min_start = base::min(start_run_s)),
         by = "step"
       ][order(-min_start), step]
@@ -831,13 +849,14 @@ analyze_pipeline_log <- function(
     )
 
   if (has_gaps) {
-    p <- p + ggplot2::geom_vline(
-      data = gap_summary,
-      mapping = ggplot2::aes(xintercept = run_s),
-      linetype = "dashed",
-      color = "firebrick3",
-      alpha = 0.6
-    )
+    p <- p +
+      ggplot2::geom_vline(
+        data = gap_summary,
+        mapping = ggplot2::aes(xintercept = run_s),
+        linetype = "dashed",
+        color = "firebrick3",
+        alpha = 0.6
+      )
   }
 
   p +
@@ -868,8 +887,7 @@ analyze_pipeline_log <- function(
     j = "script_label",
     value = factor(
       plot_dt[["script_label"]],
-      levels = plot_dt[
-        ,
+      levels = plot_dt[,
         .(min_start = base::min(start_run_s)),
         by = "script_label"
       ][order(-min_start), script_label]
@@ -919,8 +937,7 @@ analyze_pipeline_log <- function(
   }
 
   plot_dt <- data.table::copy(gap_summary)
-  plot_dt[
-    ,
+  plot_dt[,
     gap_label := ifelse(
       .has_context(script_label),
       base::paste(step, script_label, sep = " / "),

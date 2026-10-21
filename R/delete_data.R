@@ -55,7 +55,8 @@ delete_parquet_partition <- function(
   for (dir in dataset_dir) {
     for (pid in partition_ids) {
       partition_path <- fs::path(
-        dir, paste0(partition_col, "=", pid)
+        dir,
+        paste0(partition_col, "=", pid)
       )
 
       if (dir.exists(partition_path)) {
@@ -96,9 +97,9 @@ delete_parquet_partition <- function(
 #'
 #' @examples
 #' \dontrun{
-#'    delete_paths("path/to/file.txt")
-#'    delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
-#'    delete_paths("data/", del_dir = TRUE)
+#' delete_paths("path/to/file.txt")
+#' delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
+#' delete_paths("data/", del_dir = TRUE)
 #' }
 #' @export
 delete_paths <- function(
@@ -134,11 +135,11 @@ delete_paths <- function(
     # What type?
     type_ <- NA_character_
     if (fs::is_dir(path)) {
-      type_ = "directory"
+      type_ <- "directory"
     } else if (fs::is_file(path)) {
-      type_ = "file"
+      type_ <- "file"
     } else {
-      type_ = "unrecognized"
+      type_ <- "unrecognized"
     }
 
     # Does it exist?
@@ -173,7 +174,6 @@ delete_paths <- function(
     return(registry_files)
   }
 
-
   # Dry run exit
   if (dry_run) {
     msg <- paste0(
@@ -194,7 +194,6 @@ delete_paths <- function(
 
     return(registry_files)
   }
-
 
   # Move to actual deletion.
   if (nrow(registry_files_not_exists) > 0) {

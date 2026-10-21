@@ -41,7 +41,9 @@ save_data <- function(
   create_plot = FALSE,
   plot_path = "data/intermediate_plots",
   exclude_columns_from_plots = c(
-    "person_id", "pregnancy_id", "unique_id"
+    "person_id",
+    "pregnancy_id",
+    "unique_id"
   ),
   ...
 ) {

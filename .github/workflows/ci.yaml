@@ -1,0 +1,47 @@
+# CI for RWE ecosystem packages.
+# The jobs run the shared workflows from UMC-Utrecht-RWE/rwe-ecosystem;
+# change behaviour through the `with:` inputs, not by copying the workflows.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+name: CI
+
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same PR or branch
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/r_cmd_check.yaml@v2
+    secrets: inherit
+    # with:
+    #   error-on: '"error"'
+    #   matrix: '[{"os": "ubuntu-latest", "r": "release"}]'
+
+  code-quality:
+    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/code_quality.yaml@v2
+    secrets: inherit
+
+  coverage:
+    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/test_coverage.yaml@v2
+    secrets: inherit
+    # with:
+    #   threshold: 70
+
+  pkgdown:
+    uses: UMC-Utrecht-RWE/rwe-ecosystem/.github/workflows/pkgdown.yaml@v2
+    secrets: inherit
+    permissions:
+      contents: write
+    # with:
+    #   deploy: false

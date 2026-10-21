@@ -28,15 +28,19 @@ testthat::test_that("read_data() warns and forwards arguments to load()", {
 
 testthat::test_that("save_data() warns and forwards arguments to save()", {
   testthat::local_mocked_bindings(
-    save = function(data,
-                    file_path,
-                    file_name = NULL,
-                    create_plot = FALSE,
-                    plot_path = "data/intermediate_plots",
-                    exclude_columns_from_plots = c(
-                      "person_id", "pregnancy_id", "unique_id"
-                    ),
-                    ...) {
+    save = function(
+      data,
+      file_path,
+      file_name = NULL,
+      create_plot = FALSE,
+      plot_path = "data/intermediate_plots",
+      exclude_columns_from_plots = c(
+        "person_id",
+        "pregnancy_id",
+        "unique_id"
+      ),
+      ...
+    ) {
       list(
         data = data,
         file_path = file_path,

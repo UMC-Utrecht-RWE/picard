@@ -135,7 +135,8 @@ testthat::test_that("read_yaml rejects invalid YAML syntax", {
 testthat::test_that("get_tracked_files finds file on all OS", {
   test_dir <- normalizePath(
     withr::local_tempdir(),
-    winslash = "/", mustWork = FALSE
+    winslash = "/",
+    mustWork = FALSE
   )
 
   tmp <- tempfile(tmpdir = test_dir, fileext = ".txt")
@@ -147,7 +148,8 @@ testthat::test_that("get_tracked_files finds file on all OS", {
 
   tracked_files_normalized <- base::normalizePath(
     tracked_files,
-    winslash = "/", mustWork = FALSE
+    winslash = "/",
+    mustWork = FALSE
   )
   testthat::expect_true(tmp_normalized %in% tracked_files_normalized)
 })
@@ -238,7 +240,8 @@ testthat::test_that("", {
 
   output_file <- get_hash_output(output_file = NULL, log_dir = log_dir)
   testthat::expect_equal(
-    output_file, base::file.path(log_dir, "registry.csv")
+    output_file,
+    base::file.path(log_dir, "registry.csv")
   )
 })
 

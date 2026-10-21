@@ -21,8 +21,8 @@ Can also accept directories and delete all files inside them (opt-in).
 }
 \examples{
 \dontrun{
-   delete_paths("path/to/file.txt")
-   delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
-   delete_paths("data/", del_dir = TRUE)
+delete_paths("path/to/file.txt")
+delete_paths(c("a.txt", "b.txt"), dry_run = FALSE)
+delete_paths("data/", del_dir = TRUE)
 }
 }

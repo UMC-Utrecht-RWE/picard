@@ -127,7 +127,9 @@ interpolate_sql_params <- function(sql, params) {
       replacement <- paste(value, collapse = ", ")
     } else {
       stop(
-        "Unsupported parameter type for '", param, "': ",
+        "Unsupported parameter type for '",
+        param,
+        "': ",
         class(value)[1],
         call. = FALSE
       )
@@ -272,7 +274,9 @@ copy_query_to_parquet <- function(
     )
     copy_options <- paste0(
       copy_options,
-      ", PARTITION_BY (", partition_cols, ")",
+      ", PARTITION_BY (",
+      partition_cols,
+      ")",
       ", FILENAME_PATTERN 'part-{i}'"
     )
   }

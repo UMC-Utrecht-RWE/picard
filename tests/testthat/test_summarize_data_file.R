@@ -22,8 +22,14 @@ testthat::test_that("summarize_data_file returns correct summary", {
   summary <- result$summary
 
   expected <- c(
-    "file", "size_mb", "n_rows", "n_cols",
-    "columns", "col_types", "missing", "memory_mb"
+    "file",
+    "size_mb",
+    "n_rows",
+    "n_cols",
+    "columns",
+    "col_types",
+    "missing",
+    "memory_mb"
   )
   # two vectors have the same elements, regardless of order
   testthat::expect_setequal(names(summary), expected)

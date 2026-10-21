@@ -109,8 +109,9 @@ testthat::test_that("step log is created, receives messages and, closed", {
 
 testthat::test_that("Low verbose format is short", {
   log_dir <- base::file.path(base::tempdir(), "picard_logs_low")
-  if (base::dir.exists(log_dir))
+  if (base::dir.exists(log_dir)) {
     base::unlink(log_dir, recursive = TRUE, force = TRUE)
+  }
   on.exit(base::unlink(log_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
   lm <- picard:::LoggerManager$new()
@@ -184,7 +185,6 @@ testthat::test_that("High verbose includes full timers", {
   lines <- base::readLines(lm$global_log_file, warn = FALSE)
 
   testthat::expect_true("Script modified by user" %in% lines)
-
 })
 
 
