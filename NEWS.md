@@ -10,6 +10,7 @@
 - Adopted the rwe-ecosystem starter files: `.gitignore` (now also shares `.vscode/settings.json` and `.vscode/extensions.json`), `.Rbuildignore` entries, `.covrignore` (excludes `R/deprecated.R` and `R/zzz.R` from coverage), `_pkgdown.yml`, and a pull request template.
 - `.vscode/settings.json` sets Air as the R formatter with format on save; `.vscode/extensions.json` recommends the Air and R extensions.
 - `DESCRIPTION`: added `URL` (GitHub repository and pkgdown site) and `BugReports`.
+- Added `.git-blame-ignore-revs`, so `git blame` and GitHub's blame view skip the formatting-only commits of this migration.
 - `CHANGELOG.md` renamed to `NEWS.md` (pkgdown format: `# picard <version>` headings), so it ships with the package (`utils::news(package = "picard")`) and is shown as the pkgdown site's Changelog page. Release links are on the GitHub releases page.
 
 ## Removed
