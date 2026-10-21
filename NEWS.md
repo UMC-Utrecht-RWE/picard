@@ -1,27 +1,24 @@
-# Changelog
+# picard (development version)
 
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
-### Changed
+## Changed
 
 - CI now runs the shared workflows from [rwe-ecosystem](https://github.com/UMC-Utrecht-RWE/rwe-ecosystem) `@v2` through a single `.github/workflows/ci.yaml` (R CMD check, lint and Air formatting, coverage, pkgdown).
 - Code is formatted with [Air](https://posit-dev.github.io/air/) instead of styler; `air.toml` is managed by rwe-ecosystem and must not be edited here (CI fails if it differs). Run `air format .` before pushing. Formatting only, no behaviour changes.
 - `.lintr`: `indentation_linter` stays off (Air owns layout) and long lines are allowed in `tests/testthat` (long `test_that()` descriptions).
 - `R/run_logger.R`: the `# nolint` for `LoggerManager` moved to a `# nolint next` line, since Air moves trailing comments.
 - Documentation regenerated with roxygen2 8.1.0.
+- Adopted the rwe-ecosystem starter files: `.gitignore` (now also shares `.vscode/settings.json` and `.vscode/extensions.json`), `.Rbuildignore` entries, `.covrignore` (excludes `R/deprecated.R` and `R/zzz.R` from coverage), `_pkgdown.yml`, and a pull request template.
+- `.vscode/settings.json` sets Air as the R formatter with format on save; `.vscode/extensions.json` recommends the Air and R extensions.
+- `DESCRIPTION`: added `URL` (GitHub repository and pkgdown site) and `BugReports`.
+- `CHANGELOG.md` renamed to `NEWS.md` (pkgdown format: `# picard <version>` headings), so it ships with the package (`utils::news(package = "picard")`) and is shown as the pkgdown site's Changelog page. Release links are on the GitHub releases page.
 
-### Removed
+## Removed
 
 - The package's own `code_quality.yaml`, `pkgdown.yaml`, `r_cmd_check.yaml`, `test_coverage.yaml` and `testthat.yaml` workflows, replaced by the shared ones (tests run inside R CMD check).
 
-## [V1.2.5]
+# picard 1.2.5
 
-### Added
+## Added
 
 - `analyze_pipeline_log()` (`R/post_run_analysis.R`): parses a pipeline log and produces run/level/alert/step/script/gap summary tables plus diagnostic plots (`level_summary`, `step_summary`, `script_summary`, `step_timeline`, `script_timeline`, `gap_summary`), written to an `analysis/<log_name>` folder next to the log.
 - `start_script_logging()` / `stop_script_logging()` and exported `log_trace`/`log_debug`/`log_info`/`log_success`/`log_warn`/`log_error`/`log_fatal` wrappers (`R/logging_helpers.R`), so project scripts can log through `picard` without depending on `logger` directly. They become no-ops when the pipeline already owns the logging context.
@@ -29,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Colourised console log output, with a new `SUCCESS` log level used for the final "Pipeline completed successfully" message.
 - `TUTORIAL.md`, a full walkthrough with a terminology section; `README.md` significantly expanded.
 
-### Changed
+## Changed
 
 - CSV reading now goes through `data.table::fread` (`R/load.R`) instead of base/utils readers.
 - Reworked yaml/sql loading internals (`dispatch_reader`, `load_raw`, `prepare_load_request` in `R/load.R`/`R/load_sql_query.R`), replacing the old `get_tracked_files` path.
@@ -37,81 +34,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - General CRAN-compliance pass across `R/Pipeline.R`, `R/audit.R`, `R/run_logger.R`, `R/save.R`, `R/plot_data.R`, `R/delete_data.R`, `R/utils.R`, `.Rbuildignore`, `.gitignore`.
 - `step_timeline`/`script_timeline` plots now order steps/scripts chronologically by their actual start time instead of alphabetically.
 
-### Fixed
+## Fixed
 
 - `.parse_log_line()` (`R/post_run_analysis.R`): the "High" verbosity regex required a trailing `| <hash>` field; log lines with an empty message (e.g. a stray ANSI colour code) omitted that field and silently fell back to a mismatched pattern, corrupting the parsed `step` column. The hash field is now optional in the regex.
 - CSV loading no longer raises a spurious row-count-mismatch error when `nrow`/`nrows`/`skip` are passed to limit the rows read.
 - CSV reader no longer leaks `data.table::fread`'s own "Stopped early on line ..." warning on ragged/corrupt CSVs; the existing row-count check already raises a clearer error for this case.
 - `LoggerManager` gained a `reset()` method, and `.reset_logger_manager_instance()` now uses it to clear the exported `logger_manager` singleton's fields *and* its `logger::log_appender()`/`log_layout()`/`log_threshold()` registrations in place, instead of only discarding an internal cache reference the exported binding never actually pointed at. Previously, any test (or code) that configured a `LoggerManager` left the shared `logger` namespace registrations dangling on a deleted log file for the rest of the R session, causing unrelated failures the next time the full test suite ran.
 
-### Removed
+## Removed
 
 - Bundled `LICENSE` file text (674 lines), in favour of the standard `GPL-3` license specifier in `DESCRIPTION`.
 - `man/cheatsheet/picard.pdf` and `man/figures/*.png` binary assets, removed from the package for CRAN size compliance.
 
-## [V1.2.4]
+# picard 1.2.4
 
-### Changed
+## Changed
 
 - Packaged pubblished in zenodo.org
 
-## [V1.2.3]
+# picard 1.2.3
 
-### Changed
+## Changed
 
 - Minor changes in `README.md` and cheatsheet file.
 - CSV files read by `data.table` and not by `utils` package.
 
-### Added
+## Added
 
 - Added `codemeta.json`
 
-## [V1.2.2]
+# picard 1.2.2
 
-### Added
+## Added
 
 - Added `R/deprecated.R` for deprecated but still in use for now functions.
 
-### Changed
+## Changed
 
 - Simplyfied tag originations for `R/audit.R`.
 - `R/read_data.R::read_data()` is now `R/load.R::load()` all other aspects of the function are unchanged.
 - `R/save_data.R::save_data()` is now `R/save.R::save()` all other aspects of the function are unchanged.
 - `R/load_sql_query.R::execute_sql_file()` can now save results in parquet.
 
-### Future Work
+## Future Work
 
 - `R/load_sql_query.R::load_sql_query()` should be handle by `R/load.R::load()`.
 - Fix warning in `R/audit.R` when `DESCRIPTION` not present.
 
-## [V1.2.1]
+# picard 1.2.1
 
-### Fixed
+## Fixed
 
 - `R/audit.R:.get_release_version` kept giving us problems with the DEAPs, we decided to remove any call to git as not prosent in DEAPs'enviroment.
 - Fixed bug with `save_data:save_data.R` it was not passing file name correctly to `plot_data`
 
-### Added
+## Added
 
 - `save_data.R:prepare_output_path` handles all combinations of `file_path` and `file_name`. If `file_name` is present will overwrite the name in `file_path` (if that is present). If `file_name` has no extension, it will take the one in `file_path` (if that is present). If that is not possible, it will give an error.
 
-## [V1.2.0]
+# picard 1.2.0
 
-### Added
+## Added
 
 - `R/delete_data.R`: File that deletes whetever path you pass to in not a dry run.
 
-### Changed
+## Changed
 
 - `R/audit.R`: Expanded and fixed but in `.get_release_version` that created a bug when git was not prosent. Infos are now also gathered from `DESCRIPTION`. It does not create errors if none if present.
 
-### Fixed
+## Fixed
 
 - `DESCRIPTION`'s Version was not updated to 1.1.0, creating installation problems. It is now fixed with release 1.2.0.
 
-## [V1.1.0]
+# picard 1.1.0
 
-### Added
+## Added
 
 - Testing: Created tests for every part of the code and brought test coverage >95% (Ubuntu only GitHub action check).
 - `R/utils.R:read_yaml`: Validate if file is yaml or not.
@@ -122,7 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `read_parquet` in `R/read_data.R` to read parquet files, that are now the default in our work.
 - New file `R/delete_data.R` with functionality `delete_parquet_partition`. Such function (and potentially others) can be used by the pipeline class(es) to delete parquet files that are now the way we save intermidate data files.
 
-### Changed
+## Changed
 
 - `R/run_logger.R` refactoring of the code so to have a `global` and `step` log. The first captures all log messages from each step, the seconds contain also print message. The idea is the first gives a general overview the second more details. New functions:
   - `start_script/end_script`: For capturing logs on singular scripts.
@@ -135,27 +132,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `code-quality.yaml` is now `code_quality.yaml` and it has been refactor.
 - `testthat.yaml` now tests for every enviroment and
 
-### Removed
+## Removed
 
 - Removed `R/globals.R` and put its content in `R/zzz.R`
 
-### Fixed
+## Fixed
 
 - A typo prevented Github action triggering
 - All test files have the same nomenclature test_<name\>.R
 
-## [V1.0.0]
+# picard 1.0.0
 
 - All major functions transfered here from the RSV-1026 repository.
-
-# List of releases
-
-- unreleased: https://github.com/UMC-Utrecht-RWE/RSV-1026/releases
-- V1.2.5: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.5
-- V1.2.4: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.4
-- V1.2.3: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.3
-- V1.2.2: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.2
-- V1.2.1: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.1
-- V1.2.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.2.0
-- V1.1.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1.1
-- V1.0.0: https://github.com/UMC-Utrecht-RWE/picard/releases/tag/v1

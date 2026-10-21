@@ -1,0 +1,4 @@
+R/zzz.R
+R/deprecated.R
+R/import-standalone-*.R
+inst/scripts/

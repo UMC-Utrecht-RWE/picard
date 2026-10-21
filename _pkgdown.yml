@@ -1,0 +1,11 @@
+# pkgdown site settings: https://pkgdown.r-lib.org/articles/pkgdown.html
+# The same URL is in the `URL:` field of DESCRIPTION. CI builds the site and
+# deploys it to gh-pages.
+url: https://umc-utrecht-rwe.github.io/picard/
+
+template:
+  bootstrap: 5
+
+# Without a `reference:` section every exported function is listed on one
+# page. Once you add sections, every exported topic must appear in one, or
+# the build fails.
